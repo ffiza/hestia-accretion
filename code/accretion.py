@@ -45,9 +45,9 @@ def generate_dummy_df(size: int) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-def calculate_accretion_from_cells(df1: pd.DataFrame, df2: pd.DataFrame,
-                                   t1_gyr: float, t2_gyr: float,
-                                   geometry_ckpc: tuple) -> float:
+def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
+                            t1_gyr: float, t2_gyr: float,
+                            geometry_ckpc: tuple) -> float:
     """
     This method calculates the net accretion rate between two snapshots. It
     takes two data frames, `df1` and `df2`, with the information of the
@@ -151,8 +151,8 @@ def calculate_accretion_from_cells(df1: pd.DataFrame, df2: pd.DataFrame,
     return net_accretion_rate
 
 
-def calculate_accretion_properties_evolution(simulation: str,
-                                             geometry_ckpc: tuple) -> None:
+def calculate_net_accretion_evolution(simulation: str,
+                                      geometry_ckpc: tuple) -> None:
     """
     This method calculates the evolution of the net accretion rate for a
     given simulation.
@@ -180,14 +180,14 @@ def calculate_accretion_properties_evolution(simulation: str,
         # Milky-Way
         df1 = ...
         df2 = ...
-        net_accretion_mw = calculate_accretion_from_cells(
+        net_accretion_mw = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
             geometry_ckpc=geometry_ckpc)
-        
+
         # M31
         df1 = ...
         df2 = ...
-        net_accretion_m31 = calculate_accretion_from_cells(
+        net_accretion_m31 = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
             geometry_ckpc=geometry_ckpc)
 
@@ -211,13 +211,13 @@ if __name__ == "__main__":
     t2_gyr = 13.6984
 
     # Generic test with two random dataframes and a spheroid geometry
-    accretion_net = calculate_accretion_from_cells(
+    accretion_net = calculate_net_accretion(
         df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
         geometry_ckpc=(200.0,))
     print(accretion_net)
 
     # Generic test with two random dataframes and a disc geometry
-    accretion_net = calculate_accretion_from_cells(
+    accretion_net = calculate_net_accretion(
         df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
         geometry_ckpc=(30.0, 4.0))
     print(accretion_net)
