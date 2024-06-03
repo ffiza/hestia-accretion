@@ -199,7 +199,7 @@ def calculate_net_accretion_evolution(simulation: str,
                                  "NetAccretion_Msun/yr_MW",
                                  "NetAccretion_Msun/yr_M31",])
 
-    pd.to_csv(f"results/{simulation}/net_accretion.csv")
+    data.to_csv(f"results/{simulation}/net_accretion.csv")
 
 
 if __name__ == "__main__":
