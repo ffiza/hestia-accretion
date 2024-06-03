@@ -151,29 +151,55 @@ def calculate_accretion_from_cells(df1: pd.DataFrame, df2: pd.DataFrame,
     return net_accretion_rate
 
 
-def calculate_accretion_properties_evolution(simulation: str) -> None:
+def calculate_accretion_properties_evolution(simulation: str,
+                                             geometry_ckpc: tuple) -> None:
+    """
+    This method calculates the evolution of the net accretion rate for a
+    given simulation.
+
+    Parameters
+    ----------
+    simulation : str
+        The name of the simulation: `17_11`, `37_11` or `9_18`.
+    geometry_ckpc : tuple
+        Tuple that indicates the geometry of the region in which to calculate
+        the accretion. If the tuple has only one element, the method asumes an
+        spheroid of that radius. If the tuple cotains two elements, the method
+        assumes a disc with the first element as the radius and the second as
+        the height. All the dimensions should be expressed in ckpc.
+
+    """
     data = np.zeros((N_SNAPSHOTS - FIRST_SNAPSHOT, 4))
     for i in range(FIRST_SNAPSHOT, N_SNAPSHOTS):
-        print(i)
-        # TODO: df1 = read_snapshot(simulation=simulation, snapshot=i - 1)
-        # TODO: df2 = read_snapshot(simulation=simulation, snapshot=i)
-        t1_gyr, t2_gyr = ...  # TODO
-        redshift2 = ...  # TODO
-        exp_fact2 = ..  # TODO
 
-        gas_mass_mw, new_star_mass_mw = ...
-        gas_mass_m31, new_star_mass_m31 = ...
+        t1_gyr = ...
+        t2_gyr = ...
+        redshift2 = ...
+        exp_fact2 = ...
+
+        # Milky-Way
+        df1 = ...
+        df2 = ...
+        net_accretion_mw = calculate_accretion_from_cells(
+            df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
+            geometry_ckpc=geometry_ckpc)
+        
+        # M31
+        df1 = ...
+        df2 = ...
+        net_accretion_m31 = calculate_accretion_from_cells(
+            df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
+            geometry_ckpc=geometry_ckpc)
 
         data[i] = np.array([t2_gyr, redshift2, exp_fact2,
-                            gas_mass_mw, new_star_mass_mw,
-                            gas_mass_m31, new_star_mass_m31])
+                            net_accretion_mw, net_accretion_m31,])
 
     data = pd.DataFrame(data=data,
                         columns=["Time_Gyr", "Redshift", "ExpansionFactor",
-                                 "GasMass_Msun_MW", "NewStarMass_Msun_MW",
-                                 "GasMass_Msun_M31", "NewStarMass_Msun_M31"])
+                                 "NetAccretion_Msun/yr_MW",
+                                 "NetAccretion_Msun/yr_M31",])
 
-    pd.to_csv(f"data/{simulation}/accretion_cells.csv")
+    pd.to_csv(f"results/{simulation}/accretion_cells.csv")
 
 
 if __name__ == "__main__":
@@ -195,5 +221,3 @@ if __name__ == "__main__":
         df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
         geometry_ckpc=(30.0, 4.0))
     print(accretion_net)
-
-    calculate_accretion_properties_evolution("")
