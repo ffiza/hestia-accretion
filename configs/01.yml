@@ -3,7 +3,7 @@ RUN_SUFFIX:                             "_01"
 GEOMETRY_CKPC:                          [30.0, 2.0]
 DISC_SIZE_SPHERICAL_CUT_CKPC:           50.0
 DISC_SIZE_HEIGHT_CUT_CKPC:              5.0
-DISC_ENCLOSED_MASS_FRACTION:            0.9         
+DISC_ENCLOSED_MASS_PERCENTILE:          90
 
 # VISUALIZATION VALUES
 SMOOTHING_WINDOW_LENGTH:                9

@@ -1,4 +1,7 @@
 from astropy.cosmology import FlatLambdaCDM
+import yaml
+
+GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 
 class Cosmology:
@@ -13,7 +16,7 @@ class Cosmology:
         The Hubble constant in km/s/Mpc.
     omega0 : float
         The cosmological matter density.
-    omega_baryon : float
+    omega_baryons : float
         The cosmological baryon density.
     omega_lambda : float
         The cosmological dark matter density.
@@ -31,11 +34,11 @@ class Cosmology:
     """
 
     def __init__(self) -> None:
-        self.hubble_factor: float = 0.6777
-        self.hubble_constant: float = 67.77  # km/s/Mpc
-        self.omega0: float = 0.307  # Matter density
-        self.omega_baryon: float = 0.048  # Baryon density
-        self.omega_lambda: float = 0.693  # Dark energy density
+        self.hubble_factor = GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]
+        self.hubble_constant = GLOBAL_CONFIG["HUBBLE_CONST"]
+        self.omega0 = GLOBAL_CONFIG["OMEGA_0"]
+        self.omega_baryons = GLOBAL_CONFIG["OMEGA_BARYONS"]
+        self.omega_lambda = GLOBAL_CONFIG["OMEGA_LAMBDA"]
         self.cosmology = FlatLambdaCDM(H0=self.hubble_constant,
                                        Om0=self.omega0)
         self.present_time: float = self.cosmology.age(0).value  # Gyr

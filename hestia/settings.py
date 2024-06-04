@@ -4,4 +4,5 @@ class Settings:
     """
 
     def __init__(self) -> None:
-        self.galaxies: list = ["17_11", "37_11", "9_18"]
+        self.simulations: list = ["17_11", "37_11", "9_18"]
+        self.galaxies: list = ["MW", "M31"]
