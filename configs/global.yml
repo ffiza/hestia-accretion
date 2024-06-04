@@ -1,0 +1,11 @@
+REPOSITORY_NAME:                        "hestia-accretion"
+EREBOS_SIMULATION_PATH:                 "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/"
+GAS_PARTICLE_TYPE:                      0
+DARK_MATTER_PARTICLE_TYPE:              1
+STAR_PARTICLE_TYPE:                     4
+SMALL_HUBBLE_CONST:                     0.677
+OMEGA_LAMBDA:                           0.682
+OMEGA_MATTER:                           0.27
+OMEGA_BARYONS:                          0.048
+FIRST_SNAPSHOT:                         35
+N_SNAPSHOTS:                            128
