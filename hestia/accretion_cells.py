@@ -1,48 +1,10 @@
 import numpy as np
 import pandas as pd
+import yaml
 
-GAS_PARTICLE_TYPE: int = 0
-STAR_PARTICLE_TYPE: int = 4
-FIRST_SNAPSHOT: int = 35
-N_SNAPSHOTS: int = 128
-
+GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
               "Mass_Msun", "ParticleType", "StellarBirthTime_Gyr"]
-
-
-def generate_dummy_df(size: int) -> pd.DataFrame:
-    """
-    This method creates an artificial data frame that emulates the
-    contents of the data obtained from the simulation. The only
-    purpouse of this function is to test the accretion calculation.
-
-    Parameters
-    ----------
-    size : int
-        The number of rows in the data frame.
-
-    Returns
-    -------
-    pd.DataFrame
-        The data frame with the particle information.
-    """
-
-    data = {
-        "xPosition_ckpc": np.random.uniform(0, 500, size),
-        "yPosition_ckpc": np.random.uniform(0, 500, size),
-        "zPosition_ckpc": np.random.uniform(0, 500, size),
-        "Mass_Msun": np.ones(size),
-        "ParticleType": GAS_PARTICLE_TYPE * np.ones(size, dtype=np.int8),
-        "StellarBirthTime_Gyr": np.random.uniform(0, 14, size),
-    }
-
-    data["ParticleType"][
-        np.random.randint(
-            low=0, high=size, size=int(0.5 * size))] = STAR_PARTICLE_TYPE
-    data["StellarBirthTime_Gyr"][
-        data["ParticleType"] == GAS_PARTICLE_TYPE] = np.nan
-
-    return pd.DataFrame(data)
 
 
 def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
@@ -133,16 +95,19 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                 & (np.abs(df["zPosition_ckpc"]) <= geometry_ckpc[1] / 2)
 
     # Calculate mass of new stars
-    is_new_star = (df2["ParticleType"] == STAR_PARTICLE_TYPE) \
+    is_new_star = (
+        df2["ParticleType"] == GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]) \
         & (df2["StellarBirthTime_Gyr"] >= t1_gyr)
     new_star_mass = (df2["Mass_Msun"][
         is_new_star & (df2["IsGeometry"] == 1)]).sum()
 
     # Calculate mass of gas inside geometry
-    gas_mass_1 = (df1["Mass_Msun"][(df1["ParticleType"] == GAS_PARTICLE_TYPE)
-                                   & (df1["IsGeometry"] == 1)]).sum()
-    gas_mass_2 = (df2["Mass_Msun"][(df2["ParticleType"] == GAS_PARTICLE_TYPE)
-                                   & (df2["IsGeometry"] == 1)]).sum()
+    gas_mass_1 = (df1["Mass_Msun"][
+        (df1["ParticleType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"])
+        & (df1["IsGeometry"] == 1)]).sum()
+    gas_mass_2 = (df2["Mass_Msun"][(
+        df2["ParticleType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"])
+        & (df2["IsGeometry"] == 1)]).sum()
 
     # Calculate the net accretion rate in Msun/yr
     net_accretion_rate = (gas_mass_2 - gas_mass_1 + new_star_mass) \
@@ -169,8 +134,11 @@ def calculate_net_accretion_evolution(simulation: str,
         the height. All the dimensions should be expressed in ckpc.
 
     """
-    data = np.zeros((N_SNAPSHOTS - FIRST_SNAPSHOT, 4))
-    for i in range(FIRST_SNAPSHOT, N_SNAPSHOTS):
+    data = np.zeros(
+        (GLOBAL_CONFIG["N_SNAPSHOTS"] - GLOBAL_CONFIG["FIRST_SNAPSHOT"],
+         4))
+    for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"],
+                   GLOBAL_CONFIG["N_SNAPSHOTS"]):
 
         t1_gyr = ...
         t2_gyr = ...
@@ -203,21 +171,5 @@ def calculate_net_accretion_evolution(simulation: str,
 
 
 if __name__ == "__main__":
-    df1 = pd.read_pickle(
-        "data/17_11/df_SnapNo126_SnapTimeGyr13.5042_Hestia17-11.pkl")
-    t1_gyr = 13.5042
-    df2 = pd.read_pickle(
-        "data/17_11/df_SnapNo127_SnapTimeGyr13.6984_Hestia17-11.pkl")
-    t2_gyr = 13.6984
-
-    # Generic test with two random dataframes and a spheroid geometry
-    accretion_net = calculate_net_accretion(
-        df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
-        geometry_ckpc=(200.0,))
-    print(accretion_net)
-
-    # Generic test with two random dataframes and a disc geometry
-    accretion_net = calculate_net_accretion(
-        df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
-        geometry_ckpc=(30.0, 4.0))
-    print(accretion_net)
+    # TODO: Run the calculation for all galaxies.
+    pass
