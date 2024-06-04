@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import astropy
 
-from functions import PCA_matrix
+from hestia.pca import PCA_matrix
 
 
 h=0.677
