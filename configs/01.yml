@@ -1,0 +1,8 @@
+REPOSITORY_NAME:                        "hestia-accretion"
+RUN_SUFFIX:                             "_01"
+SUBHALO_VELOCITY_DISTANCE_CKPC:         10.0
+ROTATION_MATRIX_DISTANCE_CKPC:          10.0
+FIRST_SNAPSHOT:                         35
+GEOMETRY_CKPC:                          [310.0]
+SMOOTHING_WINDOW_LENGTH:                9
+SMOOTHING_POLYORDER:                    1
