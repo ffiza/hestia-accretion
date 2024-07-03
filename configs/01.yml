@@ -1,5 +1,7 @@
 # # RUN-SPECIFIC VALUES # #
 RUN_SUFFIX:                             "_01"
+
+# # DISC DEFINITION/CALCULATION # #
 DISC_SIZE_TYPE:                         "fixed"
 DISC_RADIUS_CKPC:                       30.0
 DISC_HEIGHT_CKPC:                       2.0
