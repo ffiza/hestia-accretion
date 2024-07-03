@@ -3,13 +3,13 @@ RUN_SUFFIX:                             "_01"
 DISC_SIZE_TYPE:                         "fixed"
 DISC_RADIUS_CKPC:                       30.0
 DISC_HEIGHT_CKPC:                       2.0
-# DISC_SIZE_SPHERICAL_CUT_CKPC:           0.0
-# DISC_SIZE_HEIGHT_CUT_CKPC:              0.0
-# DISC_ENCLOSED_MASS_PERCENTILE:          0
+DISC_SIZE_SPHERICAL_CUT_CKPC:           -1.0
+DISC_SIZE_HEIGHT_CUT_CKPC:              -1.0
+DISC_ENCLOSED_MASS_PERCENTILE:          -1
 
 # # VISUALIZATION VALUES # #
-# SMOOTHING_WINDOW_LENGTH:                9
-# SMOOTHING_POLYORDER:                    1
+SMOOTHING_WINDOW_LENGTH:                9
+SMOOTHING_POLYORDER:                    1
 
 # # PREPROCESSING VALUES # #
 SUBHALO_VELOCITY_DISTANCE_CKPC:         10.0
