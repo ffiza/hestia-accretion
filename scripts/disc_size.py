@@ -57,26 +57,27 @@ def calculate_disc_size_by_percentiles(
 
 
 def calculate_disc_size(simulation: str, galaxy: str, config: dict):
+    n_snapshots = GLOBAL_CONFIG["N_SNAPSHOTS"]
+
     data = {"Configuration": config["RUN_CODE"],
             "Simulation": simulation,
             "Galaxy": galaxy,
-            "Times_Gyr": [np.nan] * config["FIRST_SNAPSHOT"],
-            "Redshift": [np.nan] * config["FIRST_SNAPSHOT"],
-            "ExpansionFactor": [np.nan] * config["FIRST_SNAPSHOT"],
-            "SnapshotNumbers": [np.nan] * config["FIRST_SNAPSHOT"],
-            "VirialRadius_ckpc": [np.nan] * config["FIRST_SNAPSHOT"],
-            "PercentileRadius_ckpc": [np.nan] * config["FIRST_SNAPSHOT"],
-            "PercentileUpperHeight_ckpc": [np.nan] * config["FIRST_SNAPSHOT"],
-            "PercentileLowerHeight_ckpc": [np.nan] * config["FIRST_SNAPSHOT"],
-            "DiscRadius_ckpc": [np.nan] * config["FIRST_SNAPSHOT"],
-            "DiscHeight_ckpc": [np.nan] * config["FIRST_SNAPSHOT"]}
+            "Times_Gyr": [np.nan] * n_snapshots,
+            "Redshift": [np.nan] * n_snapshots,
+            "ExpansionFactor": [np.nan] * n_snapshots,
+            "SnapshotNumbers": [np.nan] * n_snapshots,
+            "VirialRadius_ckpc": [np.nan] * n_snapshots,
+            "PercentileRadius_ckpc": [np.nan] * n_snapshots,
+            "PercentileUpperHeight_ckpc": [np.nan] * n_snapshots,
+            "PercentileLowerHeight_ckpc": [np.nan] * n_snapshots,
+            "DiscRadius_ckpc": [np.nan] * n_snapshots,
+            "DiscHeight_ckpc": [np.nan] * n_snapshots}
 
     # Read virial radius
     virial_radius_data = pd.read_csv(
         f"data/{simulation}_{galaxy}/virial_radius.csv")
 
-    for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"],
-                   GLOBAL_CONFIG["N_SNAPSHOTS"]):
+    for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"], n_snapshots):
         virial_radius = virial_radius_data["VirialRadius_ckpc"].loc[i]
         df = make_dataframe(simulation, i, galaxy)
 
