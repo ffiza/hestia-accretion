@@ -1,18 +1,17 @@
-# # RUN-SPECIFIC VALUES # #
-RUN_SUFFIX:                             "_01"
+# Run-specific values
+RUN_CODE:                               "01"
 
-# # DISC DEFINITION/CALCULATION # #
-DISC_SIZE_TYPE:                         "fixed"
-DISC_RADIUS_CKPC:                       30.0
-DISC_HEIGHT_CKPC:                       2.0
-DISC_SIZE_SPHERICAL_CUT_CKPC:           -1.0
-DISC_SIZE_HEIGHT_CUT_CKPC:              -1.0
-DISC_ENCLOSED_MASS_PERCENTILE:          -1
+# Disc size calculation
+DISC_SIZE_SPHERICAL_CUT_CKPC:           50.0
+DISC_SIZE_ZCOORD_CUT_CKPC:              5.0
+DISC_ENCLOSED_MASS_PERCENTILE:          90
+VIRIAL_RADIUS_FRACTION:                 0.1
+VIRIAL_RADIUS_TIME_THRESHOLD_GYR:       4.0
 
-# # VISUALIZATION VALUES # #
+# Visualization
 SMOOTHING_WINDOW_LENGTH:                9
 SMOOTHING_POLYORDER:                    1
 
-# # PREPROCESSING VALUES # #
+# Preprocessing
 SUBHALO_VELOCITY_DISTANCE_CKPC:         10.0
 ROTATION_MATRIX_DISTANCE_CKPC:          10.0
