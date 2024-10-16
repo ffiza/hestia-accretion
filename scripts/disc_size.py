@@ -114,7 +114,8 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
         data["DiscHeight_ckpc"] = hd
 
     # Save dictionary
-    with open(f"data/{simulation}_{galaxy}.json", "w") as f:
+    path = f"data/{simulation}_{galaxy}_config{config['RUN_CODE']}.json"
+    with open(path, "w") as f:
         json.dump(data, f)
 
 
