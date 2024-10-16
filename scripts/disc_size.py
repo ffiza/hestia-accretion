@@ -110,8 +110,8 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
         data["PercentileRadius_ckpc"][i] = radius
         data["PercentileLowerHeight_ckpc"][i] = lower_height
         data["PercentileUpperHeight_ckpc"][i] = upper_height
-        data["DiscRadius_ckpc"] = rd
-        data["DiscHeight_ckpc"] = hd
+        data["DiscRadius_ckpc"][i] = rd
+        data["DiscHeight_ckpc"][i] = hd
 
     # Save dictionary
     path = f"data/{simulation}_{galaxy}/" \
@@ -131,3 +131,7 @@ def main():
 
     calculate_disc_size(simulation="17_11", galaxy="MW", config=config)
     calculate_disc_size(simulation="17_11", galaxy="M31", config=config)
+
+
+if __name__ == "__main__":
+    main()
