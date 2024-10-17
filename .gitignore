@@ -1,3 +1,6 @@
 /hestia/Misc
 /hestia/TrackGalaxy.py
 /results/df_*
+/tests/__pycache__
+/visualisation/__pycache__
+/hestia/__pycache__
