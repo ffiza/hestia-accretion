@@ -39,3 +39,25 @@ def generate_dummy_df(size: int) -> pd.DataFrame:
         data["ParticleType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]] = np.nan
 
     return pd.DataFrame(data)
+
+
+def weighted_percentile(x: np.ndarray, w: np.ndarray, q: int) -> float:
+    """
+    Calculates the weighted percentile of array `x` using
+    weights `w`.
+
+    Parameters
+    ---------
+    x : np.ndarray
+        The array of values.
+    w : np.ndarray
+        The weight of each value of `x`.
+    q : int
+        The percentile.
+    """
+    idxs = np.argsort(x)
+    x_sorted = x[idxs]
+    w_sorted = w[idxs]
+    cumsum = np.cumsum(w_sorted)
+    target_idx = np.where(cumsum >= q * np.sum(w) / 100)[0][0] + 1
+    return x_sorted[target_idx]
