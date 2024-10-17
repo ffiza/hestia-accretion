@@ -55,6 +55,12 @@ def weighted_percentile(x: np.ndarray, w: np.ndarray, q: int) -> float:
     q : int
         The percentile.
     """
+    if (q < 0) or (q > 100):
+        raise ValueError("Percentile must be between 0 and 100, inclusive.")
+    if (q == 0):
+        return x.min()
+    if (q == 100):
+        return x.max()
     idxs = np.argsort(x)
     x_sorted = x[idxs]
     w_sorted = w[idxs]
