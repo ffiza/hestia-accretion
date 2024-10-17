@@ -43,18 +43,15 @@ def calculate_disc_size_by_percentiles(
     is_height = (np.abs(z) <= config["DISC_SIZE_ZCOORD_CUT_CKPC"])
 
     radius = weighted_percentile(
-        x=rxy[is_radius].to_numpy(),
-        w=masses[is_radius].to_numpy(),
+        x=rxy[is_radius], w=masses[is_radius],
         q=config["DISC_ENCLOSED_MASS_PERCENTILE"],
     )
     lower_height = weighted_percentile(
-        x=z[is_radius & is_height].to_numpy(),
-        w=masses[is_radius & is_height].to_numpy(),
+        x=z[is_radius & is_height], w=masses[is_radius & is_height],
         q=int((100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
     upper_height = weighted_percentile(
-        x=z[is_radius & is_height].to_numpy(),
-        w=masses[is_radius & is_height].to_numpy(),
+        x=z[is_radius & is_height], w=masses[is_radius & is_height],
         q=int(100 - (100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
 
@@ -87,14 +84,13 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
         df = make_dataframe(simulation, i, galaxy)
 
         pos = df[["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc"]]
-        pos = pos.to_numpy()
 
         is_star = df["ParticleType"] == 4
 
         radius, lower_height, upper_height = \
             calculate_disc_size_by_percentiles(
-                positions=pos[is_star],
-                masses=df["Mass_Msun"][is_star],
+                positions=pos.to_numpy()[is_star],
+                masses=df["Mass_Msun"].to_numpy()[is_star],
                 config=config)
 
         # Decide on disc radius and height based on time and virial radius
