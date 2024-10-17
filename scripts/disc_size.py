@@ -43,18 +43,18 @@ def calculate_disc_size_by_percentiles(
     is_height = (np.abs(z) <= config["DISC_SIZE_ZCOORD_CUT_CKPC"])
 
     radius = weighted_percentile(
-        x=rxy[is_radius],
-        w=masses[is_radius],
+        x=rxy[is_radius].to_numpy(),
+        w=masses[is_radius].to_numpy(),
         q=config["DISC_ENCLOSED_MASS_PERCENTILE"],
     )
     lower_height = weighted_percentile(
-        x=z[is_radius & is_height],
-        w=masses[is_radius & is_height],
+        x=z[is_radius & is_height].to_numpy(),
+        w=masses[is_radius & is_height].to_numpy(),
         q=int((100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
     upper_height = weighted_percentile(
-        x=z[is_radius & is_height],
-        w=masses[is_radius & is_height],
+        x=z[is_radius & is_height].to_numpy(),
+        w=masses[is_radius & is_height].to_numpy(),
         q=int(100 - (100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
 
