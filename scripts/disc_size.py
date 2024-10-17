@@ -5,6 +5,7 @@ import pandas as pd
 import json
 
 from hestia.dataframe import make_dataframe
+from hestia.tools import weighted_percentile
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
@@ -38,22 +39,26 @@ def calculate_disc_size_by_percentiles(
     z = positions[:, 2]
     r = np.linalg.norm(positions, axis=1)
 
-    mask = (r <= config["DISC_SIZE_SPHERICAL_CUT_CKPC"]) \
-        & (np.abs(z) <= config["DISC_SIZE_ZCOORD_CUT_CKPC"])
+    is_radius = (r <= config["DISC_SIZE_SPHERICAL_CUT_CKPC"])
+    is_height = (np.abs(z) <= config["DISC_SIZE_ZCOORD_CUT_CKPC"])
 
-    radius = np.percentile(
-        a=rxy[mask],
+    radius = weighted_percentile(
+        x=rxy[is_radius],
+        w=masses[is_radius],
         q=config["DISC_ENCLOSED_MASS_PERCENTILE"],
-        weights=masses[mask],
     )
-    heights = np.percentile(
-        a=z[mask],
-        q=[int((100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
-           int(100 - (100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2)],
-        weights=masses[mask],
+    lower_height = weighted_percentile(
+        x=z[is_radius & is_height],
+        weights=masses[is_radius & is_height],
+        q=int((100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
+    )
+    upper_height = weighted_percentile(
+        x=z[is_radius & is_height],
+        weights=masses[is_radius & is_height],
+        q=int(100 - (100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
 
-    return radius, heights[0], heights[1]
+    return radius, lower_height, upper_height
 
 
 def calculate_disc_size(simulation: str, galaxy: str, config: dict):
