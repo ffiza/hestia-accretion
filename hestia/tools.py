@@ -55,6 +55,8 @@ def weighted_percentile(x: np.ndarray, w: np.ndarray, q: int) -> float:
     q : int
         The percentile.
     """
+    if (x.shape[0] != w.shape[0]):
+        raise ValueError("`x` and `w` must have the same dimensions.")
     if (q < 0) or (q > 100):
         raise ValueError("Percentile must be between 0 and 100, inclusive.")
     if (q == 0):
