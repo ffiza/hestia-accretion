@@ -28,14 +28,13 @@ def generate_dummy_df(size: int) -> pd.DataFrame:
         "zPosition_ckpc": np.random.uniform(0, 500, size),
         "Mass_Msun": np.ones(size),
         "ParticleType": GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]
-            * np.ones(size, dtype=np.int8),
+        * np.ones(size, dtype=np.int8),
         "StellarBirthTime_Gyr": np.random.uniform(0, 14, size),
     }
 
     data["ParticleType"][
-        np.random.randint(
-            low=0, high=size, size=int(0.5 * size))] \
-                = GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]
+        np.random.randint(low=0, high=size, size=int(0.5 * size))] \
+        = GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]
     data["StellarBirthTime_Gyr"][
         data["ParticleType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]] = np.nan
 
