@@ -66,7 +66,7 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
         H0=GLOBAL_CONFIG["HUBBLE_CONST"],
-        Om0=GLOBAL_CONFIG["OMEGA_MATTER"] + GLOBAL_CONFIG["OMEGA_BARYON"])
+        Om0=GLOBAL_CONFIG["OMEGA_MATTER"] + GLOBAL_CONFIG["OMEGA_BARYONS"])
 
     T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
                                 SimName,
