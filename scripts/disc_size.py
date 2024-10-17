@@ -49,12 +49,12 @@ def calculate_disc_size_by_percentiles(
     )
     lower_height = weighted_percentile(
         x=z[is_radius & is_height],
-        weights=masses[is_radius & is_height],
+        w=masses[is_radius & is_height],
         q=int((100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
     upper_height = weighted_percentile(
         x=z[is_radius & is_height],
-        weights=masses[is_radius & is_height],
+        w=masses[is_radius & is_height],
         q=int(100 - (100 - config["DISC_ENCLOSED_MASS_PERCENTILE"]) // 2),
     )
 
