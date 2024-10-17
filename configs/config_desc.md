@@ -10,6 +10,8 @@ This file contains a description of each configuration variable found in
 | `DISC_ENCLOSED_MASS_PERCENTILE` | `int` | - | The percentile to use when calculating the enclosed mass fraction for the disc size. For example, if `DISC_ENCLOSED_MASS_PERCENTILE = 90`, the radius and height of the disc will enclose 90% of the total stellar mass of the subhalo. |
 | `VIRIAL_RADIUS_FRACTION` | `float` | $1$ | The fraction of the virial radius to use as disc size, if needed, for times smaller than `VIRIAL_RADIUS_TIME_THRESHOLD_GYR`. |
 | `VIRIAL_RADIUS_TIME_THRESHOLD_GYR` | `float` | $\mathrm{Gyr}$ | The time before which the disc radius will be replaced by a fraction of the virial radius if needed. |
+| `DISC_SIZE_SMOOTHING_WINDOW_LENGTH` | `int` | - | The window length to use in the Savitzky-Golay filter in the disc size calculation. |
+| `DISC_SIZE_SMOOTHING_POLYORDER` | `int` | - | The polynomial order to use in the Savitzky-Golay filter in the disc size calculation. |
 | `SMOOTHING_WINDOW_LENGTH` | `int` | - | The window length for the Savitzky-Golay filter for smoothing. |
 | `SMOOTHING_POLYORDER` | `int` | - | The polynomial order for the Savitzky-Golay filter for smoothing. |
 | `SUBHALO_VELOCITY_DISTANCE_CKPC` | `float` | $\mathrm{ckpc}$ | The spherical radius in ckpc to calculate the velocity of the main subhalo. |

@@ -3,6 +3,7 @@ import yaml
 import argparse
 import pandas as pd
 import json
+from scipy.signal import savgol_filter
 
 from hestia.dataframe import make_dataframe
 from hestia.tools import weighted_percentile
@@ -116,11 +117,29 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
         data["DiscRadius_ckpc"][i] = rd
         data["DiscHeight_ckpc"][i] = hd
 
+    # Apply smoothing to the disc sizes
+    data["DiscRadius_ckpc"] = _apply_filter(
+        data["DiscRadius_ckpc"],
+        config["DISC_SIZE_SMOOTHING_WINDOW_LENGTH"],
+        config["DISC_SIZE_SMOOTHING_POLYORDER"])
+    data["DiscHeight_ckpc"] = _apply_filter(
+        data["DiscHeight_ckpc"],
+        config["DISC_SIZE_SMOOTHING_WINDOW_LENGTH"],
+        config["DISC_SIZE_SMOOTHING_POLYORDER"])
+
     # Save dictionary
     path = f"data/{simulation}_{galaxy}/" \
         + f"disc_size_config{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)
+
+
+def _apply_filter(x: list, window_length: int, polyorder: int) -> list:
+    y = np.array(x.copy())
+    y_filtered = savgol_filter(y[~np.isnan(y)], window_length, polyorder)
+    y_new = np.array([np.nan] * len(x))
+    y_new[~np.isnan(y)] = y_filtered
+    return list(y_new)
 
 
 def main():
