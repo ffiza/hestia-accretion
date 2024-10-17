@@ -110,7 +110,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
         data["Redshift"][i] = df.redshift
         data["ExpansionFactor"][i] = df.expansion_factor
         data["SnapshotNumbers"][i] = i
-        da
+        data["VirialRadius_ckpc"][i] = virial_radius
         data["PercentileRadius_ckpc"][i] = radius
         data["PercentileLowerHeight_ckpc"][i] = lower_height
         data["PercentileUpperHeight_ckpc"][i] = upper_height
