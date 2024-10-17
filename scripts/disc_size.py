@@ -100,7 +100,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
             rd = np.min(
                 [rd, config["VIRIAL_RADIUS_FRACTION"] * virial_radius])
 
-        hd = np.mean([lower_height, upper_height])
+        hd = np.mean([np.abs(lower_height), np.abs(upper_height)])
         if df.time < config["VIRIAL_RADIUS_TIME_THRESHOLD_GYR"]:
             hd = np.min(
                 [hd, config["VIRIAL_RADIUS_FRACTION"] * virial_radius])
