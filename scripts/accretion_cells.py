@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 import yaml
+import argparse
+import json
+
+from hestia.dataframe import make_dataframe
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
@@ -92,7 +96,7 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
         if geometry_type == "disc":
             df["IsGeometry"] = (
                 df["CylindricalRadius_ckpc"] <= geometry_ckpc[0]) \
-                & (np.abs(df["zPosition_ckpc"]) <= geometry_ckpc[1] / 2)
+                & (np.abs(df["zPosition_ckpc"]) <= geometry_ckpc[1])
 
     # Calculate mass of new stars
     is_new_star = (
@@ -117,7 +121,8 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
 
 
 def calculate_net_accretion_evolution(simulation: str,
-                                      geometry_ckpc: tuple) -> None:
+                                      galaxy: str,
+                                      config: dict) -> None:
     """
     This method calculates the evolution of the net accretion rate for a
     given simulation.
@@ -126,50 +131,74 @@ def calculate_net_accretion_evolution(simulation: str,
     ----------
     simulation : str
         The name of the simulation: `17_11`, `37_11` or `9_18`.
+    galaxy : str
+        The name of the galaxy: `MW` or `M31`.
     geometry_ckpc : tuple
         Tuple that indicates the geometry of the region in which to calculate
         the accretion. If the tuple has only one element, the method asumes an
         spheroid of that radius. If the tuple cotains two elements, the method
         assumes a disc with the first element as the radius and the second as
         the height. All the dimensions should be expressed in ckpc.
-
+    config : dict
+        A dictionary with the configuration parameters.
     """
-    data = np.zeros(
-        (GLOBAL_CONFIG["N_SNAPSHOTS"] - GLOBAL_CONFIG["FIRST_SNAPSHOT"],
-         4))
-    for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"],
-                   GLOBAL_CONFIG["N_SNAPSHOTS"]):
+    n_snapshots = GLOBAL_CONFIG["N_SNAPSHOTS"]
 
-        t1_gyr = ...
-        t2_gyr = ...
-        redshift2 = ...
-        exp_fact2 = ...
+    data = {"Configuration": config["RUN_CODE"],
+            "Simulation": simulation,
+            "Galaxy": galaxy,
+            "Times_Gyr": [np.nan] * n_snapshots,
+            "Redshift": [np.nan] * n_snapshots,
+            "ExpansionFactor": [np.nan] * n_snapshots,
+            "SnapshotNumbers": [np.nan] * n_snapshots,
+            "NetAccretionCells_Msun/yr": [np.nan] * n_snapshots}
 
-        # Milky-Way
-        df1 = ...
-        df2 = ...
-        net_accretion_mw = calculate_net_accretion(
-            df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
-            geometry_ckpc=geometry_ckpc)
+    path = f"data/{simulation}_{galaxy}/"
+    f"disc_size_config{config['RUN_CODE']}.json"
+    with open(path) as f:
+        disc_size = json.load(f)
 
-        # M31
-        df1 = ...
-        df2 = ...
-        net_accretion_m31 = calculate_net_accretion(
-            df1=df1, df2=df2, t1_gyr=t1_gyr, t2_gyr=t2_gyr,
-            geometry_ckpc=geometry_ckpc)
+    for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
 
-        data[i] = np.array([t2_gyr, redshift2, exp_fact2,
-                            net_accretion_mw, net_accretion_m31,])
+        # Define geometry
+        rd = disc_size["DiscRadius_ckpc"][i]
+        hd = disc_size["DiscHeight_ckpc"][i]
 
-    data = pd.DataFrame(data=data,
-                        columns=["Time_Gyr", "Redshift", "ExpansionFactor",
-                                 "NetAccretion_Msun/yr_MW",
-                                 "NetAccretion_Msun/yr_M31",])
+        df1 = make_dataframe(
+            SimName=simulation, SnapNo=i - 1, MW_or_M31=galaxy)
+        df2 = make_dataframe(
+            SimName=simulation, SnapNo=i, MW_or_M31=galaxy)
+        net_accretion = calculate_net_accretion(
+            df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
+            geometry_ckpc=(rd, hd))
 
-    data.to_csv(f"results/{simulation}/net_accretion.csv")
+        data["Times_Gyr"][i] = df2.time
+        data["Redshift"][i] = df2.redshift
+        data["ExpansionFactor"][i] = df2.expansion_factor
+        data["SnapshotNumbers"][i] = i
+        data["NetAccretionCells_Msun/yr"] = net_accretion
+
+    # Save data
+    path = f"data/{simulation}_{galaxy}/" \
+        + f"net_accretion_cells_config{config['RUN_CODE']}.json"
+    with open(path, "w") as f:
+        json.dump(data, f)
+
+
+def main():
+    # Get arguments from user
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, required=True)
+    args = parser.parse_args()
+
+    # Load configuration file
+    config = yaml.safe_load(open(f"configs/{args.config}.yml"))
+
+    calculate_net_accretion_evolution(
+        simulation="17_11", galaxy="MW", config=config)
+    calculate_net_accretion_evolution(
+        simulation="17_11", galaxy="M31", config=config)
 
 
 if __name__ == "__main__":
-    # TODO: Run the calculation for all galaxies.
-    pass
+    main()
