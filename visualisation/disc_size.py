@@ -56,7 +56,7 @@ def make_plot(config: dict) -> None:
         else:
             ax2.set_yticklabels([])
 
-    plt.savefig(f"figures/disc_size_config{config['RUN_CODE']}.pdf")
+    plt.savefig(f"images/disc_size_config{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
