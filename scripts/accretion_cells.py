@@ -176,7 +176,7 @@ def calculate_net_accretion_evolution(simulation: str,
         data["Redshift"][i] = df2.redshift
         data["ExpansionFactor"][i] = df2.expansion_factor
         data["SnapshotNumbers"][i] = i
-        data["NetAccretionCells_Msun/yr"] = net_accretion
+        data["NetAccretionCells_Msun/yr"][i] = net_accretion
 
     # Save data
     path = f"data/{simulation}_{galaxy}/" \
