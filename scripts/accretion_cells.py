@@ -153,7 +153,7 @@ def calculate_net_accretion_evolution(simulation: str,
             "SnapshotNumbers": [np.nan] * n_snapshots,
             "NetAccretionCells_Msun/yr": [np.nan] * n_snapshots}
 
-    path = f"data/{simulation}_{galaxy}/" \
+    path = f"results/{simulation}_{galaxy}/" \
         + f"disc_size_config{config['RUN_CODE']}.json"
     with open(path) as f:
         disc_size = json.load(f)
@@ -179,7 +179,7 @@ def calculate_net_accretion_evolution(simulation: str,
         data["NetAccretionCells_Msun/yr"][i] = net_accretion
 
     # Save data
-    path = f"data/{simulation}_{galaxy}/" \
+    path = f"results/{simulation}_{galaxy}/" \
         + f"net_accretion_cells_config{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)

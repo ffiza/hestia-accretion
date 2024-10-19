@@ -32,7 +32,7 @@ def make_plot(config: dict) -> None:
         ax2.tick_params(axis="y", direction="in")
 
         # Load galaxy data
-        path = f"data/{galaxy}/disc_size_config{config['RUN_CODE']}.json"
+        path = f"results/{galaxy}/disc_size_config{config['RUN_CODE']}.json"
         with open(path) as f:
             data = json.load(f)
             time = np.array(data["Times_Gyr"])

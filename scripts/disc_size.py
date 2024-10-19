@@ -78,7 +78,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
 
     # Read virial radius
     virial_radius_data = pd.read_csv(
-        f"data/{simulation}_{galaxy}/virial_radius.csv")
+        f"results/{simulation}_{galaxy}/virial_radius.csv")
 
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"], n_snapshots):
         virial_radius = virial_radius_data["VirialRadius_ckpc"].loc[i]
@@ -128,7 +128,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
         config["DISC_SIZE_SMOOTHING_POLYORDER"])
 
     # Save dictionary
-    path = f"data/{simulation}_{galaxy}/" \
+    path = f"results/{simulation}_{galaxy}/" \
         + f"disc_size_config{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)

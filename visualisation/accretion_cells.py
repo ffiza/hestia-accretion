@@ -31,7 +31,7 @@ def make_plot(config: dict) -> None:
     ax.set_xlabel(r'Time [Gyr]')
 
     for i, galaxy in enumerate(settings.galaxies):
-        path = f"data/{galaxy}/" \
+        path = f"results/{galaxy}/" \
             + f"net_accretion_cells_config{config['RUN_CODE']}.json"
         with open(path) as f:
             data = json.load(f)
