@@ -1,5 +1,5 @@
 <div align="center">
-    <h1>Gas Accretion on Local Group Galaxy Simlations</h1>
+    <h1>Gas Accretion on Local Group Galaxy Simulations</h1>
 </div>
 
 <p align="center">
