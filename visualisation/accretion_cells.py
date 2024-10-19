@@ -30,7 +30,7 @@ def make_plot(config: dict) -> None:
         r'$\dot{M}_\mathrm{net}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]')
     ax.set_xlabel(r'Time [Gyr]')
 
-    for i, galaxy in enumerate(settings.galaxies):
+    for galaxy in ["17_11_MW", "17_11_M31"]:
         path = f"results/{galaxy}/" \
             + f"net_accretion_cells_config{config['RUN_CODE']}.json"
         with open(path) as f:
@@ -44,7 +44,8 @@ def make_plot(config: dict) -> None:
         ax.plot(time[is_positive],
                 savgol_filter(net_accretion[is_positive],
                               window_length, polyorder),
-                ls=settings.galaxy_lss[i], color=settings.galaxy_colors[i],
+                ls=settings.galaxy_lss[galaxy],
+                color=settings.galaxy_colors[galaxy],
                 lw=1, label=r"$\texttt{" + f"{galaxy}" + "}$")
 
     with open("data/iza_2022.json") as f:
