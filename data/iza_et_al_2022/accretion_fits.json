@@ -1,0 +1,53 @@
+{
+    "DOI": "10.1093/mnras/stac2709",
+    "ADSURL": "https://ui.adsabs.harvard.edu/abs/2022MNRAS.517..832I/abstract",
+    "Label": "Iza et al. (2022)",
+    "NetAccretionExponentialFits":
+    {
+        "G1":
+        {
+            "Amplitude": 3.31,
+            "AmplitudeErr": 3.8,
+            "AmplitudeUnit": "Msun/yr",
+            "TimeScale": 7.2,
+            "TimeScaleErr": 0.7,
+            "TimeScaleUnit": "Gyr"
+        },
+        "G2":
+        {
+            "Amplitude": 3.6,
+            "AmplitudeErr": 0.7,
+            "AmplitudeUnit": "Msun/yr",
+            "TimeScale": -10.5,
+            "TimeScaleErr": 1.9,
+            "TimeScaleUnit": "Gyr"
+        }
+    },
+    "NetAccretionSchechterFits":
+    {
+        "G1":
+        {
+            "Amplitude": 17.4,
+            "AmplitudeErr": 0.6,
+            "AmpltiudeUnit": "Msun/yr",
+            "Alpha": 2.3,
+            "AlphaErr": 0.1,
+            "AlphaUnit": "1",
+            "TimeScale": 2.6,
+            "TimeScaleErr": 0.1,
+            "TimeScaleUnit": "Gyr"
+        },
+        "G2":
+        {
+            "Amplitude": 29.9,
+            "AmplitudeErr": 5.1,
+            "AmpltiudeUnit": "Msun/yr",
+            "Alpha": 1.6,
+            "AlphaErr": 0.1,
+            "AlphaUnit": "1",
+            "TimeScale": 11.8,
+            "TimeScaleErr": 2.7,
+            "TimeScaleUnit": "Gyr"
+        }
+    }
+}
