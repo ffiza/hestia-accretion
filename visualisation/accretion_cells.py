@@ -48,7 +48,7 @@ def make_plot(config: dict) -> None:
                 color=settings.galaxy_colors[galaxy],
                 lw=1, label=r"$\texttt{" + f"{galaxy}" + "}$")
 
-    with open("data/iza_2022/accretion_fits.json") as f:
+    with open("data/iza_et_al_2022/accretion_fits.json") as f:
         ref = json.load(f)
     time = np.linspace(0, 14, 100)
     amplitude = ref["NetAccretionSchechterFits"]["G1"]["Amplitude"]
