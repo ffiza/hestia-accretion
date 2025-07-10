@@ -32,7 +32,7 @@ def make_plot(config: dict) -> None:
 
     for galaxy in ["17_11_MW", "17_11_M31"]:
         # Load galaxy data
-        path = f"results/{galaxy}/disc_size_config{config['RUN_CODE']}.json"
+        path = f"results/{galaxy}/disc_size_{config['RUN_CODE']}.json"
         with open(path) as f:
             data = json.load(f)
             time = np.array(data["Times_Gyr"])
@@ -48,7 +48,7 @@ def make_plot(config: dict) -> None:
 
     axs[0].legend(loc="upper left", framealpha=0, fontsize=6.0)
 
-    plt.savefig(f"images/disc_size_config{config['RUN_CODE']}.pdf")
+    plt.savefig(f"images/disc_size_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 

@@ -32,7 +32,7 @@ def make_plot(config: dict) -> None:
 
     for galaxy in ["17_11_MW", "17_11_M31", "09_18_MW", "09_18_M31", "37_11_MW", "37_11_M31"]:
         path = f"results/{galaxy}/" \
-            + f"net_accretion_cells_config{config['RUN_CODE']}.json"
+            + f"net_accretion_cells_{config['RUN_CODE']}.json"
         with open(path) as f:
             data = json.load(f)
             time = np.array(data["Times_Gyr"])
@@ -59,7 +59,7 @@ def make_plot(config: dict) -> None:
 
     ax.legend(loc="lower right", framealpha=0, fontsize=6.0)
 
-    plt.savefig(f"images/net_accretion_cells_config{config['RUN_CODE']}.pdf")
+    plt.savefig(f"images/net_accretion_cells_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 

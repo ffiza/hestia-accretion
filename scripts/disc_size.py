@@ -129,7 +129,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
 
     # Save dictionary
     path = f"results/{simulation}_{galaxy}/" \
-        + f"disc_size_config{config['RUN_CODE']}.json"
+        + f"disc_size_{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)
 
