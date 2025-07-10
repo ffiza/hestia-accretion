@@ -7,3 +7,4 @@ __pycache__/
 Misc/
 Miniconda3-latest-Linux-x86_64.sh
 TrackGalaxy.py
+/hestia.egg-info
