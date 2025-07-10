@@ -1,6 +1,9 @@
 /hestia/Misc
 /hestia/TrackGalaxy.py
-/results/df_*
 /tests/__pycache__
 /visualisation/__pycache__
 /hestia/__pycache__
+__pycache__/
+Misc/
+Miniconda3-latest-Linux-x86_64.sh
+TrackGalaxy.py

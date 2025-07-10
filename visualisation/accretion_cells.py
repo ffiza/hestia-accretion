@@ -30,7 +30,7 @@ def make_plot(config: dict) -> None:
         r'$\dot{M}_\mathrm{net}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]')
     ax.set_xlabel(r'Time [Gyr]')
 
-    for galaxy in ["17_11_MW", "17_11_M31"]:
+    for galaxy in ["17_11_MW", "17_11_M31", "09_18_MW", "09_18_M31", "37_11_MW", "37_11_M31"]:
         path = f"results/{galaxy}/" \
             + f"net_accretion_cells_config{config['RUN_CODE']}.json"
         with open(path) as f:
