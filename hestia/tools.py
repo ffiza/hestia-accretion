@@ -98,7 +98,7 @@ def windowed_average(x: np.ndarray, y: np.ndarray,
         of `y`. If no points fall within the window at a given `x[i]`, the
         result is `np.nan`.
     """
-    y_avg = np.nan * np.ones(x)
+    y_avg = np.nan * np.ones(x.shape[0])
     for i in range(len(x)):
         mask = (x >= x[i] - window_length / 2) \
             & (x <= x[i] + window_length / 2)
