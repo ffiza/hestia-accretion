@@ -23,6 +23,6 @@ This sections contains a description of each configuration variable found in
 | `DISC_SIZE_SMOOTHING_POLYORDER` | `int` | - | The polynomial order to use in the Savitzky-Golay filter in the disc size calculation. |
 | `NET_ACCRETION_SMOOTHING_WINDOW_LENGTH` | `int` | - | The window length for the Savitzky-Golay filter for smoothing net accretion data. |
 | `NET_ACCRETION_SMOOTHING_POLYORDER` | `int` | - | The polynomial order for the Savitzky-Golay filter for smoothing net accretion data. |
-| `TEMPORAL_AVERAGE_WINDOW_LENGTH` | `float` | #$\mathrm{Gyr}$ | The time window to use when smoothing accretion with a windowed average.
+| `TEMPORAL_AVERAGE_WINDOW_LENGTH` | `float` | $\mathrm{Gyr}$ | The time window to use when smoothing accretion with a windowed average.
 | `SUBHALO_VELOCITY_DISTANCE_CKPC` | `float` | $\mathrm{ckpc}$ | The spherical radius in ckpc to calculate the velocity of the main subhalo. |
 | `ROTATION_MATRIX_DISTANCE_CKPC` | `float` | $\mathrm{ckpc}$ | The spherical radius to calculate the orientation matrix. |
