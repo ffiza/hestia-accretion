@@ -103,7 +103,7 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     StarBirths_Gyr = cosmo.age(StarBirths_z).value
 
     # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
-    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/data/progenitor_lists/snaps_MWprogs_M31progs_int_{}.txt'.format(SimName))
+    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
     Snaps = Snaps.astype(int)
     Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
     Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
