@@ -4,11 +4,10 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.signal import savgol_filter
 
-from hestia.math import schechter
 from hestia.settings import Settings
 from hestia.images import figure_setup
+from hestia.tools import windowed_average
 
 
 def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
@@ -25,12 +24,33 @@ def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
     return df
 
 
+def _get_auriga_data(config: dict) -> pd.DataFrame:
+    window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
+    df = pd.read_csv("data/iza_et_al_2022/net_accretion_rate_cells.csv")
+    for i in range(1, 31):
+        time = df["Time_Gyr"].to_numpy()
+        rate = df[f"AccretionRate_Au{i}_Msun/yr"].to_numpy()
+        rate[rate < 0.1] = np.nan
+        df[f"AccretionRateSmoothed_Au{i}_Msun/yr"] = windowed_average(
+            time, rate, window_length)
+    df["AccretionRateSmoothedMin_Msun/yr"] = df[[
+        f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].min(
+            axis=1)
+    df["AccretionRateSmoothedMax_Msun/yr"] = df[[
+        f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].max(
+            axis=1)
+    return df
+
+
 def make_plot(config: dict) -> None:
+    df_auriga = _get_auriga_data(config)
+    window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
+
     fig = plt.figure(figsize=(5.0, 2.0))
     gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
-    for ax in axs.flatten():
+    for ax in axs:
         ax.set_axisbelow(True)
         ax.grid(True)
         ax.set_xlim(0, 14)
@@ -49,15 +69,14 @@ def make_plot(config: dict) -> None:
         for galaxy in Settings.GALAXIES:
             df = _get_data(
                 galaxy=f"{simulation}_{galaxy}", config=config)
-
             is_positive = df["NetAccretionCells_Msun/yr"] >= 0.1
-            window_length = config["NET_ACCRETION_SMOOTHING_WINDOW_LENGTH"]
-            polyorder = config["NET_ACCRETION_SMOOTHING_POLYORDER"]
             ax.plot(df["Time_Gyr"][is_positive],
-                    savgol_filter(
-                        df["NetAccretionCells_Msun/yr"].to_numpy()[
-                            is_positive],
-                        window_length, polyorder),
+                    windowed_average(
+                        df["Time_Gyr"][is_positive].to_numpy(),
+                        df["NetAccretionCells_Msun/yr"][
+                            is_positive].to_numpy(),
+                        window_length
+                    ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
                     color=Settings.SIMULATION_COLORS[simulation],
                     lw=1, label=galaxy)
@@ -67,17 +86,14 @@ def make_plot(config: dict) -> None:
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
-        #region Load External Data
-        with open("data/iza_et_al_2022/accretion_fits.json") as f:
-            ref = json.load(f)
-        time = np.linspace(0, 14, 100)
-        amplitude = ref["NetAccretionSchechterFits"]["G1"]["Amplitude"]
-        alpha = ref["NetAccretionSchechterFits"]["G1"]["Alpha"]
-        timescale = ref["NetAccretionSchechterFits"]["G1"]["TimeScale"]
-        net_accretion = schechter(time, amplitude, timescale, alpha)
-        ax.plot(time, net_accretion, ls="-.", lw=1, label=ref["Label"], c='k')
+        #region TestAurigaData
+        ax.fill_between(
+            df_auriga["Time_Gyr"],
+            df_auriga["AccretionRateSmoothedMin_Msun/yr"],
+            df_auriga["AccretionRateSmoothedMax_Msun/yr"],
+            color="k", alpha=0.1, label="Iza et al. 2022", lw=0)
         #endregion
-        
+
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/net_accretion_cells_{config['RUN_CODE']}.pdf")
