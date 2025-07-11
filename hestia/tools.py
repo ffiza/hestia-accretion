@@ -1,6 +1,7 @@
+import yaml
+import warnings
 import numpy as np
 import pandas as pd
-import yaml
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
@@ -103,5 +104,7 @@ def windowed_average(x: np.ndarray, y: np.ndarray,
         mask = (x >= x[i] - window_length / 2) \
             & (x <= x[i] + window_length / 2)
         if np.sum(mask) > 0:
-            y_avg[i] = np.nanmean(y[mask])
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                y_avg[i] = np.nanmean(y[mask])
     return y_avg
