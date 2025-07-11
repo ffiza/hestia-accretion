@@ -69,3 +69,39 @@ def weighted_percentile(x: np.ndarray, w: np.ndarray, q: int) -> float:
     cumsum = np.cumsum(w_sorted)
     target_idx = np.where(cumsum >= q * np.sum(w) / 100)[0][0] + 1
     return x_sorted[target_idx]
+
+
+def windowed_average(x: np.ndarray, y: np.ndarray,
+                     window_length: float) -> np.ndarray:
+    """
+    Compute a moving average of `y` over a sliding window centered at each
+    point in `x`.
+
+    For each value in `x`, this function computes the average of `y` values
+    whose corresponding `x` values fall within a window of width
+    `window_length`, centered at the current `x[i]`. If no points fall in the
+    window, `NaN` is returned at that index.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        A 1D array of x-values (must be sorted if spatial locality is assumed).
+    y : np.ndarray
+        A 1D array of y-values, same length as `x`.
+    window_length : float
+        Width of the window over which to compute the local average.
+
+    Returns
+    -------
+    y_avg : np.ndarray
+        A 1D array of the same shape as `x`, containing the windowed average
+        of `y`. If no points fall within the window at a given `x[i]`, the
+        result is `np.nan`.
+    """
+    y_avg = np.nan * np.ones(x)
+    for i in range(len(x)):
+        mask = (x >= x[i] - window_length / 2) \
+            & (x <= x[i] + window_length / 2)
+        if np.sum(mask) > 0:
+            y_avg[i] = np.nanmean(y[mask])
+    return y_avg
