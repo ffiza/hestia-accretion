@@ -61,7 +61,7 @@ def calculate_overdensity_evolution(simulation: str,
 
     arguments = [(simulation, galaxy, i, distance) for i in range(n_snapshots)]
     data = np.array(Pool(n_processes).starmap(
-        calculate_overdensity, arguments))
+        calculate_overdensity_in_simulation, arguments))
 
     df = pd.DataFrame(
         data, columns=["SnapshotNumbers", "Times_Gyr", "Delta"]
