@@ -179,6 +179,7 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     df.expansion_factor = SnapTime
     df.time = SnapTime_Gyr
     df.redshift = Redshift
+    df.snapshot_number = SnapNo
 
     return df
 
