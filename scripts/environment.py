@@ -44,7 +44,7 @@ def calculate_overdensity_in_simulation(simulation: str,
                                         distance: float):
     GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
     if snapshot_number < GLOBAL_CONFIG["FIRST_SNAPSHOT"]:
-        return np.array([np.nan] * 3)
+        return np.array([snapshot_number, np.nan, np.nan])
     df = make_dataframe(
         SimName=simulation, SnapNo=snapshot_number,
         MW_or_M31=galaxy, max_radius=distance)
@@ -66,7 +66,7 @@ def calculate_overdensity_evolution(simulation: str,
     df = pd.DataFrame(
         data, columns=["SnapshotNumbers", "Times_Gyr", "Delta"]
     )
-    # df["SnapshotNumbers"] = df["SnapshotNumbers"].astype(int)
+    df["SnapshotNumbers"] = df["SnapshotNumbers"].astype(int)
 
     df.to_csv(f"results/{simulation}_{galaxy}/delta_{int(distance)}.csv",
               index=False)
