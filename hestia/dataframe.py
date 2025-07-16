@@ -41,13 +41,6 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
 
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
-    if SimName != "17_11":
-        raise NotImplementedError("Only the mergers trees for simulation "
-                                  "17-11 are available.")
-
-    if MW_or_M31 not in ["MW", "M31"]:
-        raise ValueError("Incorrect value for `MW_or_M31`. Can be `MW` "
-                         "or `M31`.")
 
     # These numbers come from cross-correlating with
     # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.

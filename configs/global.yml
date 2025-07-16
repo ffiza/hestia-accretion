@@ -13,4 +13,4 @@ OMEGA_BARYONS:                          0.048
 OMEGA_0:                                0.318
 FIRST_SNAPSHOT:                         35
 N_SNAPSHOTS:                            128
-N_PROCESSES:                            2
+N_PROCESSES:                            4
