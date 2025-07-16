@@ -39,6 +39,8 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
 
+    print(f'Running make_dataframe for snapshot {SnapNo}...')
+
     if SimName != "17_11":
         raise NotImplementedError("Only the mergers trees for simulation "
                                   "17-11 are available.")
@@ -112,15 +114,21 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
         /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
     DMIDs = DM_Attrs['ParticleIDs']
 
-    BH_Attrs = T.GetParticles(
-        SnapNo, Type=5, Attrs=['Coordinates',
+    try:
+        BH_Attrs = T.GetParticles(
+            SnapNo, Type=5, Attrs=['Coordinates',
                                'Masses',
                                'ParticleIDs'])
-    BHPos = 1000*BH_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
-    BHMass = BH_Attrs['Masses'] * 1e10 \
-        /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
-    BHIDs = BH_Attrs['ParticleIDs']
+    except KeyError:
+        print('No BHs in this file.')
+        BH_Attrs = None
+
+    if BH_Attrs:
+        BHPos = 1000*BH_Attrs['Coordinates'] \
+            / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
+        BHMass = BH_Attrs['Masses'] * 1e10 \
+            /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+        BHIDs = BH_Attrs['ParticleIDs']
 
     # Subhalo center and velocity directly from the merger trees.
     # FIX: Currently directories for 17_11, change for other realisations.
@@ -150,13 +158,15 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
         GasPos -= MW_pos
         StarPos -= MW_pos
         DMPos -= MW_pos
-        BHPos -= MW_pos
+        if BH_Attrs:
+            BHPos -= MW_pos
         GasVel -= MW_vel
     elif MW_or_M31 == 'M31':
         GasPos -= M31_pos
         StarPos -= M31_pos
         DMPos -= M31_pos
-        BHPos -= M31_pos
+        if BH_Attrs:
+            BHPos -= M31_pos
         GasVel -= M31_vel
 
     # Keep only particles within RMAX:
@@ -166,8 +176,9 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
         StarPos[:, 0]**2 + StarPos[:, 1]**2 + StarPos[:, 2]**2 < max_radius**2)
     index_of_nearby_DM = numpy.where(
         DMPos[:, 0]**2 + DMPos[:, 1]**2 + DMPos[:, 2]**2 < max_radius**2)
-    index_of_nearby_BH = numpy.where(
-        BHPos[:, 0]**2 + BHPos[:, 1]**2 + BHPos[:, 2]**2 < max_radius**2)
+    if BH_Attrs:
+        index_of_nearby_BH = numpy.where(
+            BHPos[:, 0]**2 + BHPos[:, 1]**2 + BHPos[:, 2]**2 < max_radius**2)
     
     GasPos = GasPos[index_of_nearby_gas]
     GasMass = GasMass[index_of_nearby_gas]
@@ -182,28 +193,42 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     DMMass = DMMass[index_of_nearby_DM]
     DMIDs = DMIDs[index_of_nearby_DM]
 
-    BHPos = BHPos[index_of_nearby_BH]
-    BHMass = BHMass[index_of_nearby_BH]
-    BHIDs = BHIDs[index_of_nearby_BH]
+    if BH_Attrs:
+        BHPos = BHPos[index_of_nearby_BH]
+        BHMass = BHMass[index_of_nearby_BH]
+        BHIDs = BHIDs[index_of_nearby_BH]
 
     # We align positions with gas disk:
     R = PCA_matrix(GasPos, GasVel, 15)
     GasPos = np.dot(GasPos, R)
     StarPos = np.dot(StarPos, R)
     DMPos = np.dot(DMPos, R)
-    BHPos = np.dot(BHPos, R)
+    if BH_Attrs:
+        BHPos = np.dot(BHPos, R)
 
-    AllPos = np.concatenate((GasPos, StarPos, DMPos, BHPos))
-    AllMass = np.concatenate((GasMass, StarMass, DMMass, BHMass))
-    AllIDs = np.concatenate((GasIDs, StarIDs, DMIDs, BHIDs))
-    AllTypes = np.concatenate((np.zeros(np.size(GasIDs)),
-                               4 * np.ones(np.size(StarIDs)),
-                               1 * np.ones(np.size(DMIDs)),
-                               5 * np.ones(np.size(BHIDs))))
-    AllBirths = np.concatenate((np.nan*np.ones(np.size(GasIDs)),
-                                StarBirths_Gyr,
-                                np.nan*np.ones(np.size(DMIDs)),
-                                np.nan*np.ones(np.size(BHIDs))))
+
+    if BH_Attrs:
+        AllPos = np.concatenate((GasPos, StarPos, DMPos, BHPos))
+        AllMass = np.concatenate((GasMass, StarMass, DMMass, BHMass))
+        AllIDs = np.concatenate((GasIDs, StarIDs, DMIDs, BHIDs))
+        AllTypes = np.concatenate((np.zeros(np.size(GasIDs)),
+                                4 * np.ones(np.size(StarIDs)),
+                                1 * np.ones(np.size(DMIDs)),
+                                5 * np.ones(np.size(BHIDs))))
+        AllBirths = np.concatenate((np.nan*np.ones(np.size(GasIDs)),
+                                    StarBirths_Gyr,
+                                    np.nan*np.ones(np.size(DMIDs)),
+                                    np.nan*np.ones(np.size(BHIDs))))
+    else:
+        AllPos = np.concatenate((GasPos, StarPos, DMPos))
+        AllMass = np.concatenate((GasMass, StarMass, DMMass))
+        AllIDs = np.concatenate((GasIDs, StarIDs, DMIDs))
+        AllTypes = np.concatenate((np.zeros(np.size(GasIDs)),
+                                4 * np.ones(np.size(StarIDs)),
+                                1 * np.ones(np.size(DMIDs))))
+        AllBirths = np.concatenate((np.nan*np.ones(np.size(GasIDs)),
+                                    StarBirths_Gyr,
+                                    np.nan*np.ones(np.size(DMIDs))))
 
     data_dict = {
         'xPosition_ckpc': AllPos[:, 0],
