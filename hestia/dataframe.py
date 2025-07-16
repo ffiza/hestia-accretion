@@ -102,28 +102,20 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     StarBirths_z = 1/StarBirths - 1
     StarBirths_Gyr = cosmo.age(StarBirths_z).value
 
-    # Subhalo center and velocity directly from the merger trees.
-    # FIX: Currently directories for 17_11, change for other realisations.
-    if SimName != "17_11":
-        raise NotImplementedError("Check the following lines.")
-    MergerTreeMW = np.loadtxt(
-        "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/17_11/MergerTrees/"
-        "HESTIA_100Mpc_8192_17_11.127_halo_127000000000003.dat")
-    MergerTreeM31 = np.loadtxt(
-        "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/17_11/MergerTrees/"
-        "HESTIA_100Mpc_8192_17_11.127_halo_127000000000002.dat")
-    MW_pos = MergerTreeMW[
-        MergerTreeMW[:, 1] // 1000000000000 == SnapNo][0][6:9] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]
-    MW_vel = MergerTreeMW[
-        MergerTreeMW[:, 1] // 1000000000000 == SnapNo][0][9:12] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]
-    M31_pos = MergerTreeM31[
-        MergerTreeM31[:, 1] // 1000000000000 == SnapNo][0][6:9] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]
-    M31_vel = MergerTreeM31[
-        MergerTreeM31[:, 1] // 1000000000000 == SnapNo][0][9:12] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]
+    # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
+    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
+    Snaps = Snaps.astype(int)
+    Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
+    Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
+    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
+
+    # Read in subhaloes position and velocities:
+    GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
+    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime) # km s^-1
+    MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
+    M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
+
 
     # We keep only particles within the chosen halo
     if MW_or_M31 == 'MW':
