@@ -89,6 +89,7 @@ def make_dataframe(
     Star_Attrs = T.GetParticles(
         SnapNo, Type=4, Attrs=['Coordinates',
                                'Masses',
+                               'Velocities',
                                'ParticleIDs',
                                'GFM_StellarFormationTime'])
     StarPos = 1000*Star_Attrs['Coordinates'] \
