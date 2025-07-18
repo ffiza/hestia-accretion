@@ -1,4 +1,5 @@
 import warnings
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -13,10 +14,12 @@ def _get_data(galaxy: str) -> pd.DataFrame:
 
 def _get_auriga_data() -> pd.DataFrame:
     df = pd.read_csv("data/iza_et_al_2022/environment_delta_1200.csv")
-    df["Delta1200_Max"] = df[
-        [f"Delta1200_Au{i}" for i in range(1, 31)]].max(axis=1)
-    df["Delta1200_Min"] = df[
-        [f"Delta1200_Au{i}" for i in range(1, 31)]].min(axis=1)
+    df["Delta1200Mean"] = np.nanmean(
+        df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
+        axis=1)
+    df["Delta1200Std"] = np.nanstd(
+        df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
+        axis=1)
     return df
 
 
@@ -55,23 +58,27 @@ def make_plot() -> None:
                     df["Delta"],
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
                     color=Settings.SIMULATION_COLORS[simulation],
-                    lw=1, label=galaxy)
+                    lw=1, label=galaxy, zorder=11)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=7.0,
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
-        #region Load External Data
+        #region TestAurigaData
         ax.fill_between(
             auriga["Time_Gyr"],
-            auriga["Delta1200_Min"], auriga["Delta1200_Max"],
-            color="k", alpha=0.1, label="Auriga", lw=0)
+            auriga["Delta1200Mean"] - auriga["Delta1200Std"],
+            auriga["Delta1200Mean"] + auriga["Delta1200Std"],
+            color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
+        ax.plot(auriga["Time_Gyr"],
+                auriga["Delta1200Mean"],
+                ls="-", color="darkgray", lw=1, zorder=10)
         #endregion
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig(f"images/delta1200.pdf")
+    plt.savefig("images/delta1200.pdf")
     plt.close(fig)
 
 
