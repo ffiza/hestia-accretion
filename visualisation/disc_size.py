@@ -26,7 +26,29 @@ def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
     return df
 
 
+def _get_auriga_data() -> pd.DataFrame:
+    df = pd.read_csv("data/iza_et_al_2022/disc_size.csv")
+    df["DiscRadiusMean_ckpc"] = np.nanmean(
+        df[[f"DiscRadius_Au{i}_ckpc" for i in range(
+            1, 31)]].to_numpy(),
+        axis=1)
+    df["DiscHeightMean_ckpc"] = np.nanmean(
+        df[[f"DiscHeight_Au{i}_ckpc" for i in range(
+            1, 31)]].to_numpy(),
+        axis=1)
+    df["DiscRadiusStd_ckpc"] = np.nanstd(
+        df[[f"DiscRadius_Au{i}_ckpc" for i in range(
+            1, 31)]].to_numpy(),
+        axis=1)
+    df["DiscHeightStd_ckpc"] = np.nanstd(
+        df[[f"DiscHeight_Au{i}_ckpc" for i in range(
+            1, 31)]].to_numpy(),
+        axis=1)
+    return df
+
+
 def plot_disc_radius(config: dict) -> None:
+    df_auriga = _get_auriga_data()
     fig = plt.figure(figsize=(5.0, 2.0))
     gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
@@ -51,18 +73,34 @@ def plot_disc_radius(config: dict) -> None:
                 df["Time_Gyr"], df["ExpansionFactor"] * df["DiscRadius_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
-                lw=1, label=galaxy)
-        ax.text(x=0.95, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
+                lw=1, label=galaxy, zorder=11)
+        ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
                 transform=ax.transAxes, fontsize=7.0,
-                verticalalignment='top', horizontalalignment='right',
+                verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
-        ax.legend(loc="upper left", framealpha=0, fontsize=5)
+        
+        #region TestAurigaData
+        ax.fill_between(
+            df_auriga["Time_Gyr"],
+            (df_auriga["DiscRadiusMean_ckpc"]
+             - df_auriga["DiscRadiusStd_ckpc"]) * df_auriga["ExpansionFactor"],
+            (df_auriga["DiscRadiusMean_ckpc"]
+             + df_auriga["DiscRadiusStd_ckpc"]) * df_auriga["ExpansionFactor"],
+            color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["DiscRadiusMean_ckpc"]
+                * df_auriga["ExpansionFactor"],
+                ls="-", color="darkgray", lw=1, zorder=10)
+        #endregion
+
+        ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/disc_radius_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
 def plot_disc_height(config: dict) -> None:
+    df_auriga = _get_auriga_data()
     fig = plt.figure(figsize=(5.0, 2.0))
     gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
@@ -87,12 +125,27 @@ def plot_disc_height(config: dict) -> None:
                 df["Time_Gyr"], df["ExpansionFactor"] * df["DiscHeight_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
-                lw=1, label=galaxy)
-        ax.text(x=0.95, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
+                lw=1, label=galaxy, zorder=11)
+        ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
                 transform=ax.transAxes, fontsize=7.0,
-                verticalalignment='top', horizontalalignment='right',
+                verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
-        ax.legend(loc="upper left", framealpha=0, fontsize=5)
+
+        #region TestAurigaData
+        ax.fill_between(
+            df_auriga["Time_Gyr"],
+            (df_auriga["DiscHeightMean_ckpc"]
+             - df_auriga["DiscHeightStd_ckpc"]) * df_auriga["ExpansionFactor"],
+            (df_auriga["DiscHeightMean_ckpc"]
+             + df_auriga["DiscHeightStd_ckpc"]) * df_auriga["ExpansionFactor"],
+            color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["DiscHeightMean_ckpc"]
+                * df_auriga["ExpansionFactor"],
+                ls="-", color="darkgray", lw=1, zorder=10)
+        #endregion
+
+        ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/disc_height_{config['RUN_CODE']}.pdf")
     plt.close(fig)
