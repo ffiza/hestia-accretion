@@ -39,6 +39,14 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
     df["AccretionRateSmoothedMax_Msun/yr"] = df[[
         f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].max(
             axis=1)
+    df["AccretionRateSmoothedMean_Msun/yr"] = np.nanmean(
+        df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
+            1, 31)]].to_numpy(),
+        axis=1)
+    df["AccretionRateSmoothedStd_Msun/yr"] = np.nanstd(
+        df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
+            1, 31)]].to_numpy(),
+        axis=1)
     return df
 
 
@@ -79,7 +87,7 @@ def make_plot(config: dict) -> None:
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
                     color=Settings.SIMULATION_COLORS[simulation],
-                    lw=1, label=galaxy)
+                    lw=1, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=7.0,
@@ -89,9 +97,14 @@ def make_plot(config: dict) -> None:
         #region TestAurigaData
         ax.fill_between(
             df_auriga["Time_Gyr"],
-            df_auriga["AccretionRateSmoothedMin_Msun/yr"],
-            df_auriga["AccretionRateSmoothedMax_Msun/yr"],
-            color="k", alpha=0.1, label="Iza et al. 2022", lw=0)
+            df_auriga["AccretionRateSmoothedMean_Msun/yr"]
+            - df_auriga["AccretionRateSmoothedStd_Msun/yr"],
+            df_auriga["AccretionRateSmoothedMean_Msun/yr"]
+            + df_auriga["AccretionRateSmoothedStd_Msun/yr"],
+            color="k", alpha=0.1, label="Auriga", lw=0)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["AccretionRateSmoothedMean_Msun/yr"],
+                ls="-", color="darkgray", lw=1, zorder=10)
         #endregion
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
