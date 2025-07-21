@@ -6,7 +6,7 @@ import yaml
 
 import TrackGalaxy
 from hestia.pca import PCA_matrix
-from tools import timer
+from hestia.tools import timer
 
 @timer
 def make_dataframe(
