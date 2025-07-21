@@ -40,7 +40,7 @@ def make_dataframe(
     """
 
     GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
-    print(f'Running make_dataframe for snapshot {SnapNo}...')
+    print(f'Running make_dataframe() for snapshot {SnapNo}...')
 
     if MW_or_M31 not in ["MW", "M31"]:
         raise ValueError(

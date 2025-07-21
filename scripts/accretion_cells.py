@@ -165,9 +165,9 @@ def calculate_net_accretion_evolution(simulation: str,
         hd = disc_size["DiscHeight_ckpc"][i]
 
         df1 = make_dataframe(
-            SimName=simulation, SnapNo=i - 1, MW_or_M31=galaxy)
+            SimName=simulation, SnapNo=i - 1, config=config, MW_or_M31=galaxy)
         df2 = make_dataframe(
-            SimName=simulation, SnapNo=i, MW_or_M31=galaxy)
+            SimName=simulation, SnapNo=i, config=config, MW_or_M31=galaxy)
         net_accretion = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             geometry_ckpc=(rd, hd))
@@ -195,10 +195,17 @@ def main():
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     calculate_net_accretion_evolution(
-        simulation="17_11", galaxy="MW", config=config)
+        simulation="09_18", galaxy="MW", config=config)
     calculate_net_accretion_evolution(
-        simulation="17_11", galaxy="M31", config=config)
-
+        simulation="09_18", galaxy="M31", config=config)
+    # calculate_net_accretion_evolution(
+    #     simulation="17_11", galaxy="MW", config=config)
+    # calculate_net_accretion_evolution(
+    #     simulation="17_11", galaxy="M31", config=config)
+    calculate_net_accretion_evolution(
+        simulation="37_11", galaxy="MW", config=config)
+    calculate_net_accretion_evolution(
+        simulation="37_11", galaxy="M31", config=config)
 
 if __name__ == "__main__":
     main()
