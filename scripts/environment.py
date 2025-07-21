@@ -10,6 +10,7 @@ import pandas as pd
 from multiprocessing import Pool
 
 from hestia.settings import Settings
+from hestia.df_type import DFType
 from hestia.dataframe import make_dataframe
 
 
@@ -46,8 +47,7 @@ def calculate_overdensity_in_simulation(simulation: str,
     if snapshot_number < GLOBAL_CONFIG["FIRST_SNAPSHOT"]:
         return np.array([snapshot_number, np.nan, np.nan])
     df = make_dataframe(
-        SimName=simulation, SnapNo=snapshot_number,
-        MW_or_M31=galaxy, max_radius=distance)
+        simulation, snapshot_number, galaxy, DFType.CELLS, max_radius=distance)
     return calculate_overdensity(df=df, distance=distance)
 
 

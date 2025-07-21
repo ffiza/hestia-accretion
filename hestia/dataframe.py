@@ -6,12 +6,14 @@ import yaml
 
 import TrackGalaxy
 from hestia.pca import PCA_matrix
+from hestia.df_type import DFType
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 
-def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
-                   max_radius: float = 100.0):
+def _make_dataframe_cells(
+        SimName: str, SnapNo: int, MW_or_M31: str,
+        max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns:
 
@@ -237,8 +239,41 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     return df
 
 
-if __name__ == "__main__":
-    SimName = '17_11'
-    SnapNo = 127
-    output_dir = '../results/dataframes/'
-    make_dataframe(SimName, SnapNo, output_dir=output_dir)
+def _make_dataframe_tracers(
+    SimName: str, SnapNo: int, MW_or_M31: str,
+    max_radius: float = 100.0) -> pd.DataFrame:
+    pass
+
+
+def make_dataframe(
+        SimName: str, SnapNo: int, MW_or_M31: str,
+        df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
+    """
+    Loads a snapshot and returns a dataframe with data pertaining to cells
+    if `df_type=DFType.CELLS` or to tracer particles if
+    `df_tpye=DFType.TRACERS`.
+
+    Parameters
+    ----------
+    SimName : str
+        Simulation name from '17_11', '09_18' or '37_11'.
+    SnapNo : int
+        Snapshot number (z=0 corresponds to SnapNo=127)
+    MW_or_M31 : str, optional
+        Choose one of the two main galaxies from 'MW' or 'M31' to center the
+        sphere that will be considered for the dataframe.
+    output_dir : str, optional
+        Directory where the pickle containing the df will be saved. By default
+        "results/dataframes/".
+    df_type : DFType
+        `DFType.CELLS` to read cell data, `DFType.TRACERS` to read tracer
+        particle data.
+    max_radius : float, optional
+        Radius of the sphere required for the df in ckpc. By default 100.0.
+    """
+    if df_type == DFType.CELLS:
+        return _make_dataframe_cells(SimName, SnapNo, MW_or_M31, max_radius)
+    if df_type == DFType.TRACERS:
+        return _make_dataframe_tracers(SimName, SnapNo, MW_or_M31, max_radius)
+    raise ValueError(
+        f"{df_type} can only be `DFType.CELLS` or `DFType.TRACERS`.")

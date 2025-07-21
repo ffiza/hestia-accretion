@@ -6,6 +6,7 @@ import json
 from scipy.signal import savgol_filter
 
 from hestia.dataframe import make_dataframe
+from hestia.df_type import DFType
 from hestia.tools import weighted_percentile
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
@@ -82,7 +83,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
 
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"], n_snapshots):
         virial_radius = virial_radius_data["VirialRadius_ckpc"].loc[i]
-        df = make_dataframe(simulation, i, galaxy)
+        df = make_dataframe(simulation, i, galaxy, DFType.CELLS)
 
         pos = df[["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc"]]
 

@@ -5,6 +5,7 @@ import argparse
 import json
 
 from hestia.dataframe import make_dataframe
+from hestia.df_type import DFType
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
@@ -164,10 +165,8 @@ def calculate_net_accretion_evolution(simulation: str,
         rd = disc_size["DiscRadius_ckpc"][i]
         hd = disc_size["DiscHeight_ckpc"][i]
 
-        df1 = make_dataframe(
-            SimName=simulation, SnapNo=i - 1, MW_or_M31=galaxy)
-        df2 = make_dataframe(
-            SimName=simulation, SnapNo=i, MW_or_M31=galaxy)
+        df1 = make_dataframe(simulation, i - 1, galaxy, DFType.CELLS)
+        df2 = make_dataframe(simulation, i, galaxy, DFType.CELLS)
         net_accretion = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             geometry_ckpc=(rd, hd))
