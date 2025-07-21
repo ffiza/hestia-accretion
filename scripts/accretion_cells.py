@@ -5,6 +5,7 @@ import argparse
 import json
 
 from hestia.dataframe import make_dataframe
+from hestia.tools import timer
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
