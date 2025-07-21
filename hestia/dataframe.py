@@ -6,8 +6,9 @@ import yaml
 
 import TrackGalaxy
 from hestia.pca import PCA_matrix
+from tools import timer
 
-
+@timer
 def make_dataframe(
         SimName: str, SnapNo: int, config: dict,
         MW_or_M31: str = 'MW', max_radius: float = 100.0) -> pd.DataFrame:
