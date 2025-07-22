@@ -165,8 +165,11 @@ def calculate_net_accretion_evolution(simulation: str,
         rd = disc_size["DiscRadius_ckpc"][i]
         hd = disc_size["DiscHeight_ckpc"][i]
 
-        df1 = make_dataframe(
-            SimName=simulation, SnapNo=i - 1, config=config, MW_or_M31=galaxy)
+        try:
+            df1
+        except NameError:
+            df1 = make_dataframe(
+                SimName=simulation, SnapNo=i - 1, config=config, MW_or_M31=galaxy)
         df2 = make_dataframe(
             SimName=simulation, SnapNo=i, config=config, MW_or_M31=galaxy)
         net_accretion = calculate_net_accretion(
@@ -178,6 +181,9 @@ def calculate_net_accretion_evolution(simulation: str,
         data["ExpansionFactor"][i] = df2.expansion_factor
         data["SnapshotNumbers"][i] = i
         data["NetAccretionCells_Msun/yr"][i] = net_accretion
+
+        # Save df2 as df1 for the next step:
+        df1 = df2.copy()
 
     # Save data
     path = f"results/{simulation}_{galaxy}/" \
@@ -199,10 +205,10 @@ def main():
         simulation="09_18", galaxy="MW", config=config)
     calculate_net_accretion_evolution(
         simulation="09_18", galaxy="M31", config=config)
-    # calculate_net_accretion_evolution(
-    #     simulation="17_11", galaxy="MW", config=config)
-    # calculate_net_accretion_evolution(
-    #     simulation="17_11", galaxy="M31", config=config)
+    calculate_net_accretion_evolution(
+        simulation="17_11", galaxy="MW", config=config)
+    calculate_net_accretion_evolution(
+        simulation="17_11", galaxy="M31", config=config)
     calculate_net_accretion_evolution(
         simulation="37_11", galaxy="MW", config=config)
     calculate_net_accretion_evolution(
