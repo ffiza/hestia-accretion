@@ -82,7 +82,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
 
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"], n_snapshots):
         virial_radius = virial_radius_data["VirialRadius_ckpc"].loc[i]
-        df = make_dataframe(simulation, i, galaxy)
+        df = make_dataframe(simulation, i, config=config, MW_or_M31=galaxy)
 
         pos = df[["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc"]]
 
@@ -151,8 +151,10 @@ def main():
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    calculate_disc_size(simulation="17_11", galaxy="MW", config=config)
-    calculate_disc_size(simulation="17_11", galaxy="M31", config=config)
+    calculate_disc_size(simulation="09_18", galaxy="MW", config=config)
+    calculate_disc_size(simulation="09_18", galaxy="M31", config=config)
+    calculate_disc_size(simulation="37_11", galaxy="MW", config=config)
+    calculate_disc_size(simulation="37_11", galaxy="M31", config=config)
 
 
 if __name__ == "__main__":

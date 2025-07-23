@@ -6,12 +6,12 @@ import yaml
 
 import TrackGalaxy
 from hestia.pca import PCA_matrix
+from hestia.tools import timer
 
-GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
-
-
-def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
-                   max_radius: float = 100.0):
+@timer
+def make_dataframe(
+        SimName: str, SnapNo: int, config: dict,
+        MW_or_M31: str = 'MW', max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns:
 
@@ -39,8 +39,12 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
 
-    print(f'Running make_dataframe for snapshot {SnapNo}...')
+    GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
+    print(f'Running make_dataframe() for snapshot {SnapNo}...')
 
+    if MW_or_M31 not in ["MW", "M31"]:
+        raise ValueError(
+            "Incorrect value for `MW_or_M31`. Can be `MW` or `M31`.")
 
     # These numbers come from cross-correlating with
     # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.
@@ -86,12 +90,14 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     Star_Attrs = T.GetParticles(
         SnapNo, Type=4, Attrs=['Coordinates',
                                'Masses',
+                               'Velocities',
                                'ParticleIDs',
                                'GFM_StellarFormationTime'])
     StarPos = 1000*Star_Attrs['Coordinates'] \
         / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
     StarMass = Star_Attrs['Masses'] * 1e10 \
         / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # Msun
+    StarVel = Star_Attrs['Velocities']*numpy.sqrt(SnapTime)  # km/s
     StarIDs = Star_Attrs['ParticleIDs']
     StarBirths = Star_Attrs['GFM_StellarFormationTime']
     StarBirths_z = 1/StarBirths - 1
@@ -113,7 +119,7 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
                                'Masses',
                                'ParticleIDs'])
     except KeyError:
-        print('No BHs in this file.')
+        # print('No BHs in this file.')
         BH_Attrs = None
 
     if BH_Attrs:
@@ -138,8 +144,7 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
     MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
     M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
 
-
-    # We keep only particles within the chosen halo
+    # Center system of reference on object of interest
     if MW_or_M31 == 'MW':
         GasPos -= MW_pos
         StarPos -= MW_pos
@@ -184,8 +189,9 @@ def make_dataframe(SimName: str, SnapNo: int, MW_or_M31: str = 'MW',
         BHMass = BHMass[index_of_nearby_BH]
         BHIDs = BHIDs[index_of_nearby_BH]
 
-    # We align positions with gas disk:
-    R = PCA_matrix(GasPos, GasVel, 15)
+    # Align positions with the stellar disc
+    alignment_distance = config["ROTATION_MATRIX_DISTANCE_CKPC"]
+    R = PCA_matrix(StarPos, StarVel, alignment_distance)
     GasPos = np.dot(GasPos, R)
     StarPos = np.dot(StarPos, R)
     DMPos = np.dot(DMPos, R)

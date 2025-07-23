@@ -2,6 +2,9 @@ import yaml
 import warnings
 import numpy as np
 import pandas as pd
+from sys import stdout
+import time
+from typing import Callable
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
@@ -108,3 +111,32 @@ def windowed_average(x: np.ndarray, y: np.ndarray,
                 warnings.simplefilter("ignore", RuntimeWarning)
                 y_avg[i] = np.nanmean(y[mask])
     return y_avg
+
+
+def timer(method: Callable) -> Callable:
+    """
+    A decorator to monitor the time it takes to run a function.
+
+    Parameters
+    ----------
+    method : Callable
+        A method to decorate.
+
+    Returns
+    -------
+    wrapper : Callable
+        A wrapper.
+    """
+    def wrapper(*args, **kw):
+        BLUE = "\033[94m"
+        RESET = "\033[0m"
+        start_time = time.time()
+        result = method(*args, **kw)
+        end_time = time.time()
+        delta_time = int((end_time - start_time) / 60)
+        delta_time_str = str(delta_time).rjust(3)
+
+        stdout.write(f"{BLUE}Timer: {delta_time_str} min. {RESET}\n")
+        return result
+
+    return wrapper

@@ -5,6 +5,7 @@ import argparse
 import json
 
 from hestia.dataframe import make_dataframe
+from hestia.tools import timer
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
@@ -119,7 +120,7 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
 
     return net_accretion_rate
 
-
+@timer
 def calculate_net_accretion_evolution(simulation: str,
                                       galaxy: str,
                                       config: dict) -> None:
@@ -164,10 +165,13 @@ def calculate_net_accretion_evolution(simulation: str,
         rd = disc_size["DiscRadius_ckpc"][i]
         hd = disc_size["DiscHeight_ckpc"][i]
 
-        df1 = make_dataframe(
-            SimName=simulation, SnapNo=i - 1, MW_or_M31=galaxy)
+        try:
+            df1
+        except NameError:
+            df1 = make_dataframe(
+                SimName=simulation, SnapNo=i - 1, config=config, MW_or_M31=galaxy)
         df2 = make_dataframe(
-            SimName=simulation, SnapNo=i, MW_or_M31=galaxy)
+            SimName=simulation, SnapNo=i, config=config, MW_or_M31=galaxy)
         net_accretion = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             geometry_ckpc=(rd, hd))
@@ -177,6 +181,10 @@ def calculate_net_accretion_evolution(simulation: str,
         data["ExpansionFactor"][i] = df2.expansion_factor
         data["SnapshotNumbers"][i] = i
         data["NetAccretionCells_Msun/yr"][i] = net_accretion
+
+        # Save df2 as df1 for the next step:
+        df1 = df2.copy()
+        df1.__dict__.update(df2.__dict__)
 
     # Save data
     path = f"results/{simulation}_{galaxy}/" \
@@ -195,10 +203,17 @@ def main():
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     calculate_net_accretion_evolution(
+        simulation="09_18", galaxy="MW", config=config)
+    calculate_net_accretion_evolution(
+        simulation="09_18", galaxy="M31", config=config)
+    calculate_net_accretion_evolution(
         simulation="17_11", galaxy="MW", config=config)
     calculate_net_accretion_evolution(
         simulation="17_11", galaxy="M31", config=config)
-
+    calculate_net_accretion_evolution(
+        simulation="37_11", galaxy="MW", config=config)
+    calculate_net_accretion_evolution(
+        simulation="37_11", galaxy="M31", config=config)
 
 if __name__ == "__main__":
     main()
