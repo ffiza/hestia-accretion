@@ -120,7 +120,7 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
 
     return net_accretion_rate
 
-
+@timer
 def calculate_net_accretion_evolution(simulation: str,
                                       galaxy: str,
                                       config: dict) -> None:
@@ -184,6 +184,7 @@ def calculate_net_accretion_evolution(simulation: str,
 
         # Save df2 as df1 for the next step:
         df1 = df2.copy()
+        df1.__dict__.update(df2.__dict__)
 
     # Save data
     path = f"results/{simulation}_{galaxy}/" \

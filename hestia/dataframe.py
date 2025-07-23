@@ -119,7 +119,7 @@ def make_dataframe(
                                'Masses',
                                'ParticleIDs'])
     except KeyError:
-        print('No BHs in this file.')
+        # print('No BHs in this file.')
         BH_Attrs = None
 
     if BH_Attrs:
