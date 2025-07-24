@@ -112,7 +112,7 @@ def make_plot(config: dict) -> None:
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig(f"images/net_accretion_cells_{config['RUN_CODE']}.pdf")
+    plt.savefig(f"images/net_accretion_cells_{config['RUN_CODE']}.png")
     plt.close(fig)
 
 
