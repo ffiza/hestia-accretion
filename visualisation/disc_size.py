@@ -1,6 +1,7 @@
 import json
 import yaml
 import argparse
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -28,22 +29,24 @@ def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
 
 def _get_auriga_data() -> pd.DataFrame:
     df = pd.read_csv("data/iza_et_al_2022/disc_size.csv")
-    df["DiscRadiusMean_ckpc"] = np.nanmean(
-        df[[f"DiscRadius_Au{i}_ckpc" for i in range(
-            1, 31)]].to_numpy(),
-        axis=1)
-    df["DiscHeightMean_ckpc"] = np.nanmean(
-        df[[f"DiscHeight_Au{i}_ckpc" for i in range(
-            1, 31)]].to_numpy(),
-        axis=1)
-    df["DiscRadiusStd_ckpc"] = np.nanstd(
-        df[[f"DiscRadius_Au{i}_ckpc" for i in range(
-            1, 31)]].to_numpy(),
-        axis=1)
-    df["DiscHeightStd_ckpc"] = np.nanstd(
-        df[[f"DiscHeight_Au{i}_ckpc" for i in range(
-            1, 31)]].to_numpy(),
-        axis=1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        df["DiscRadiusMean_ckpc"] = np.nanmean(
+            df[[f"DiscRadius_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
+        df["DiscHeightMean_ckpc"] = np.nanmean(
+            df[[f"DiscHeight_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
+        df["DiscRadiusStd_ckpc"] = np.nanstd(
+            df[[f"DiscRadius_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
+        df["DiscHeightStd_ckpc"] = np.nanstd(
+            df[[f"DiscHeight_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
     return df
 
 

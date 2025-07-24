@@ -14,12 +14,14 @@ def _get_data(galaxy: str) -> pd.DataFrame:
 
 def _get_auriga_data() -> pd.DataFrame:
     df = pd.read_csv("data/iza_et_al_2022/environment_delta_1200.csv")
-    df["Delta1200Mean"] = np.nanmean(
-        df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
-        axis=1)
-    df["Delta1200Std"] = np.nanstd(
-        df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
-        axis=1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        df["Delta1200Mean"] = np.nanmean(
+            df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
+            axis=1)
+        df["Delta1200Std"] = np.nanstd(
+            df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
+            axis=1)
     return df
 
 

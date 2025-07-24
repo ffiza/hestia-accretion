@@ -1,6 +1,7 @@
 import json
 import yaml
 import argparse
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,14 +40,16 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
     df["AccretionRateSmoothedMax_Msun/yr"] = df[[
         f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].max(
             axis=1)
-    df["AccretionRateSmoothedMean_Msun/yr"] = np.nanmean(
-        df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
-            1, 31)]].to_numpy(),
-        axis=1)
-    df["AccretionRateSmoothedStd_Msun/yr"] = np.nanstd(
-        df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
-            1, 31)]].to_numpy(),
-        axis=1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        df["AccretionRateSmoothedMean_Msun/yr"] = np.nanmean(
+            df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
+        df["AccretionRateSmoothedStd_Msun/yr"] = np.nanstd(
+            df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
     return df
 
 
