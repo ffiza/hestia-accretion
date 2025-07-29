@@ -242,7 +242,150 @@ def _make_dataframe_cells(
 def _make_dataframe_tracers(
     SimName: str, SnapNo: int, MW_or_M31: str,
     max_radius: float = 100.0) -> pd.DataFrame:
-    pass
+    
+    print(f'Running make_dataframe for snapshot {SnapNo}...')
+
+    # These numbers come from cross-correlating with
+    # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.
+    if SimName == '17_11':
+        # subhalo_number = 1 if MW_or_M31 == "MW" else 0
+        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
+            + "17_11/output_2x2.5Mpc/"
+    elif SimName == '09_18':
+        # subhalo_number = 3911 if MW_or_M31 == "MW" else 2608
+        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
+            + "09_18/output_2x2.5Mpc/"
+    elif SimName == '37_11':
+        # subhalo_number = 920 if MW_or_M31 == "MW" else 0
+        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
+            + "37_11/output_2x2.5Mpc/"
+    else:
+        raise ValueError("Invalid simulation name.")
+
+    cosmo = astropy.cosmology.FlatLambdaCDM(
+        H0=GLOBAL_CONFIG["HUBBLE_CONST"],
+        Om0=GLOBAL_CONFIG["OMEGA_MATTER"] + GLOBAL_CONFIG["OMEGA_BARYONS"])
+
+    T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
+                                SimName,
+                                Dir=SimulationDirectory,
+                                MultipleSnaps=True)
+    SnapTime = T.SnapTimes[0]  # Scale factor
+    Redshift = 1.0 / SnapTime - 1
+    SnapTime_Gyr = cosmo.age(Redshift).value  # Gyr
+
+    Gas_Attrs = T.GetParticles(
+        SnapNo, Type=0, Attrs=['Coordinates',
+                               'ParticleIDs'])
+    GasPos = 1000*Gas_Attrs['Coordinates'] \
+        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    GasIDs = Gas_Attrs['ParticleIDs']
+
+    Star_Attrs = T.GetParticles(
+        SnapNo, Type=4, Attrs=['Coordinates',
+                               'ParticleIDs'])
+    StarPos = 1000*Star_Attrs['Coordinates'] \
+        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    StarIDs = Star_Attrs['ParticleIDs']
+
+    BH_Attrs = T.GetParticles(
+        SnapNo, Type=5, Attrs=['Coordinates',
+                               'ParticleIDs'])
+    BHPos = 1000*BH_Attrs['Coordinates'] \
+        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    BHIDs = BH_Attrs['ParticleIDs']
+
+    Tracer_Attrs = T.GetParticles(
+        SnapNo, Type=6, Attrs=['ParentID',
+                               'TracerID'])
+    TracerID = Tracer_Attrs['TracerID']
+    TracerParentID = Tracer_Attrs['ParentID']
+
+    
+    # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
+    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
+    Snaps = Snaps.astype(int)
+    Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
+    Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
+    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
+
+    # Read in subhaloes position and velocities:
+    GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
+    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime) # km s^-1
+    MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
+    M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
+
+
+    # We keep only particles within the chosen halo
+    if MW_or_M31 == 'MW':
+        GasPos -= MW_pos
+        StarPos -= MW_pos
+        BHPos -= MW_pos
+    elif MW_or_M31 == 'M31':
+        GasPos -= M31_pos
+        StarPos -= M31_pos
+        BHPos -= M31_pos
+
+    # # Keep only particles within max_radius:
+    # index_of_nearby_gas = numpy.where(
+    #     GasPos[:, 0]**2 + GasPos[:, 1]**2 + GasPos[:, 2]**2 < max_radius**2)
+    # index_of_nearby_stars = numpy.where(
+    #     StarPos[:, 0]**2 + StarPos[:, 1]**2 + StarPos[:, 2]**2 < max_radius**2)
+    # index_of_nearby_BH = numpy.where(
+    #     BHPos[:, 0]**2 + BHPos[:, 1]**2 + BHPos[:, 2]**2 < max_radius**2)
+    
+    # GasPos, GasIDs = GasPos[index_of_nearby_gas], GasIDs[index_of_nearby_gas]
+    # StarPos, StarIDs = StarPos[index_of_nearby_stars], StarIDs[index_of_nearby_stars]
+    # BHPos, BHIDs = BHPos[index_of_nearby_BH], BHIDs[index_of_nearby_BH]
+
+
+    # Build dictionaries for each type
+    gas_id_to_index = {pID: ind for ind, pID in enumerate(GasIDs)}
+    star_id_to_index = {pID: ind for ind, pID in enumerate(StarIDs)}
+    bh_id_to_index = {pID: ind for ind, pID in enumerate(BHIDs)}
+
+    # For each tracer particle, find the type and position
+    matched_types = []
+    matched_positions = []
+
+    for pID in TracerParentID:
+        if pID in gas_id_to_index:
+            matched_types.append(0)
+            matched_positions.append(GasPos[gas_id_to_index[pID]])
+        elif pID in star_id_to_index:
+            matched_types.append(4)
+            matched_positions.append(StarPos[star_id_to_index[pID]])
+        elif pID in bh_id_to_index:
+            matched_types.append(5)
+            matched_positions.append(BHPos[bh_id_to_index[pID]])
+        # else:
+        #     matched_types.append(-1)
+        #     matched_positions.append(None)
+    matched_types, matched_positions = np.array(matched_types), np.array(matched_positions)
+
+    index_nearby = np.linalg.norm(matched_positions, axis=1) < 100
+    TracerID, matched_positions, matched_types = TracerID[index_nearby], matched_positions[index_nearby], matched_types[index_nearby]
+    ID_sorting = np.argsort(TracerID)
+    TracerID_sorted, matched_positions_sorted, matched_types_sorted = TracerID[ID_sorting], matched_positions[ID_sorting], matched_types[ID_sorting]
+
+    data_dict = {
+        'TracerID': TracerID_sorted,
+        'xPosition_ckpc': matched_positions_sorted[:, 0],
+        'yPosition_ckpc': matched_positions_sorted[:, 1],
+        'zPosition_ckpc': matched_positions_sorted[:, 2],
+        'ParentCellType': matched_types_sorted 
+    }
+
+    df = pd.DataFrame(data_dict)
+
+    # Additional data as dataframe metadata
+    df.expansion_factor = SnapTime
+    df.time = SnapTime_Gyr
+    df.redshift = Redshift
+    df.snapshot_number = SnapNo
+
+    return df
 
 
 def make_dataframe(
