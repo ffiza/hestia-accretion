@@ -327,19 +327,6 @@ def _make_dataframe_tracers(
         StarPos -= M31_pos
         BHPos -= M31_pos
 
-    # # Keep only particles within max_radius:
-    # index_of_nearby_gas = numpy.where(
-    #     GasPos[:, 0]**2 + GasPos[:, 1]**2 + GasPos[:, 2]**2 < max_radius**2)
-    # index_of_nearby_stars = numpy.where(
-    #     StarPos[:, 0]**2 + StarPos[:, 1]**2 + StarPos[:, 2]**2 < max_radius**2)
-    # index_of_nearby_BH = numpy.where(
-    #     BHPos[:, 0]**2 + BHPos[:, 1]**2 + BHPos[:, 2]**2 < max_radius**2)
-    
-    # GasPos, GasIDs = GasPos[index_of_nearby_gas], GasIDs[index_of_nearby_gas]
-    # StarPos, StarIDs = StarPos[index_of_nearby_stars], StarIDs[index_of_nearby_stars]
-    # BHPos, BHIDs = BHPos[index_of_nearby_BH], BHIDs[index_of_nearby_BH]
-
-
     # Build dictionaries for each type
     gas_id_to_index = {pID: ind for ind, pID in enumerate(GasIDs)}
     star_id_to_index = {pID: ind for ind, pID in enumerate(StarIDs)}
@@ -359,9 +346,7 @@ def _make_dataframe_tracers(
         elif pID in bh_id_to_index:
             matched_types.append(5)
             matched_positions.append(BHPos[bh_id_to_index[pID]])
-        # else:
-        #     matched_types.append(-1)
-        #     matched_positions.append(None)
+
     matched_types, matched_positions = np.array(matched_types), np.array(matched_positions)
 
     index_nearby = np.linalg.norm(matched_positions, axis=1) < 100
