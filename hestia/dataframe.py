@@ -370,6 +370,10 @@ def _make_dataframe_tracers(
     df.redshift = Redshift
     df.snapshot_number = SnapNo
 
+    # Add target gas mass value to dataframe
+    df.target_gas_mass = yaml.safe_load(
+        open("data/hestia/target_gas_mass.yml"))[SimName]
+
     return df
 
 
