@@ -364,6 +364,10 @@ def _make_dataframe_tracers(
 
     df = pd.DataFrame(data_dict)
 
+    # Force data types
+    df["TracerID"] = df["TracerID"].astype(np.uint64)
+    df["ParentCellType"] = df["ParentCellType"].astype(np.uint8)
+
     # Additional data as dataframe metadata
     df.expansion_factor = SnapTime
     df.time = SnapTime_Gyr
