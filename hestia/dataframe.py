@@ -372,7 +372,8 @@ def _make_dataframe_tracers(
 
     # Add target gas mass value to dataframe
     df.target_gas_mass = yaml.safe_load(
-        open("data/hestia/target_gas_mass.yml"))[SimName]
+        open("data/hestia/target_gas_mass.yml"))[SimName] \
+        * 1E10 / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # Msun
 
     return df
 
