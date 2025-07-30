@@ -349,7 +349,7 @@ def _make_dataframe_tracers(
 
     matched_types, matched_positions = np.array(matched_types), np.array(matched_positions)
 
-    index_nearby = np.linalg.norm(matched_positions, axis=1) < 100
+    index_nearby = np.linalg.norm(matched_positions, axis=1) < max_radius
     TracerID, matched_positions, matched_types = TracerID[index_nearby], matched_positions[index_nearby], matched_types[index_nearby]
     ID_sorting = np.argsort(TracerID)
     TracerID_sorted, matched_positions_sorted, matched_types_sorted = TracerID[ID_sorting], matched_positions[ID_sorting], matched_types[ID_sorting]
