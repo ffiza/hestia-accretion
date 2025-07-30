@@ -151,14 +151,15 @@ def calculate_accretion_evolution(simulation: str,
         disc_size = json.load(f)
 
     df1 = make_dataframe(
-        simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], galaxy, DFType.TRACERS)
+        simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], galaxy,
+        DFType.TRACERS, np.inf)
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
 
         # Define geometry
         rd = disc_size["DiscRadius_ckpc"][i]
         hd = disc_size["DiscHeight_ckpc"][i]
 
-        df2 = make_dataframe(simulation, i, galaxy, DFType.TRACERS)
+        df2 = make_dataframe(simulation, i, galaxy, DFType.TRACERS, np.inf)
         inflow_rate, outflow_rate = calculate_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             geometry_ckpc=(rd, hd))
