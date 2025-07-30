@@ -43,7 +43,6 @@ def _make_dataframe_cells(
 
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
-
     # These numbers come from cross-correlating with
     # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.
     if SimName == '17_11':
@@ -106,14 +105,14 @@ def _make_dataframe_cells(
     DMPos = 1000*DM_Attrs['Coordinates'] \
         / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
     DMMass = DM_Attrs['Masses'] * 1e10 \
-        /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+        / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
     DMIDs = DM_Attrs['ParticleIDs']
 
     try:
         BH_Attrs = T.GetParticles(
             SnapNo, Type=5, Attrs=['Coordinates',
-                               'Masses',
-                               'ParticleIDs'])
+                                   'Masses',
+                                   'ParticleIDs'])
     except KeyError:
         print('No BHs in this file.')
         BH_Attrs = None
@@ -122,24 +121,22 @@ def _make_dataframe_cells(
         BHPos = 1000*BH_Attrs['Coordinates'] \
             / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
         BHMass = BH_Attrs['Masses'] * 1e10 \
-            /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+            / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
         BHIDs = BH_Attrs['ParticleIDs']
 
-    
     # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
     Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
     Snaps = Snaps.astype(int)
     Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
     Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
-    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
+    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps == SnapNo], Tracked_Numbers_M31[Snaps == SnapNo]
 
     # Read in subhaloes position and velocities:
     GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
-    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime) # km s^-1
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime)  # km s^-1
     MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
     M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
-
 
     # We keep only particles within the chosen halo
     if MW_or_M31 == 'MW':
