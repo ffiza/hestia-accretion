@@ -7,6 +7,7 @@ import yaml
 import TrackGalaxy
 from hestia.pca import PCA_matrix
 from hestia.df_type import DFType
+from hestia.tools import timer
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
@@ -288,9 +289,12 @@ def _make_dataframe_tracers(
     BH_Attrs = T.GetParticles(
         SnapNo, Type=5, Attrs=['Coordinates',
                                'ParticleIDs'])
-    BHPos = 1000*BH_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
-    BHIDs = BH_Attrs['ParticleIDs']
+    if len(BH_Attrs['Coordinates']) > 0:
+        BHPos = 1000*BH_Attrs['Coordinates'] \
+            / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+        BHIDs = BH_Attrs['ParticleIDs']
+    else:
+        BHPos, BHIDs = None, None
 
     Tracer_Attrs = T.GetParticles(
         SnapNo, Type=6, Attrs=['ParentID',
@@ -309,50 +313,54 @@ def _make_dataframe_tracers(
     # Read in subhaloes position and velocities:
     GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
     SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
-    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime) # km s^-1
-    MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
-    M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
-
+    MW_pos = SubhaloPos[SubhaloNumberMW]
+    M31_pos = SubhaloPos[SubhaloNumberM31]
 
     # We keep only particles within the chosen halo
     if MW_or_M31 == 'MW':
         GasPos -= MW_pos
         StarPos -= MW_pos
-        BHPos -= MW_pos
+        BHPos = BHPos - MW_pos if BHPos is not None and len(BHPos) > 0 else None
     elif MW_or_M31 == 'M31':
         GasPos -= M31_pos
         StarPos -= M31_pos
-        BHPos -= M31_pos
+        BHPos = BHPos - M31_pos if BHPos is not None and len(BHPos) > 0 else None
 
     # Build dictionaries for each type
     gas_id_to_index = {pID: ind for ind, pID in enumerate(GasIDs)}
     star_id_to_index = {pID: ind for ind, pID in enumerate(StarIDs)}
-    bh_id_to_index = {pID: ind for ind, pID in enumerate(BHIDs)}
+    bh_id_to_index = {}
+    if len(BH_Attrs['Coordinates']) > 0:
+        bh_id_to_index = {pID: ind for ind, pID in enumerate(BHIDs)}
 
     # For each tracer particle, find the type and position
     matched_types = []
     matched_positions = []
-
-    for pID in TracerParentID:
+    matched_tracer_ids = []
+ 
+    for tID, pID in zip(TracerID, TracerParentID):
         if pID in gas_id_to_index:
             matched_types.append(0)
             matched_positions.append(GasPos[gas_id_to_index[pID]])
+            matched_tracer_ids.append(tID)
         elif pID in star_id_to_index:
             matched_types.append(4)
             matched_positions.append(StarPos[star_id_to_index[pID]])
+            matched_tracer_ids.append(tID)
         elif pID in bh_id_to_index:
             matched_types.append(5)
             matched_positions.append(BHPos[bh_id_to_index[pID]])
+            matched_tracer_ids.append(tID)
 
-    matched_types, matched_positions = np.array(matched_types), np.array(matched_positions)
+    matched_types, matched_positions, matched_tracer_ids = np.array(matched_types), np.array(matched_positions), np.array(matched_tracer_ids)
 
     index_nearby = np.linalg.norm(matched_positions, axis=1) < max_radius
-    TracerID, matched_positions, matched_types = TracerID[index_nearby], matched_positions[index_nearby], matched_types[index_nearby]
-    ID_sorting = np.argsort(TracerID)
-    TracerID_sorted, matched_positions_sorted, matched_types_sorted = TracerID[ID_sorting], matched_positions[ID_sorting], matched_types[ID_sorting]
+    matched_tracer_ids, matched_positions, matched_types = matched_tracer_ids[index_nearby], matched_positions[index_nearby], matched_types[index_nearby]
+    ID_sorting = np.argsort(matched_tracer_ids)
+    matched_tracer_ids_sorted, matched_positions_sorted, matched_types_sorted = matched_tracer_ids[ID_sorting], matched_positions[ID_sorting], matched_types[ID_sorting]
 
     data_dict = {
-        'TracerID': TracerID_sorted,
+        'TracerID': matched_tracer_ids_sorted,
         'xPosition_ckpc': matched_positions_sorted[:, 0],
         'yPosition_ckpc': matched_positions_sorted[:, 1],
         'zPosition_ckpc': matched_positions_sorted[:, 2],
@@ -378,7 +386,7 @@ def _make_dataframe_tracers(
 
     return df
 
-
+@timer
 def make_dataframe(
         SimName: str, SnapNo: int, MW_or_M31: str,
         df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:

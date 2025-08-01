@@ -8,12 +8,13 @@ from multiprocessing import Pool
 from hestia.df_type import DFType
 from hestia.settings import Settings
 from hestia.dataframe import make_dataframe
+from hestia.tools import timer
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
               "ParentCellType"]
 
-
+@timer
 def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                         t1_gyr: float, t2_gyr: float,
                         geometry_ckpc: tuple) -> tuple:
@@ -110,7 +111,7 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
 
     return (in_rate, out_rate)
 
-
+@timer
 def calculate_accretion_evolution(simulation: str,
                                   galaxy: str,
                                   config: dict) -> None:
