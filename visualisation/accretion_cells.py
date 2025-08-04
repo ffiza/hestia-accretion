@@ -62,7 +62,7 @@ def make_plot(config: dict) -> None:
         ax.set_axisbelow(True)
         ax.grid(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(0.1, 100)
+        ax.set_ylim(0.1, 200)
         ax.set_yscale("log")
         ax.set_xticks([2, 4, 6, 8, 10, 12])
         ax.set_yticks([0.1, 1, 10, 100])
