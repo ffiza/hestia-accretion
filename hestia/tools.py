@@ -1,5 +1,6 @@
 import yaml
 import warnings
+import time
 import numpy as np
 import pandas as pd
 from sys import stdout
@@ -136,7 +137,7 @@ def timer(method: Callable) -> Callable:
         delta_time = int((end_time - start_time) / 60)
         delta_time_str = str(delta_time).rjust(3)
 
-        stdout.write(f"{BLUE}Timer: {delta_time_str} min. {RESET}\n")
+        stdout.write(f"\n{BLUE}Timer: {delta_time_str} min. {RESET}\n")
         return result
 
     return wrapper

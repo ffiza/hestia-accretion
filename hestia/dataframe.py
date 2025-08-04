@@ -6,12 +6,15 @@ import yaml
 
 import TrackGalaxy
 from hestia.pca import PCA_matrix
+from hestia.df_type import DFType
 from hestia.tools import timer
 
-@timer
-def make_dataframe(
-        SimName: str, SnapNo: int, config: dict,
-        MW_or_M31: str = 'MW', max_radius: float = 100.0) -> pd.DataFrame:
+GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
+
+
+def _make_dataframe_cells(
+        SimName: str, SnapNo: int, MW_or_M31: str,
+        max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns:
 
@@ -110,14 +113,14 @@ def make_dataframe(
     DMPos = 1000*DM_Attrs['Coordinates'] \
         / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
     DMMass = DM_Attrs['Masses'] * 1e10 \
-        /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+        / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
     DMIDs = DM_Attrs['ParticleIDs']
 
     try:
         BH_Attrs = T.GetParticles(
             SnapNo, Type=5, Attrs=['Coordinates',
-                               'Masses',
-                               'ParticleIDs'])
+                                   'Masses',
+                                   'ParticleIDs'])
     except KeyError:
         # print('No BHs in this file.')
         BH_Attrs = None
@@ -126,21 +129,20 @@ def make_dataframe(
         BHPos = 1000*BH_Attrs['Coordinates'] \
             / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
         BHMass = BH_Attrs['Masses'] * 1e10 \
-            /GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+            / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
         BHIDs = BH_Attrs['ParticleIDs']
 
-    
     # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
     Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
     Snaps = Snaps.astype(int)
     Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
     Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
-    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
+    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps == SnapNo], Tracked_Numbers_M31[Snaps == SnapNo]
 
     # Read in subhaloes position and velocities:
     GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
-    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime) # km s^-1
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime)  # km s^-1
     MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
     M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
 
@@ -243,8 +245,185 @@ def make_dataframe(
     return df
 
 
-if __name__ == "__main__":
-    SimName = '17_11'
-    SnapNo = 127
-    output_dir = '../results/dataframes/'
-    make_dataframe(SimName, SnapNo, output_dir=output_dir)
+def _make_dataframe_tracers(
+    SimName: str, SnapNo: int, MW_or_M31: str,
+    max_radius: float = 100.0) -> pd.DataFrame:
+    
+    print(f'Running make_dataframe for snapshot {SnapNo}...')
+
+    # These numbers come from cross-correlating with
+    # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.
+    if SimName == '17_11':
+        # subhalo_number = 1 if MW_or_M31 == "MW" else 0
+        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
+            + "17_11/output_2x2.5Mpc/"
+    elif SimName == '09_18':
+        # subhalo_number = 3911 if MW_or_M31 == "MW" else 2608
+        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
+            + "09_18/output_2x2.5Mpc/"
+    elif SimName == '37_11':
+        # subhalo_number = 920 if MW_or_M31 == "MW" else 0
+        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
+            + "37_11/output_2x2.5Mpc/"
+    else:
+        raise ValueError("Invalid simulation name.")
+
+    cosmo = astropy.cosmology.FlatLambdaCDM(
+        H0=GLOBAL_CONFIG["HUBBLE_CONST"],
+        Om0=GLOBAL_CONFIG["OMEGA_MATTER"] + GLOBAL_CONFIG["OMEGA_BARYONS"])
+
+    T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
+                                SimName,
+                                Dir=SimulationDirectory,
+                                MultipleSnaps=True)
+    SnapTime = T.SnapTimes[0]  # Scale factor
+    Redshift = 1.0 / SnapTime - 1
+    SnapTime_Gyr = cosmo.age(Redshift).value  # Gyr
+
+    Gas_Attrs = T.GetParticles(
+        SnapNo, Type=0, Attrs=['Coordinates',
+                               'ParticleIDs'])
+    GasPos = 1000*Gas_Attrs['Coordinates'] \
+        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    GasIDs = Gas_Attrs['ParticleIDs']
+
+    Star_Attrs = T.GetParticles(
+        SnapNo, Type=4, Attrs=['Coordinates',
+                               'ParticleIDs'])
+    StarPos = 1000*Star_Attrs['Coordinates'] \
+        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    StarIDs = Star_Attrs['ParticleIDs']
+
+    BH_Attrs = T.GetParticles(
+        SnapNo, Type=5, Attrs=['Coordinates',
+                               'ParticleIDs'])
+    if len(BH_Attrs['Coordinates']) > 0:
+        BHPos = 1000*BH_Attrs['Coordinates'] \
+            / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+        BHIDs = BH_Attrs['ParticleIDs']
+    else:
+        BHPos, BHIDs = None, None
+
+    Tracer_Attrs = T.GetParticles(
+        SnapNo, Type=6, Attrs=['ParentID',
+                               'TracerID'])
+    TracerID = Tracer_Attrs['TracerID']
+    TracerParentID = Tracer_Attrs['ParentID']
+
+    
+    # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
+    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
+    Snaps = Snaps.astype(int)
+    Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
+    Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
+    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
+
+    # Read in subhaloes position and velocities:
+    GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
+    MW_pos = SubhaloPos[SubhaloNumberMW]
+    M31_pos = SubhaloPos[SubhaloNumberM31]
+
+    # We keep only particles within the chosen halo
+    if MW_or_M31 == 'MW':
+        GasPos -= MW_pos
+        StarPos -= MW_pos
+        BHPos = BHPos - MW_pos if BHPos is not None and len(BHPos) > 0 else None
+    elif MW_or_M31 == 'M31':
+        GasPos -= M31_pos
+        StarPos -= M31_pos
+        BHPos = BHPos - M31_pos if BHPos is not None and len(BHPos) > 0 else None
+
+    # Build dictionaries for each type
+    gas_id_to_index = {pID: ind for ind, pID in enumerate(GasIDs)}
+    star_id_to_index = {pID: ind for ind, pID in enumerate(StarIDs)}
+    bh_id_to_index = {}
+    if len(BH_Attrs['Coordinates']) > 0:
+        bh_id_to_index = {pID: ind for ind, pID in enumerate(BHIDs)}
+
+    # For each tracer particle, find the type and position
+    matched_types = []
+    matched_positions = []
+    matched_tracer_ids = []
+ 
+    for tID, pID in zip(TracerID, TracerParentID):
+        if pID in gas_id_to_index:
+            matched_types.append(0)
+            matched_positions.append(GasPos[gas_id_to_index[pID]])
+            matched_tracer_ids.append(tID)
+        elif pID in star_id_to_index:
+            matched_types.append(4)
+            matched_positions.append(StarPos[star_id_to_index[pID]])
+            matched_tracer_ids.append(tID)
+        elif pID in bh_id_to_index:
+            matched_types.append(5)
+            matched_positions.append(BHPos[bh_id_to_index[pID]])
+            matched_tracer_ids.append(tID)
+
+    matched_types, matched_positions, matched_tracer_ids = np.array(matched_types), np.array(matched_positions), np.array(matched_tracer_ids)
+
+    index_nearby = np.linalg.norm(matched_positions, axis=1) < max_radius
+    matched_tracer_ids, matched_positions, matched_types = matched_tracer_ids[index_nearby], matched_positions[index_nearby], matched_types[index_nearby]
+    ID_sorting = np.argsort(matched_tracer_ids)
+    matched_tracer_ids_sorted, matched_positions_sorted, matched_types_sorted = matched_tracer_ids[ID_sorting], matched_positions[ID_sorting], matched_types[ID_sorting]
+
+    data_dict = {
+        'TracerID': matched_tracer_ids_sorted,
+        'xPosition_ckpc': matched_positions_sorted[:, 0],
+        'yPosition_ckpc': matched_positions_sorted[:, 1],
+        'zPosition_ckpc': matched_positions_sorted[:, 2],
+        'ParentCellType': matched_types_sorted 
+    }
+
+    df = pd.DataFrame(data_dict)
+
+    # Force data types
+    df["TracerID"] = df["TracerID"].astype(np.uint64)
+    df["ParentCellType"] = df["ParentCellType"].astype(np.uint8)
+
+    # Additional data as dataframe metadata
+    df.expansion_factor = SnapTime
+    df.time = SnapTime_Gyr
+    df.redshift = Redshift
+    df.snapshot_number = SnapNo
+
+    # Add target gas mass value to dataframe
+    df.target_gas_mass = yaml.safe_load(
+        open("data/hestia/target_gas_mass.yml"))[SimName] \
+        * 1E10 / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # Msun
+
+    return df
+
+@timer
+def make_dataframe(
+        SimName: str, SnapNo: int, MW_or_M31: str,
+        df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
+    """
+    Loads a snapshot and returns a dataframe with data pertaining to cells
+    if `df_type=DFType.CELLS` or to tracer particles if
+    `df_tpye=DFType.TRACERS`.
+
+    Parameters
+    ----------
+    SimName : str
+        Simulation name from '17_11', '09_18' or '37_11'.
+    SnapNo : int
+        Snapshot number (z=0 corresponds to SnapNo=127)
+    MW_or_M31 : str, optional
+        Choose one of the two main galaxies from 'MW' or 'M31' to center the
+        sphere that will be considered for the dataframe.
+    output_dir : str, optional
+        Directory where the pickle containing the df will be saved. By default
+        "results/dataframes/".
+    df_type : DFType
+        `DFType.CELLS` to read cell data, `DFType.TRACERS` to read tracer
+        particle data.
+    max_radius : float, optional
+        Radius of the sphere required for the df in ckpc. By default 100.0.
+    """
+    if df_type == DFType.CELLS:
+        return _make_dataframe_cells(SimName, SnapNo, MW_or_M31, max_radius)
+    if df_type == DFType.TRACERS:
+        return _make_dataframe_tracers(SimName, SnapNo, MW_or_M31, max_radius)
+    raise ValueError(
+        f"{df_type} can only be `DFType.CELLS` or `DFType.TRACERS`.")

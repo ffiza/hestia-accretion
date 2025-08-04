@@ -1,10 +1,17 @@
-/hestia/Misc
-/hestia/TrackGalaxy.py
+Misc
+TrackGalaxy.py
+/results/df_*
 /tests/__pycache__
 /visualisation/__pycache__
-/hestia/__pycache__
-__pycache__/
-Misc/
-Miniconda3-latest-Linux-x86_64.sh
-TrackGalaxy.py
+__pycache__
+
+
+# Conda installer
+Miniconda3-*.sh
+
+
+# Logs and intermediate data
+*.log
+*.tmp
+*.bak
 /hestia.egg-info
