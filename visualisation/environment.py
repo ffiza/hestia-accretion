@@ -34,7 +34,6 @@ def make_plot() -> None:
 
     for ax in axs.flatten():
         ax.set_axisbelow(True)
-        ax.grid(True)
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 100)
         ax.set_yscale("log")

@@ -111,7 +111,6 @@ def make_plot(config: dict, rate_type: RateType) -> None:
 
     for ax in axs:
         ax.set_axisbelow(True)
-        ax.grid(True)
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 200)
         ax.set_yscale("log")

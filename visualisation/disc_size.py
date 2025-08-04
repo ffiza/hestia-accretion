@@ -58,7 +58,6 @@ def plot_disc_radius(config: dict) -> None:
 
     for ax in axs.flatten():
         ax.set_axisbelow(True)
-        ax.grid(True)
         ax.set_xlim(0, 14)
         ax.set_xticks([2, 4, 6, 8, 10, 12])
         ax.set_xlabel(r'Time [Gyr]')
@@ -110,7 +109,6 @@ def plot_disc_height(config: dict) -> None:
 
     for ax in axs.flatten():
         ax.set_axisbelow(True)
-        ax.grid(True)
         ax.set_xlim(0, 14)
         ax.set_xticks([2, 4, 6, 8, 10, 12])
         ax.set_xlabel(r'Time [Gyr]')
