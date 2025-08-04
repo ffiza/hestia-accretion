@@ -160,7 +160,7 @@ def make_plot(config: dict, rate_type: RateType) -> None:
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(
-        f"images/{RATE_TYPE_FILE_PREFIX[rate_type]}_{config['RUN_CODE']}.pdf")
+        f"images/{RATE_TYPE_FILE_PREFIX[rate_type]}_{config['RUN_CODE']}.png")
     plt.close(fig)
 
 
