@@ -7,4 +7,5 @@ all: create-plots
 create-plots:
 	python ./visualisation/disc_size.py --config 01
 	python ./visualisation/accretion_cells.py --config 01
+	python ./visualisation/accretion_tracers.py --config 01
 	python ./visualisation/environment.py --config 01
