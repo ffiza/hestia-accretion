@@ -4,7 +4,6 @@ import time
 import numpy as np
 import pandas as pd
 from sys import stdout
-import time
 from typing import Callable
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))

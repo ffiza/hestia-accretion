@@ -121,6 +121,7 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
 
     return net_accretion_rate
 
+
 @timer
 def calculate_net_accretion_evolution(simulation: str,
                                       galaxy: str,
@@ -217,6 +218,7 @@ def main():
         simulation="37_11", galaxy="MW", config=config)
     calculate_net_accretion_evolution(
         simulation="37_11", galaxy="M31", config=config)
+
 
 if __name__ == "__main__":
     main()

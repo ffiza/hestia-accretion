@@ -14,6 +14,7 @@ GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
               "ParentCellType"]
 
+
 @timer
 def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                         t1_gyr: float, t2_gyr: float,
@@ -110,6 +111,7 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
     out_rate = outflowing_number * df1.target_gas_mass / delta_time
 
     return (in_rate, out_rate)
+
 
 @timer
 def calculate_accretion_evolution(simulation: str,
