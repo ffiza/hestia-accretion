@@ -138,6 +138,8 @@ def calculate_net_accretion_evolution(
         + f"disc_size_{config['RUN_CODE']}.json"
     with open(path) as f:
         disc_size = json.load(f)
+    virial_data = pd.read_csv(
+        f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
 
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
 
@@ -148,9 +150,8 @@ def calculate_net_accretion_evolution(
                 hd = disc_size["DiscHeight_ckpc"][i]
                 accretion_region = StellarDiscRegion(rd, hd)
             case AccretionRegionType.HALO:
-                # Read virial radius
-                # Set accretion region
-                raise NotImplementedError("Halo region is not implemented.")
+                r200 = virial_data.iloc[i]["VirialRadius_ckpc"]
+                accretion_region = HaloRegion(r200)
             case _:
                 raise ValueError("Invalid `AccretionRegionType`.")
 
@@ -177,9 +178,13 @@ def calculate_net_accretion_evolution(
         df1 = df2.copy()
         df1.__dict__.update(df2.__dict__)
 
+    suffix = ""
+    if accretion_region_type == AccretionRegionType.HALO:
+        suffix = "halo"
+
     # Save data
     path = f"results/{simulation}_{galaxy}/" \
-        + f"net_accretion_cells_{config['RUN_CODE']}.json"
+        + f"net_accretion_cells_{suffix}_{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)
 
