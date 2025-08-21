@@ -162,7 +162,7 @@ def calculate_net_accretion_evolution(
                 MW_or_M31=galaxy, df_type=DFType.CELLS)
         df2 = make_dataframe(
             SimName=simulation, SnapNo=i, config=config,
-            MW_or_M31=galaxy, df_tpye=DFType.CELLS)
+            MW_or_M31=galaxy, df_type=DFType.CELLS)
         net_accretion = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             accretion_region=accretion_region)

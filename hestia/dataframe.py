@@ -13,8 +13,8 @@ GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 
 def _make_dataframe_cells(
-        SimName: str, SnapNo: int, MW_or_M31: str,
-        max_radius: float = 100.0) -> pd.DataFrame:
+        SimName: str, SnapNo: int, 
+        MW_or_M31: str, config:dict, max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns:
 
@@ -125,12 +125,13 @@ def _make_dataframe_cells(
         # print('No BHs in this file.')
         BH_Attrs = None
 
-    if BH_Attrs:
+    if len(BH_Attrs['Coordinates']) > 0:
         BHPos = 1000*BH_Attrs['Coordinates'] \
-            / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
-        BHMass = BH_Attrs['Masses'] * 1e10 \
-            / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+            / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
         BHIDs = BH_Attrs['ParticleIDs']
+        BHMass = BH_Attrs['Masses']
+    else:
+        BHPos, BHIDs, BHMass = None, None, None
 
     # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
     Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
@@ -151,16 +152,12 @@ def _make_dataframe_cells(
         GasPos -= MW_pos
         StarPos -= MW_pos
         DMPos -= MW_pos
-        if BH_Attrs:
-            BHPos -= MW_pos
-        GasVel -= MW_vel
+        BHPos = BHPos - MW_pos if BHPos is not None and len(BHPos) > 0 else None
     elif MW_or_M31 == 'M31':
         GasPos -= M31_pos
         StarPos -= M31_pos
         DMPos -= M31_pos
-        if BH_Attrs:
-            BHPos -= M31_pos
-        GasVel -= M31_vel
+        BHPos = BHPos - M31_pos if BHPos is not None and len(BHPos) > 0 else None
 
     # Keep only particles within RMAX:
     index_of_nearby_gas = numpy.where(
@@ -169,7 +166,7 @@ def _make_dataframe_cells(
         StarPos[:, 0]**2 + StarPos[:, 1]**2 + StarPos[:, 2]**2 < max_radius**2)
     index_of_nearby_DM = numpy.where(
         DMPos[:, 0]**2 + DMPos[:, 1]**2 + DMPos[:, 2]**2 < max_radius**2)
-    if BH_Attrs:
+    if BHPos is not None:
         index_of_nearby_BH = numpy.where(
             BHPos[:, 0]**2 + BHPos[:, 1]**2 + BHPos[:, 2]**2 < max_radius**2)
     
@@ -186,7 +183,7 @@ def _make_dataframe_cells(
     DMMass = DMMass[index_of_nearby_DM]
     DMIDs = DMIDs[index_of_nearby_DM]
 
-    if BH_Attrs:
+    if BHPos is not None:
         BHPos = BHPos[index_of_nearby_BH]
         BHMass = BHMass[index_of_nearby_BH]
         BHIDs = BHIDs[index_of_nearby_BH]
@@ -197,11 +194,11 @@ def _make_dataframe_cells(
     GasPos = np.dot(GasPos, R)
     StarPos = np.dot(StarPos, R)
     DMPos = np.dot(DMPos, R)
-    if BH_Attrs:
+    if BHPos is not None:
         BHPos = np.dot(BHPos, R)
 
 
-    if BH_Attrs:
+    if BHPos is not None:
         AllPos = np.concatenate((GasPos, StarPos, DMPos, BHPos))
         AllMass = np.concatenate((GasMass, StarMass, DMMass, BHMass))
         AllIDs = np.concatenate((GasIDs, StarIDs, DMIDs, BHIDs))
@@ -246,8 +243,8 @@ def _make_dataframe_cells(
 
 
 def _make_dataframe_tracers(
-    SimName: str, SnapNo: int, MW_or_M31: str,
-    max_radius: float = 100.0) -> pd.DataFrame:
+    SimName: str, SnapNo: int, config:dict,
+    MW_or_M31: str, max_radius: float = 100.0) -> pd.DataFrame:
     
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
@@ -324,7 +321,7 @@ def _make_dataframe_tracers(
     MW_pos = SubhaloPos[SubhaloNumberMW]
     M31_pos = SubhaloPos[SubhaloNumberM31]
 
-    # We keep only particles within the chosen halo
+    # We center particle's positions:
     if MW_or_M31 == 'MW':
         GasPos -= MW_pos
         StarPos -= MW_pos
@@ -396,8 +393,8 @@ def _make_dataframe_tracers(
 
 @timer
 def make_dataframe(
-        SimName: str, SnapNo: int, MW_or_M31: str,
-        df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
+        SimName: str, SnapNo: int, config: dict, 
+        MW_or_M31: str, df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with data pertaining to cells
     if `df_type=DFType.CELLS` or to tracer particles if
@@ -422,8 +419,8 @@ def make_dataframe(
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
     if df_type == DFType.CELLS:
-        return _make_dataframe_cells(SimName, SnapNo, MW_or_M31, max_radius)
+        return _make_dataframe_cells(SimName, SnapNo, MW_or_M31, config=config, max_radius=max_radius)
     if df_type == DFType.TRACERS:
-        return _make_dataframe_tracers(SimName, SnapNo, MW_or_M31, max_radius)
+        return _make_dataframe_tracers(SimName, SnapNo, MW_or_M31, config=config, max_radius=max_radius)
     raise ValueError(
         f"{df_type} can only be `DFType.CELLS` or `DFType.TRACERS`.")
