@@ -201,7 +201,7 @@ def main():
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
             calculate_net_accretion_evolution(
-                simulation, galaxy, config, AccretionRegionType.STELLAR_DISC)
+                simulation, galaxy, config, AccretionRegionType.HALO)
 
 
 if __name__ == "__main__":
