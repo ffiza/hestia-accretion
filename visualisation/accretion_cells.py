@@ -9,11 +9,17 @@ import matplotlib.pyplot as plt
 from hestia.settings import Settings
 from hestia.images import figure_setup
 from hestia.tools import windowed_average
+from hestia.accretion_region import (AccretionRegionType,
+                                     get_accretion_region_suffix)
 
 
-def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
+def _get_data(galaxy: str, config: dict,
+              accretion_region_type: AccretionRegionType) -> pd.DataFrame:
+
+    suffix = get_accretion_region_suffix(accretion_region_type)
+
     path = f"results/{galaxy}/net_accretion_cells" \
-        + f"_{config['RUN_CODE']}.json"
+        + f"{suffix}_{config['RUN_CODE']}.json"
     with open(path) as f:
         data = json.load(f)
         time = np.array(data["Times_Gyr"])
@@ -53,8 +59,22 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
     return df
 
 
-def make_plot(config: dict) -> None:
+def _add_auriga_data_to_ax(ax) -> None:
     df_auriga = _get_auriga_data(config)
+    ax.fill_between(
+        df_auriga["Time_Gyr"],
+        df_auriga["AccretionRateSmoothedMean_Msun/yr"]
+        - df_auriga["AccretionRateSmoothedStd_Msun/yr"],
+        df_auriga["AccretionRateSmoothedMean_Msun/yr"]
+        + df_auriga["AccretionRateSmoothedStd_Msun/yr"],
+        color="k", alpha=0.1, label="Auriga", lw=0)
+    ax.plot(df_auriga["Time_Gyr"],
+            df_auriga["AccretionRateSmoothedMean_Msun/yr"],
+            ls="-", color="darkgray", lw=1, zorder=10)
+
+
+def make_plot(config: dict,
+              accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
     fig = plt.figure(figsize=(5.0, 2.0))
@@ -78,7 +98,7 @@ def make_plot(config: dict) -> None:
         ax = axs[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
-                galaxy=f"{simulation}_{galaxy}", config=config)
+                f"{simulation}_{galaxy}", config, accretion_region_type)
             is_positive = df["NetAccretionCells_Msun/yr"] >= 0.1
             ax.plot(df["Time_Gyr"][is_positive],
                     windowed_average(
@@ -96,22 +116,13 @@ def make_plot(config: dict) -> None:
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
-        #region TestAurigaData
-        ax.fill_between(
-            df_auriga["Time_Gyr"],
-            df_auriga["AccretionRateSmoothedMean_Msun/yr"]
-            - df_auriga["AccretionRateSmoothedStd_Msun/yr"],
-            df_auriga["AccretionRateSmoothedMean_Msun/yr"]
-            + df_auriga["AccretionRateSmoothedStd_Msun/yr"],
-            color="k", alpha=0.1, label="Auriga", lw=0)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["AccretionRateSmoothedMean_Msun/yr"],
-                ls="-", color="darkgray", lw=1, zorder=10)
-        #endregion
+        if accretion_region_type == AccretionRegionType.STELLAR_DISC:
+            _add_auriga_data_to_ax(ax)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig(f"images/net_accretion_cells_{config['RUN_CODE']}.png")
+    suffix = get_accretion_region_suffix(accretion_region_type)
+    plt.savefig(f"images/net_accretion_cells{suffix}_{config['RUN_CODE']}.png")
     plt.close(fig)
 
 
@@ -126,4 +137,5 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    make_plot(config=config)
+    make_plot(config, AccretionRegionType.STELLAR_DISC)
+    make_plot(config, AccretionRegionType.HALO)
