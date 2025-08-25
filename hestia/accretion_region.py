@@ -70,3 +70,14 @@ class HaloRegion(AccretionRegion):
         if filter_type == FilterType.OUT:
             return ~is_selected
         return is_selected
+
+
+def get_accretion_region_suffix(accretion_region_type: AccretionRegionType
+                                ) -> str:
+    match accretion_region_type:
+        case AccretionRegionType.STELLAR_DISC:
+            return ""
+        case AccretionRegionType.HALO:
+            return "_halo"
+        case _:
+            raise ValueError("Invalid `AccretionRegionType`.")
