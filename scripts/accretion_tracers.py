@@ -9,6 +9,9 @@ from hestia.df_type import DFType
 from hestia.settings import Settings
 from hestia.dataframe import make_dataframe
 from hestia.tools import timer
+from hestia.accretion_region import (AccretionRegionType, FilterType,
+                                     AccretionRegion, StellarDiscRegion,
+                                     HaloRegion, get_accretion_region_suffix)
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
@@ -18,7 +21,7 @@ DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
 @timer
 def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                         t1_gyr: float, t2_gyr: float,
-                        geometry_ckpc: tuple) -> tuple:
+                        accretion_region: AccretionRegion) -> tuple:
     """
     This method calculates the accretion rates between two snapshots using
     tarcer particles. It takes two data frames, `df1` and `df2`, with the
@@ -44,12 +47,8 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
         Time of the first snapshot in Gyr.
     t2_gyr : float
         Time of the second snapshot in Gyr.
-    geometry_ckpc : tuple
-        Tuple that indicates the geometry of the region in which to calculate
-        the accretion. If the tuple has only one element, the method asumes an
-        spheroid of that radius. If the tuple cotains two elements, the method
-        assumes a disc with the first element as the radius and the second as
-        the height. All the dimensions should be expressed in ckpc.
+    accretion_region : AccretionRegion
+        The region onto which to calculate the accretion rate.
     """
 
     for df in [df1, df2]:  # Check all columns are in the data frames
@@ -60,37 +59,20 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
     if t2_gyr <= t1_gyr:  # Check if the times are correct
         raise ValueError("`t2_gyr` must be greater than `t1_gyr`.")
 
-    # Define the geometry
-    if len(geometry_ckpc) == 1:
-        geometry_type = "spheroid"
-    elif len(geometry_ckpc) == 2:
-        geometry_type = "disc"
-    else:
-        raise ValueError(
-            "`geometry` should be a tuple of length 1 "
-            "for spheroids or length 2 for discs.")
-
     # Calculate new coordinates
     for df in [df1, df2]:
         pos = df[["xPosition_ckpc",
                   "yPosition_ckpc",
                   "zPosition_ckpc"]].to_numpy()
-        if geometry_type == "spheroid":
-            df["SphericalRadius_ckpc"] = np.linalg.norm(pos, axis=1)
-        if geometry_type == "disc":
-            df["CylindricalRadius_ckpc"] = np.linalg.norm(pos[:, :2], axis=1)
+        df["SphericalRadius_ckpc"] = np.linalg.norm(pos, axis=1)
+        df["CylindricalRadius_ckpc"] = np.linalg.norm(pos[:, :2], axis=1)
 
     # Calculate the time between snapshots in yr
     delta_time = (t2_gyr - t1_gyr) * 1E9
 
     # Tag particles inside geometry
     for df in [df1, df2]:
-        if geometry_type == "spheroid":
-            df["IsGeometry"] = df["SphericalRadius_ckpc"] <= geometry_ckpc[0]
-        if geometry_type == "disc":
-            df["IsGeometry"] = (
-                df["CylindricalRadius_ckpc"] <= geometry_ckpc[0]) \
-                & (np.abs(df["zPosition_ckpc"]) <= geometry_ckpc[1])
+        df["IsGeometry"] = accretion_region.select(df, FilterType.IN)
 
     # Compute the amount of inflowing/outflowing particles
     inflowing_number = (
@@ -116,7 +98,9 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
 @timer
 def calculate_accretion_evolution(simulation: str,
                                   galaxy: str,
-                                  config: dict) -> None:
+                                  config: dict,
+                                  accretion_region_type: AccretionRegionType
+                                  ) -> None:
     """
     This method calculates the evolution of the accretion rates for tracers
     for a given simulation.
@@ -127,14 +111,10 @@ def calculate_accretion_evolution(simulation: str,
         The name of the simulation: `17_11`, `37_11` or `9_18`.
     galaxy : str
         The name of the galaxy: `MW` or `M31`.
-    geometry_ckpc : tuple
-        Tuple that indicates the geometry of the region in which to calculate
-        the accretion. If the tuple has only one element, the method asumes an
-        spheroid of that radius. If the tuple cotains two elements, the method
-        assumes a disc with the first element as the radius and the second as
-        the height. All the dimensions should be expressed in ckpc.
     config : dict
         A dictionary with the configuration parameters.
+    accretion_region_type : AccretionRegionType
+        The type of region onto which to calculate the accretion rate.
     """
     n_snapshots = GLOBAL_CONFIG["N_SNAPSHOTS"]
 
@@ -152,20 +132,30 @@ def calculate_accretion_evolution(simulation: str,
         + f"disc_size_{config['RUN_CODE']}.json"
     with open(path) as f:
         disc_size = json.load(f)
+    virial_data = pd.read_csv(
+        f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
 
     df1 = make_dataframe(
         simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], galaxy,
         DFType.TRACERS, np.inf)
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
 
-        # Define geometry
-        rd = disc_size["DiscRadius_ckpc"][i]
-        hd = disc_size["DiscHeight_ckpc"][i]
+        # Define geometry of the accretion region
+        match accretion_region_type:
+            case AccretionRegionType.STELLAR_DISC:
+                rd = disc_size["DiscRadius_ckpc"][i]
+                hd = disc_size["DiscHeight_ckpc"][i]
+                accretion_region = StellarDiscRegion(rd, hd)
+            case AccretionRegionType.HALO:
+                r200 = virial_data.iloc[i]["VirialRadius_ckpc"]
+                accretion_region = HaloRegion(r200)
+            case _:
+                raise ValueError("Invalid `AccretionRegionType`.")
 
         df2 = make_dataframe(simulation, i, galaxy, DFType.TRACERS, np.inf)
         inflow_rate, outflow_rate = calculate_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
-            geometry_ckpc=(rd, hd))
+            accretion_region=accretion_region)
 
         data["Times_Gyr"][i] = df2.time
         data["Redshift"][i] = df2.redshift
@@ -178,9 +168,11 @@ def calculate_accretion_evolution(simulation: str,
         df1 = df2.copy()
         df1.__dict__.update(df2.__dict__)
 
+    suffix = get_accretion_region_suffix(accretion_region_type)
+
     # Save data
     path = f"results/{simulation}_{galaxy}/" \
-        + f"accretion_tracers_{config['RUN_CODE']}.json"
+        + f"accretion_tracers{suffix}_{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)
 
@@ -194,12 +186,7 @@ def main():
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    for simulation in Settings.SIMULATIONS:
-        for galaxy in Settings.GALAXIES:
-            calculate_accretion_evolution(
-                simulation=simulation, galaxy=galaxy, config=config)
-
-    arguments = [(simulation, galaxy, config)
+    arguments = [(simulation, galaxy, config, AccretionRegionType.HALO)
                  for simulation in Settings.SIMULATIONS
                  for galaxy in Settings.GALAXIES]
     Pool(GLOBAL_CONFIG["N_PROCESSES"]).starmap(
