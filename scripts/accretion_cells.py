@@ -122,6 +122,8 @@ def calculate_net_accretion_evolution(
         The name of the galaxy: `MW` or `M31`.
     config : dict
         A dictionary with the configuration parameters.
+    accretion_region_type : AccretionRegionType
+        The type of region onto which to calculate the accretion rate.
     """
     n_snapshots = GLOBAL_CONFIG["N_SNAPSHOTS"]
 
@@ -182,7 +184,7 @@ def calculate_net_accretion_evolution(
 
     # Save data
     path = f"results/{simulation}_{galaxy}/" \
-        + f"net_accretion_cells_{suffix}_{config['RUN_CODE']}.json"
+        + f"net_accretion_cells{suffix}_{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)
 
