@@ -10,7 +10,7 @@ from hestia.settings import Settings
 from hestia.dataframe import make_dataframe
 from hestia.accretion_region import (AccretionRegionType, FilterType,
                                      AccretionRegion, StellarDiscRegion,
-                                     HaloRegion)
+                                     HaloRegion, get_accretion_region_suffix)
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 DF_COLUMNS = ["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
@@ -178,9 +178,7 @@ def calculate_net_accretion_evolution(
         df1 = df2.copy()
         df1.__dict__.update(df2.__dict__)
 
-    suffix = ""
-    if accretion_region_type == AccretionRegionType.HALO:
-        suffix = "halo"
+    suffix = get_accretion_region_suffix(accretion_region_type)
 
     # Save data
     path = f"results/{simulation}_{galaxy}/" \
