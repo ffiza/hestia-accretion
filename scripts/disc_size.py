@@ -83,7 +83,7 @@ def calculate_disc_size(simulation: str, galaxy: str, config: dict):
 
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"], n_snapshots):
         virial_radius = virial_radius_data["VirialRadius_ckpc"].loc[i]
-        df = make_dataframe(simulation, i, galaxy, DFType.CELLS)
+        df = make_dataframe(simulation, i, galaxy, config, DFType.CELLS)
 
         pos = df[["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc"]]
 

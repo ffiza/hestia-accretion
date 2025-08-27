@@ -7,14 +7,13 @@ import yaml
 import TrackGalaxy
 from hestia.pca import PCA_matrix
 from hestia.df_type import DFType
-from hestia.tools import timer
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 
 def _make_dataframe_cells(
-        SimName: str, SnapNo: int, 
-        MW_or_M31: str, config:dict, max_radius: float = 100.0) -> pd.DataFrame:
+        SimName: str, SnapNo: int,  MW_or_M31: str, config: dict,
+        max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns:
 
@@ -38,6 +37,8 @@ def _make_dataframe_cells(
     output_dir : str, optional
         Directory where the pickle containing the df will be saved. By default
         "results/dataframes/".
+    config : dict
+        A dictionary with the configuration parameters.
     max_radius : float, optional
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
@@ -169,7 +170,7 @@ def _make_dataframe_cells(
     if BHPos is not None:
         index_of_nearby_BH = numpy.where(
             BHPos[:, 0]**2 + BHPos[:, 1]**2 + BHPos[:, 2]**2 < max_radius**2)
-    
+
     GasPos = GasPos[index_of_nearby_gas]
     GasMass = GasMass[index_of_nearby_gas]
     GasIDs = GasIDs[index_of_nearby_gas]
@@ -243,9 +244,36 @@ def _make_dataframe_cells(
 
 
 def _make_dataframe_tracers(
-    SimName: str, SnapNo: int, MW_or_M31: str, config:dict,
-    max_radius: float = 100.0) -> pd.DataFrame:
-    
+        SimName: str, SnapNo: int, MW_or_M31: str, config: dict,
+        max_radius: float = 100.0) -> pd.DataFrame:
+    """
+    Loads a snapshot and returns a dataframe with the following columns
+    related to tracer particles:
+
+    - `xPosition_ckpc`: x-coordinate of the particles in ckpc.
+    - `yPosition_ckpc`: y-coordinate of the particles in ckpc.
+    - `zPosition_ckpc`: z-coordinate of the particles in ckpc
+    - `TracerID`: the ID of the tracer.
+    - `ParentCellType`: type of the parent cell.
+
+    Parameters
+    ----------
+    SimName : str
+        Simulation name from '17_11', '09_18' or '37_11'.
+    SnapNo : int
+        Snapshot number (z=0 corresponds to SnapNo=127)
+    MW_or_M31 : str, optional
+        Choose one of the two main galaxies from 'MW' or 'M31' to center the
+        sphere that will be considered for the dataframe.
+    output_dir : str, optional
+        Directory where the pickle containing the df will be saved. By default
+        "results/dataframes/".
+    config : dict
+        A dictionary with the configuration parameters.
+    max_radius : float, optional
+        Radius of the sphere required for the df in ckpc. By default 100.0.
+    """
+
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
     # These numbers come from cross-correlating with
@@ -307,7 +335,7 @@ def _make_dataframe_tracers(
     TracerID = Tracer_Attrs['TracerID']
     TracerParentID = Tracer_Attrs['ParentID']
 
-    
+
     # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
     Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
     Snaps = Snaps.astype(int)
@@ -342,7 +370,7 @@ def _make_dataframe_tracers(
     matched_types = []
     matched_positions = []
     matched_tracer_ids = []
- 
+
     for tID, pID in zip(TracerID, TracerParentID):
         if pID in gas_id_to_index:
             matched_types.append(0)
@@ -369,7 +397,7 @@ def _make_dataframe_tracers(
         'xPosition_ckpc': matched_positions_sorted[:, 0],
         'yPosition_ckpc': matched_positions_sorted[:, 1],
         'zPosition_ckpc': matched_positions_sorted[:, 2],
-        'ParentCellType': matched_types_sorted 
+        'ParentCellType': matched_types_sorted
     }
 
     df = pd.DataFrame(data_dict)
@@ -391,10 +419,10 @@ def _make_dataframe_tracers(
 
     return df
 
-# @timer
+
 def make_dataframe(
-        SimName: str, SnapNo: int, config: dict, 
-        MW_or_M31: str, df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
+        SimName: str, SnapNo: int, MW_or_M31: str, config: dict,
+        df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with data pertaining to cells
     if `df_type=DFType.CELLS` or to tracer particles if
@@ -412,6 +440,8 @@ def make_dataframe(
     output_dir : str, optional
         Directory where the pickle containing the df will be saved. By default
         "results/dataframes/".
+    config : dict
+        A dictionary with the configuration parameters.
     df_type : DFType
         `DFType.CELLS` to read cell data, `DFType.TRACERS` to read tracer
         particle data.
@@ -419,8 +449,10 @@ def make_dataframe(
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
     if df_type == DFType.CELLS:
-        return _make_dataframe_cells(SimName, SnapNo, MW_or_M31, config=config, max_radius=max_radius)
+        return _make_dataframe_cells(
+            SimName, SnapNo, MW_or_M31, config, max_radius)
     if df_type == DFType.TRACERS:
-        return _make_dataframe_tracers(SimName, SnapNo, MW_or_M31, config=config, max_radius=max_radius)
+        return _make_dataframe_tracers(
+            SimName, SnapNo, MW_or_M31, config, max_radius)
     raise ValueError(
         f"{df_type} can only be `DFType.CELLS` or `DFType.TRACERS`.")

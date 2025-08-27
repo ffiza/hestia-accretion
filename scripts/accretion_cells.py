@@ -4,7 +4,6 @@ import yaml
 import argparse
 import json
 
-from hestia.tools import timer
 from hestia.df_type import DFType
 from hestia.settings import Settings
 from hestia.dataframe import make_dataframe
@@ -104,7 +103,6 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
     return net_accretion_rate
 
 
-# @timer
 def calculate_net_accretion_evolution(
         simulation: str,
         galaxy: str,
@@ -161,11 +159,9 @@ def calculate_net_accretion_evolution(
             df1
         except NameError:
             df1 = make_dataframe(
-                SimName=simulation, SnapNo=i - 1, config,
-                MW_or_M31=galaxy, df_type=DFType.CELLS)
+                simulation, i - 1, galaxy, config, DFType.CELLS)
         df2 = make_dataframe(
-            SimName=simulation, SnapNo=i, config,
-            MW_or_M31=galaxy, df_type=DFType.CELLS)
+            simulation, i, galaxy, config, DFType.CELLS)
         net_accretion = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             accretion_region=accretion_region)

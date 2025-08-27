@@ -47,7 +47,7 @@ def calculate_overdensity_in_simulation(simulation: str,
     if snapshot_number < GLOBAL_CONFIG["FIRST_SNAPSHOT"]:
         return np.array([snapshot_number, np.nan, np.nan])
     df = make_dataframe(
-        simulation, snapshot_number, galaxy, DFType.CELLS, max_radius=distance)
+        simulation, snapshot_number, galaxy, config, DFType.CELLS, distance)
     return calculate_overdensity(df=df, distance=distance)
 
 
@@ -86,5 +86,4 @@ if __name__ == "__main__":
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
             calculate_overdensity_evolution(
-                simulation=simulation, galaxy=galaxy,
-                config=config, distance=DISTANCE)
+                simulation, galaxy, config, DISTANCE)
