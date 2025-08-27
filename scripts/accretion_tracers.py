@@ -18,7 +18,7 @@ DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
               "ParentCellType"]
 
 
-@timer
+# @timer
 def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                         t1_gyr: float, t2_gyr: float,
                         accretion_region: AccretionRegion) -> tuple:
@@ -95,7 +95,7 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
     return (in_rate, out_rate)
 
 
-@timer
+# @timer
 def calculate_accretion_evolution(simulation: str,
                                   galaxy: str,
                                   config: dict,
@@ -136,7 +136,7 @@ def calculate_accretion_evolution(simulation: str,
         f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
 
     df1 = make_dataframe(
-        simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], galaxy,
+        simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], config, galaxy,
         DFType.TRACERS, np.inf)
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
 
@@ -152,7 +152,7 @@ def calculate_accretion_evolution(simulation: str,
             case _:
                 raise ValueError("Invalid `AccretionRegionType`.")
 
-        df2 = make_dataframe(simulation, i, galaxy, DFType.TRACERS, np.inf)
+        df2 = make_dataframe(simulation, i, config, galaxy, DFType.TRACERS, np.inf)
         inflow_rate, outflow_rate = calculate_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
             accretion_region=accretion_region)

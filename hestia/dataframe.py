@@ -243,8 +243,8 @@ def _make_dataframe_cells(
 
 
 def _make_dataframe_tracers(
-    SimName: str, SnapNo: int, config:dict,
-    MW_or_M31: str, max_radius: float = 100.0) -> pd.DataFrame:
+    SimName: str, SnapNo: int, MW_or_M31: str, config:dict,
+    max_radius: float = 100.0) -> pd.DataFrame:
     
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
@@ -391,7 +391,7 @@ def _make_dataframe_tracers(
 
     return df
 
-@timer
+# @timer
 def make_dataframe(
         SimName: str, SnapNo: int, config: dict, 
         MW_or_M31: str, df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:

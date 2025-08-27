@@ -104,7 +104,7 @@ def calculate_net_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
     return net_accretion_rate
 
 
-@timer
+# @timer
 def calculate_net_accretion_evolution(
         simulation: str,
         galaxy: str,
@@ -161,10 +161,10 @@ def calculate_net_accretion_evolution(
             df1
         except NameError:
             df1 = make_dataframe(
-                SimName=simulation, SnapNo=i - 1, config=config,
+                SimName=simulation, SnapNo=i - 1, config,
                 MW_or_M31=galaxy, df_type=DFType.CELLS)
         df2 = make_dataframe(
-            SimName=simulation, SnapNo=i, config=config,
+            SimName=simulation, SnapNo=i, config,
             MW_or_M31=galaxy, df_type=DFType.CELLS)
         net_accretion = calculate_net_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
