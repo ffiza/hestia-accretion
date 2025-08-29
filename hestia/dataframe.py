@@ -314,9 +314,11 @@ def _make_dataframe_tracers(
 
     Star_Attrs = T.GetParticles(
         SnapNo, Type=4, Attrs=['Coordinates',
+                               'Velocities',
                                'ParticleIDs'])
     StarPos = 1000*Star_Attrs['Coordinates'] \
         / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    StarVel = Star_Attrs['Velocities']*numpy.sqrt(SnapTime)  # km/s
     StarIDs = Star_Attrs['ParticleIDs']
 
     BH_Attrs = T.GetParticles(
@@ -358,6 +360,16 @@ def _make_dataframe_tracers(
         GasPos -= M31_pos
         StarPos -= M31_pos
         BHPos = BHPos - M31_pos if BHPos is not None and len(BHPos) > 0 else None
+
+    # Align positions with the stellar disc
+    alignment_distance = config["ROTATION_MATRIX_DISTANCE_CKPC"]
+    R = PCA_matrix(StarPos, StarVel, alignment_distance)
+    GasPos = np.dot(GasPos, R)
+    StarPos = np.dot(StarPos, R)
+    # DMPos = np.dot(DMPos, R)
+    if BHPos is not None:
+        BHPos = np.dot(BHPos, R)
+
 
     # Build dictionaries for each type
     gas_id_to_index = {pID: ind for ind, pID in enumerate(GasIDs)}

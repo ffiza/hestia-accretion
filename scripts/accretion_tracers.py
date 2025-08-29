@@ -136,6 +136,7 @@ def calculate_accretion_evolution(simulation: str,
         simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], galaxy, config,
         DFType.TRACERS, np.inf)
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
+        print(np.shape(df1))
 
         # Define geometry of the accretion region
         match accretion_region_type:
