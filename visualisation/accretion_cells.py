@@ -59,7 +59,7 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
     return df
 
 
-def _add_auriga_data_to_ax(ax) -> None:
+def _add_auriga_data_to_ax(ax, config: dict) -> None:
     df_auriga = _get_auriga_data(config)
     ax.fill_between(
         df_auriga["Time_Gyr"],
@@ -117,7 +117,7 @@ def make_plot(config: dict,
             color=Settings.SIMULATION_COLORS[simulation])
 
         if accretion_region_type == AccretionRegionType.STELLAR_DISC:
-            _add_auriga_data_to_ax(ax)
+            _add_auriga_data_to_ax(ax, config)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
