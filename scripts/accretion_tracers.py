@@ -185,9 +185,11 @@ def main():
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    arguments = [(simulation, galaxy, config, AccretionRegionType.HALO)
-                 for simulation in Settings.SIMULATIONS
-                 for galaxy in Settings.GALAXIES]
+    arguments = [(simulation, galaxy, config, accretion_region_type)
+			 for simulation in Settings.SIMULATIONS
+			 for galaxy in Settings.GALAXIES
+			 for accretion_region_type in [AccretionRegionType.STELLAR_DISC,
+										   AccretionRegionType.HALO]]
     Pool(GLOBAL_CONFIG["N_PROCESSES"]).starmap(
         calculate_accretion_evolution, arguments)
 

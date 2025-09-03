@@ -10,6 +10,35 @@ from hestia.df_type import DFType
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
+def find_indices(a: np.array,
+                 b: np.array,
+                 invalid_specifier: int = -1,
+                 ) -> np.array:
+    """
+    Returns an array with the indices of the elements of `b`
+    in `a`. If an element of `b` is not in `a`, it returns
+    `invalid_specifier` for that element.
+
+    Parameters
+    ----------
+    a : np.array
+        An array in which to search.
+    b : np.array
+        An array that contains the values to be searched for.
+    invalid_specifier : int, optional
+        A value to use in case the element is not found. -1
+        by default.
+
+    Returns
+    -------
+    np.array
+        An array with the indices.
+    """
+    sidx = a.argsort()
+    idx = np.searchsorted(a, b, sorter=sidx)
+    idx[idx == len(a)] = 0
+    idx0 = sidx[idx]
+    return np.where(a[idx0] == b, idx0, invalid_specifier)
 
 def _make_dataframe_cells(
         SimName: str, SnapNo: int,  MW_or_M31: str, config: dict,
