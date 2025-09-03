@@ -84,7 +84,7 @@ def make_plot(config: dict,
     for ax in axs:
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(0.1, 200)
+        ax.set_ylim(0.1, 400)
         ax.set_yscale("log")
         ax.set_xticks([2, 4, 6, 8, 10, 12])
         ax.set_yticks([0.1, 1, 10, 100])
