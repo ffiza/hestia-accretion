@@ -183,6 +183,17 @@ def plot_halo_disc_relation(
     gs = fig.add_gridspec(nrows=2, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
+    if rate_type == RateType.INFLOW:
+        xlabel = r'$\dot{M}_\mathrm{in}^\mathrm{disc}$ [$\mathrm{M}_\odot' + \
+            r'\, \mathrm{yr}^{-1}$]'
+        ylabel = r'$\dot{M}_\mathrm{in}^\mathrm{halo}$ [$\mathrm{M}_\odot' + \
+            r'\, \mathrm{yr}^{-1}$]'
+    elif rate_type == RateType.OUTFLOW:
+        xlabel = r'$\dot{M}_\mathrm{out}^\mathrm{disc}$ [$\mathrm{M}_\odot' + \
+            r'\, \mathrm{yr}^{-1}$]'
+        ylabel = r'$\dot{M}_\mathrm{out}^\mathrm{halo}$ [$\mathrm{M}_\odot' + \
+            r'\, \mathrm{yr}^{-1}$]'
+
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0.1, 400)
@@ -193,12 +204,8 @@ def plot_halo_disc_relation(
         ax.set_yticks([0.1, 1, 10, 100])
         ax.set_xticklabels(["0.1", "1", "10", "100"])
         ax.set_yticklabels(["0.1", "1", "10", "100"])
-        ax.set_ylabel(
-            r'$\dot{M}_\mathrm{in}^\mathrm{halo}$ [$\mathrm{M}_\odot'
-            r'\, \mathrm{yr}^{-1}$]',)
-        ax.set_xlabel(
-            r'$\dot{M}_\mathrm{in}^\mathrm{disc}$ [$\mathrm{M}_\odot'
-            r'\, \mathrm{yr}^{-1}$]',)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
