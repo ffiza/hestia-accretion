@@ -10,3 +10,7 @@ class Settings:
         "MW": "-",
         "M31": "--"
     }
+    GALAXY_SYMBOLS: dict = {
+        "MW": "^",
+        "M31": "s"
+    }
