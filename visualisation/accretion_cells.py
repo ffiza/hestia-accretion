@@ -122,7 +122,7 @@ def make_plot(config: dict,
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
-    plt.savefig(f"images/net_accretion_cells{suffix}_{config['RUN_CODE']}.png")
+    plt.savefig(f"images/net_accretion_cells{suffix}_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 

@@ -97,7 +97,7 @@ def plot_disc_radius(config: dict) -> None:
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig(f"images/disc_radius_{config['RUN_CODE']}.png")
+    plt.savefig(f"images/disc_radius_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
@@ -148,7 +148,7 @@ def plot_disc_height(config: dict) -> None:
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig(f"images/disc_height_{config['RUN_CODE']}.png")
+    plt.savefig(f"images/disc_height_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 

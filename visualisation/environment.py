@@ -79,7 +79,7 @@ def make_plot() -> None:
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig("images/delta1200.png")
+    plt.savefig("images/delta1200.pdf")
     plt.close(fig)
 
 

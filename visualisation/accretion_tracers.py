@@ -173,7 +173,7 @@ def plot_accretion_evolution(
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(
         f"images/{RATE_TYPE_FILE_PREFIX[rate_type]}{suffix}"
-        f"_{config['RUN_CODE']}.png")
+        f"_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
@@ -229,7 +229,7 @@ def plot_halo_disc_relation(
 
     plt.savefig(
         f"images/{RATE_TYPE_FILE_PREFIX[rate_type]}_relation"
-        f"_{config['RUN_CODE']}.png")
+        f"_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
