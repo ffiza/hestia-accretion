@@ -261,7 +261,7 @@ def plot_time_correlation(config: dict) -> None:
         axs[i].plot(axs[i].get_xlim(),
                     [r.slope * axs[i].get_xlim()[0] + r.intercept,
                      r.slope * axs[i].get_xlim()[1] + r.intercept],
-                    c="black", lw=1)
+                    c="black", lw=0.75)
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -274,12 +274,29 @@ def plot_time_correlation(config: dict) -> None:
         r = linregress(np.log10(df["Delta1200"]), np.log10(df["SFR_Msun/yr"]))
         slopes[snapnum] = r.slope
         pvalues[snapnum] = r.pvalue
-    ax.scatter(time, slopes, c=pvalues, s=10)
-    for snapnum in snapnums:
-        ax.scatter(time[snapnum], slopes[snapnum], color="red", s=10,
-                   facecolor="none")
+        if snapnum in snapnums:
+            ax.scatter(time[snapnum], slopes[snapnum], color="k",
+                       s=10, facecolor="none", zorder=11, lw=0.75)
+            ax.annotate(
+                f"$z =$ {round(df.redshift, 1)}",
+                xy=(time[snapnum], slopes[snapnum]), xycoords='data',
+                xytext=(-40, -20), textcoords='offset points',
+                arrowprops=dict(arrowstyle="->", linewidth=0.75),
+                fontsize=6, zorder=11)
+    s = ax.scatter(time, slopes, c=pvalues, s=10, zorder=10, vmin=0, vmax=0.1,
+                   cmap="RdYlGn_r")
 
-    plt.savefig("images/prop_correlation.png")
+    cbax = ax.inset_axes([0.35, 0.89, 0.6, 0.025],
+                         transform=ax.transAxes)
+    cb = plt.colorbar(s, cax=cbax, orientation="horizontal")
+    cbax.set_xlim(0, 0.1)
+    cb.set_ticks([0, 0.02, 0.04, 0.06, 0.08, 0.1])
+    cb.set_ticklabels(['0', '0.02', '0.04', '0.06', '0.08', '0.1'],
+                      fontsize=5.0)
+    cbax.set_xlabel(r"$p$-value", fontsize=6)
+    cbax.xaxis.set_label_position('top')
+
+    plt.savefig("images/prop_correlation_sfr_vs_delta.pdf")
     plt.close(fig)
 
 
