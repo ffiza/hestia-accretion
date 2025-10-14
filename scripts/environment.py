@@ -25,13 +25,14 @@ def calculate_overdensity(df: pd.DataFrame, distance: float) -> np.ndarray:
 
     mass = df["Mass_Msun"][df["SphericalRadius_ckpc"] < distance].sum()
     vol = (4/3 * np.pi * df.expansion_factor**3 * distance**3)
-    mean_density = mass / vol
+    mean_density = (mass * u.solMass) / (vol * u.kpc**3)
 
-    overdensity = mean_density / c.critical_density(df.redshift) \
+    overdensity = mean_density / c.critical_density(0) \
         / Cosmology.OMEGA_0
+    print(overdensity)
 
     return np.asarray(
-        [df.snapshot_number, df.time, overdensity])
+        [df.snapshot_number, df.time, overdensity.value])
 
 
 def calculate_overdensity_in_simulation(simulation: str,
@@ -63,8 +64,9 @@ def calculate_overdensity_evolution(simulation: str,
     )
     df["SnapshotNumbers"] = df["SnapshotNumbers"].astype(int)
 
-    df.to_csv(f"results/{simulation}_{galaxy}/delta_{int(distance)}.csv",
-              index=False)
+    df.to_csv(
+        f"results/{simulation}_{galaxy}/delta_{int(distance)}_fixedrhoc.csv",
+        index=False)
 
 
 if __name__ == "__main__":
