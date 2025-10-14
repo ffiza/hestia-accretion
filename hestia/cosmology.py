@@ -135,7 +135,7 @@ class Cosmology:
 
         return 1 / (1 + redshift)
 
-    def omega_matter(self, redshift: float) -> float:
+    def omega0(self, redshift: float) -> float:
         """
         This method calculates the matter density parameter at a given
         redshift.
