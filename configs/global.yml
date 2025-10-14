@@ -5,12 +5,6 @@ DARK_MATTER_PARTICLE_TYPE:              1
 STAR_PARTICLE_TYPE:                     4
 BH_PARTICLE_TYPE:                       5
 TRACER_PARTICLE_TYPE:                   6
-SMALL_HUBBLE_CONST:                     0.6777
-HUBBLE_CONST:                           67.77 # km/s/Mpc
-OMEGA_LAMBDA:                           0.682
-OMEGA_MATTER:                           0.27
-OMEGA_BARYONS:                          0.048
-OMEGA_0:                                0.318
 FIRST_SNAPSHOT:                         35
 N_SNAPSHOTS:                            128
 N_PROCESSES:                            4

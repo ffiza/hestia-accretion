@@ -9,31 +9,26 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Pool
 
-from hestia.settings import Settings
 from hestia.df_type import DFType
+from hestia.settings import Settings
+from hestia.cosmology import Cosmology
 from hestia.dataframe import make_dataframe
 
 
 def calculate_overdensity(df: pd.DataFrame, distance: float) -> np.ndarray:
-    GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
     df["SphericalRadius_ckpc"] = np.linalg.norm(
         df[["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc"]].values,
         axis=1
     )
 
-    omega0 = GLOBAL_CONFIG["OMEGA_0"]
-    hubbleparam = GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]
-    omegalambda = GLOBAL_CONFIG["OMEGA_LAMBDA"]
-
-    omega0 = omega0 * (1 + df.redshift)**3
-    H = 100 * hubbleparam * np.sqrt(omega0 + omegalambda)  # km s^-1 Mpc^-1
-    critical_density = 3 * H**2 / (1E3 * 8 * np.pi * 4.3E-3)  # Msun kpc^-3
+    c = Cosmology()
 
     mass = df["Mass_Msun"][df["SphericalRadius_ckpc"] < distance].sum()
     vol = (4/3 * np.pi * df.expansion_factor**3 * distance**3)
     mean_density = mass / vol
 
-    overdensity = mean_density / critical_density / omega0
+    overdensity = mean_density / c.critical_density(df.redshift) \
+        / Cosmology.OMEGA_0
 
     return np.asarray(
         [df.snapshot_number, df.time, overdensity])
