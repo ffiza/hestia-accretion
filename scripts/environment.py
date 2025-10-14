@@ -7,6 +7,7 @@ import yaml
 import argparse
 import numpy as np
 import pandas as pd
+from astropy import units as u
 from multiprocessing import Pool
 
 from hestia.df_type import DFType
