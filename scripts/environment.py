@@ -28,7 +28,7 @@ def calculate_overdensity(df: pd.DataFrame, distance: float) -> np.ndarray:
     vol = (4/3 * np.pi * df.expansion_factor**3 * distance**3)
     mean_density = (mass * u.solMass) / (vol * u.kpc**3)
 
-    overdensity = mean_density / c.critical_density(0) \
+    overdensity = mean_density / c.critical_density(df.redshift) \
         / Cosmology.OMEGA_0
     print(overdensity)
 
