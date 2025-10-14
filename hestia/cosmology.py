@@ -168,7 +168,7 @@ class Cosmology:
             The Hubble constant at the given redshift in km/s/Mpc.
         """
 
-        omega_matter = self.omega_matter(redshift)
+        omega_matter = self.omega0(redshift)
         return Cosmology.HUBBLE_CONST \
             * np.sqrt(omega_matter + Cosmology.OMEGA_LAMBDA)
 
