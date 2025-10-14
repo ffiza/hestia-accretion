@@ -7,8 +7,8 @@ import yaml
 import TrackGalaxy
 from hestia.pca import PCA_matrix
 from hestia.df_type import DFType
+from hestia.cosmology import Cosmology
 
-GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 def find_indices(a: np.array,
                  b: np.array,
@@ -39,6 +39,7 @@ def find_indices(a: np.array,
     idx[idx == len(a)] = 0
     idx0 = sidx[idx]
     return np.where(a[idx0] == b, idx0, invalid_specifier)
+
 
 def _make_dataframe_cells(
         SimName: str, SnapNo: int,  MW_or_M31: str, config: dict,
@@ -72,7 +73,6 @@ def _make_dataframe_cells(
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
 
-    GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
     print(f'Running make_dataframe() for snapshot {SnapNo}...')
 
     if MW_or_M31 not in ["MW", "M31"]:
@@ -97,8 +97,7 @@ def _make_dataframe_cells(
         raise ValueError("Invalid simulation name.")
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
-        H0=GLOBAL_CONFIG["HUBBLE_CONST"],
-        Om0=GLOBAL_CONFIG["OMEGA_MATTER"] + GLOBAL_CONFIG["OMEGA_BARYONS"])
+        H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_0)
 
     T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
                                 SimName,
@@ -114,10 +113,10 @@ def _make_dataframe_cells(
                                'Velocities',
                                'ParticleIDs'])
     GasPos = 1000*Gas_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+        / Cosmology.SMALL_HUBBLE_CONST  # ckpc
     GasMass = Gas_Attrs['Masses'] * 1e10 \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # Msun
-    GasVel = Gas_Attrs['Velocities']*numpy.sqrt(SnapTime)  # km/s
+        / Cosmology.SMALL_HUBBLE_CONST  # Msun
+    # GasVel = Gas_Attrs['Velocities']*numpy.sqrt(SnapTime)  # km/s
     GasIDs = Gas_Attrs['ParticleIDs']
 
     Star_Attrs = T.GetParticles(
@@ -127,9 +126,9 @@ def _make_dataframe_cells(
                                'ParticleIDs',
                                'GFM_StellarFormationTime'])
     StarPos = 1000*Star_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+        / Cosmology.SMALL_HUBBLE_CONST  # ckpc
     StarMass = Star_Attrs['Masses'] * 1e10 \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # Msun
+        / Cosmology.SMALL_HUBBLE_CONST  # Msun
     StarVel = Star_Attrs['Velocities']*numpy.sqrt(SnapTime)  # km/s
     StarIDs = Star_Attrs['ParticleIDs']
     StarBirths = Star_Attrs['GFM_StellarFormationTime']
@@ -141,9 +140,9 @@ def _make_dataframe_cells(
                                'Masses',
                                'ParticleIDs'])
     DMPos = 1000*DM_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # ckpc
+        / Cosmology.SMALL_HUBBLE_CONST  # ckpc
     DMMass = DM_Attrs['Masses'] * 1e10 \
-        / GLOBAL_CONFIG['SMALL_HUBBLE_CONST']  # Msun
+        / Cosmology.SMALL_HUBBLE_CONST  # Msun
     DMIDs = DM_Attrs['ParticleIDs']
 
     try:
@@ -157,7 +156,7 @@ def _make_dataframe_cells(
 
     if len(BH_Attrs['Coordinates']) > 0:
         BHPos = 1000*BH_Attrs['Coordinates'] \
-            / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+            / Cosmology.SMALL_HUBBLE_CONST  # ckpc
         BHIDs = BH_Attrs['ParticleIDs']
         BHMass = BH_Attrs['Masses']
     else:
@@ -172,7 +171,7 @@ def _make_dataframe_cells(
 
     # Read in subhaloes position and velocities:
     GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST  # ckpc
     SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime)  # km s^-1
     MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
     M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
@@ -323,8 +322,7 @@ def _make_dataframe_tracers(
         raise ValueError("Invalid simulation name.")
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
-        H0=GLOBAL_CONFIG["HUBBLE_CONST"],
-        Om0=GLOBAL_CONFIG["OMEGA_MATTER"] + GLOBAL_CONFIG["OMEGA_BARYONS"])
+        H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_0)
 
     T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
                                 SimName,
@@ -338,7 +336,7 @@ def _make_dataframe_tracers(
         SnapNo, Type=0, Attrs=['Coordinates',
                                'ParticleIDs'])
     GasPos = 1000*Gas_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+        / Cosmology.SMALL_HUBBLE_CONST  # ckpc
     GasIDs = Gas_Attrs['ParticleIDs']
 
     Star_Attrs = T.GetParticles(
@@ -346,7 +344,7 @@ def _make_dataframe_tracers(
                                'Velocities',
                                'ParticleIDs'])
     StarPos = 1000*Star_Attrs['Coordinates'] \
-        / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+        / Cosmology.SMALL_HUBBLE_CONST  # ckpc
     StarVel = Star_Attrs['Velocities']*numpy.sqrt(SnapTime)  # km/s
     StarIDs = Star_Attrs['ParticleIDs']
 
@@ -355,7 +353,7 @@ def _make_dataframe_tracers(
                                'ParticleIDs'])
     if len(BH_Attrs['Coordinates']) > 0:
         BHPos = 1000*BH_Attrs['Coordinates'] \
-            / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # ckpc
+            / Cosmology.SMALL_HUBBLE_CONST  # ckpc
         BHIDs = BH_Attrs['ParticleIDs']
     else:
         BHPos, BHIDs = None, None
@@ -376,7 +374,7 @@ def _make_dataframe_tracers(
 
     # Read in subhaloes position and velocities:
     GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"] # ckpc
+    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST # ckpc
     MW_pos = SubhaloPos[SubhaloNumberMW]
     M31_pos = SubhaloPos[SubhaloNumberM31]
 
@@ -456,7 +454,7 @@ def _make_dataframe_tracers(
     # Add target gas mass value to dataframe
     df.target_gas_mass = yaml.safe_load(
         open("data/hestia/target_gas_mass.yml"))[SimName] \
-        * 1E10 / GLOBAL_CONFIG["SMALL_HUBBLE_CONST"]  # Msun
+        * 1E10 / Cosmology.SMALL_HUBBLE_CONST  # Msun
 
     return df
 
