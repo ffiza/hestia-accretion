@@ -65,7 +65,7 @@ def calculate_overdensity_evolution(simulation: str,
     df["SnapshotNumbers"] = df["SnapshotNumbers"].astype(int)
 
     df.to_csv(
-        f"results/{simulation}_{galaxy}/delta_{int(distance)}_fixedrhoc.csv",
+        f"results/{simulation}_{galaxy}/delta_{int(distance)}.csv",
         index=False)
 
 
