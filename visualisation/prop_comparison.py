@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
+from matplotlib.patches import Rectangle
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
@@ -41,7 +42,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
             delta.append(environment["Delta"].to_numpy()[snapnum])
             galaxies.append(f"{simulation}_{galaxy}")
 
-    colors = ["darkgray"] * 30
+    colors = ["dimgray"] * 30
     for s in Settings.SIMULATIONS:
         for _ in Settings.GALAXIES:
             colors.append(Settings.SIMULATION_COLORS[s])
@@ -86,13 +87,14 @@ def plot_prop_comparison(config: dict) -> None:
     axs[0, 0].scatter(
         np.log10(df_au["Mstar_10^10Msun"].to_numpy() * 1e10),
         np.log10(df_au["Mgas_10^10Msun"].to_numpy() * 1e10),
-        s=12, c=df_au["Colors"].values[0], edgecolor="none", label="Auriga",
+        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
+        marker="o", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[0, 0].scatter(
             np.log10(row["Mstar_10^10Msun"] * 1e10),
             np.log10(row["Mgas_10^10Msun"] * 1e10),
-            s=14, facecolors="none",
+            s=12, facecolors="none",
             marker=row["Symbols"],
             edgecolor=row["Colors"],
             label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
@@ -108,13 +110,14 @@ def plot_prop_comparison(config: dict) -> None:
     axs[1, 0].scatter(
         np.log10(df_au["Mstar_10^10Msun"].to_numpy() * 1e10),
         np.log10(df_au["SFR_Msun/yr"].to_numpy()),
-        s=12, c=df_au["Colors"].values[0], edgecolor="none", label="Auriga",
+        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
+        marker="o", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[1, 0].scatter(
             np.log10(row["Mstar_10^10Msun"] * 1e10),
             np.log10(row["SFR_Msun/yr"]),
-            s=14, facecolors="none",
+            s=12, facecolors="none",
             marker=row["Symbols"],
             edgecolor=row["Colors"],
             label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
@@ -129,13 +132,14 @@ def plot_prop_comparison(config: dict) -> None:
     axs[0, 1].scatter(
         np.log10(df_au["Delta1200"].to_numpy()),
         np.log10(df_au["SFR_Msun/yr"].to_numpy()),
-        s=12, c=df_au["Colors"].values[0], edgecolor="none", label="Auriga",
+        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
+        marker="o", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[0, 1].scatter(
             np.log10(row["Delta1200"]),
             np.log10(row["SFR_Msun/yr"]),
-            s=14, facecolors="none",
+            s=12, facecolors="none",
             marker=row["Symbols"],
             edgecolor=row["Colors"],
             label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
@@ -153,13 +157,14 @@ def plot_prop_comparison(config: dict) -> None:
         / df_au["Mstar_10^10Msun"].to_numpy() / 10
     axs[1, 1].scatter(
         np.log10(df_au["Delta1200"].to_numpy()), np.log10(ssfr),
-        s=12, c=df_au["Colors"].values[0], edgecolor="none", label="Auriga",
+        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
+        marker="o", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[1, 1].scatter(
             np.log10(row["Delta1200"]),
             np.log10(row["SFR_Msun/yr"] / row["Mstar_10^10Msun"] / 10),
-            s=14, facecolors="none",
+            s=12, facecolors="none",
             marker=row["Symbols"],
             edgecolor=row["Colors"],
             label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
@@ -185,9 +190,9 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
     ax1.set_xlabel(r"$\log_{10} \delta_{1200}$")
-    ax1.set_xlim(0, 1.5)
+    ax1.set_xlim(-1, 1.5)
     ax1.set_ylim(-0.4, 1.6)
-    ax1.set_xticks([0.25, 0.5, 0.75, 1, 1.25])
+    ax1.set_xticks([-0.5, 0, 0.5, 1])
     ax1.set_yticks([0, 0.5, 1])
     ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
@@ -200,13 +205,14 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     ax3.tick_params(axis="y", labelleft=False, labelright=True)
 
     axs = [ax1, ax2, ax3]
-    snapnums = [77, 95, 127]
+    snapnums = [61, 77, 95]
 
-    for i, snapnum in enumerate(snapnums):
+    for j, snapnum in enumerate(snapnums):
+        i = len(snapnums) - j - 1
         df = _get_data(snapnum, config)
         for _, row in df.iterrows():
             axs[i].scatter(
-                np.log10(row["Delta1200"]), np.log10(row["SFR_Msun/yr"]), s=14,
+                np.log10(row["Delta1200"]), np.log10(row["SFR_Msun/yr"]), s=10,
                 color=row["Colors"], facecolors="none", marker=row["Symbols"])
         r = linregress(np.log10(df["Delta1200"]), np.log10(df["SFR_Msun/yr"]))
         axs[i].text(0.025, 0.95, f"$z =$ {round(df.redshift, 1)}",
@@ -215,7 +221,13 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
         axs[i].plot(axs[i].get_xlim(),
                     [r.slope * axs[i].get_xlim()[0] + r.intercept,
                      r.slope * axs[i].get_xlim()[1] + r.intercept],
-                    c="black", lw=0.75)
+                    c="black", lw=0.75, ls="--")
+
+    for i in range(len(axs)):
+        r = Rectangle(
+            (0.5, axs[i].get_ylim()[0]), 0.7, np.diff(axs[i].get_ylim())[0],
+            color='gainsboro', zorder=-11)
+        axs[i].add_patch(r)
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -234,7 +246,7 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
             ax.annotate(
                 f"$z =$ {round(df.redshift, 1)}",
                 xy=(time[snapnum], slopes[snapnum]), xycoords='data',
-                xytext=(-40, -20), textcoords='offset points',
+                xytext=(-20, -30), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->", linewidth=0.75),
                 fontsize=6, zorder=11)
     s = ax.scatter(time, slopes, c=pvalues, s=10, zorder=10, vmin=0, vmax=0.1,
@@ -267,9 +279,9 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
     ax1.set_xlabel(r"$\log_{10} \delta_{1200}$")
-    ax1.set_xlim(0, 1.5)
+    ax1.set_xlim(-1, 1.5)
     ax1.set_ylim(-2.5, 0.5)
-    ax1.set_xticks([0.25, 0.5, 0.75, 1, 1.25])
+    ax1.set_xticks([-0.5, 0, 0.5, 1.0])
     ax1.set_yticks([-2, -1, 0])
     ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
@@ -282,14 +294,15 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
     ax3.tick_params(axis="y", labelleft=False, labelright=True)
 
     axs = [ax1, ax2, ax3]
-    snapnums = [77, 95, 127]
+    snapnums = [61, 77, 95]
 
-    for i, snapnum in enumerate(snapnums):
+    for j, snapnum in enumerate(snapnums):
+        i = len(snapnums) - j - 1
         df = _get_data(snapnum, config)
         for _, row in df.iterrows():
             ssfr = row["SFR_Msun/yr"] / row["Mstar_10^10Msun"] / 10
             axs[i].scatter(
-                np.log10(row["Delta1200"]), np.log10(ssfr), s=14,
+                np.log10(row["Delta1200"]), np.log10(ssfr), s=10,
                 color=row["Colors"], facecolors="none", marker=row["Symbols"])
         ssfr = df["SFR_Msun/yr"] / df["Mstar_10^10Msun"] / 10
         r = linregress(np.log10(df["Delta1200"]), np.log10(ssfr))
@@ -299,7 +312,13 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
         axs[i].plot(axs[i].get_xlim(),
                     [r.slope * axs[i].get_xlim()[0] + r.intercept,
                      r.slope * axs[i].get_xlim()[1] + r.intercept],
-                    c="black", lw=0.75)
+                    c="black", lw=0.75, ls="--")
+
+    for i in range(len(axs)):
+        r = Rectangle(
+            (0.5, axs[i].get_ylim()[0]), 0.7, np.diff(axs[i].get_ylim())[0],
+            color='gainsboro', zorder=-11)
+        axs[i].add_patch(r)
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -319,7 +338,7 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
             ax.annotate(
                 f"$z =$ {round(df.redshift, 1)}",
                 xy=(time[snapnum], slopes[snapnum]), xycoords='data',
-                xytext=(-25, -30), textcoords='offset points',
+                xytext=(-15, -40), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->", linewidth=0.75),
                 fontsize=6, zorder=11)
     s = ax.scatter(time, slopes, c=pvalues, s=10, zorder=10, vmin=0, vmax=0.1,
