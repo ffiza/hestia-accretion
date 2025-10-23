@@ -29,7 +29,7 @@ def calculate_overdensity(df: pd.DataFrame, distance: float) -> np.ndarray:
     mean_density = (mass * u.solMass) / (vol * u.kpc**3)
 
     z = df.redshift
-    overdensity = mean_density / c.critical_density(z) / c.omega0(z)
+    overdensity = mean_density / c.critical_density(z) / c.omega_matter(z)
 
     return np.asarray(
         [df.snapshot_number, df.time, overdensity.value])

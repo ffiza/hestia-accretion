@@ -97,7 +97,7 @@ def _make_dataframe_cells(
         raise ValueError("Invalid simulation name.")
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
-        H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_0)
+        H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_MATTER)
 
     T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
                                 SimName,
@@ -322,7 +322,7 @@ def _make_dataframe_tracers(
         raise ValueError("Invalid simulation name.")
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
-        H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_0)
+        H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_MATTER)
 
     T = TrackGalaxy.TrackGalaxy(numpy.array([SnapNo]),
                                 SimName,
