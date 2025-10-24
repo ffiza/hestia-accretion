@@ -59,7 +59,7 @@ def make_plot() -> None:
                     df["Delta"],
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
                     color=Settings.SIMULATION_COLORS[simulation],
-                    lw=1, label=galaxy, zorder=11)
+                    lw=0.75, label=galaxy, zorder=11)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=7.0,
@@ -74,7 +74,7 @@ def make_plot() -> None:
             color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
         ax.plot(auriga["Time_Gyr"],
                 auriga["Delta1200Mean"],
-                ls="-", color="darkgray", lw=1, zorder=10)
+                ls="-", color="darkgray", lw=0.75, zorder=10)
         #endregion
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)

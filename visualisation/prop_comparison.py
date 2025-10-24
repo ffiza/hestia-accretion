@@ -183,9 +183,9 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     ax.set_xlabel("Time [Gyr]")
     ax.set_ylabel("Regression Slope")
     ax.set_xlim(0, 14)
-    ax.set_ylim(0, 4)
+    ax.set_ylim(0, 2)
     ax.set_xticks([2, 4, 6, 8, 10, 12])
-    ax.set_yticks([0, 1, 2, 3, 4])
+    ax.set_yticks([0, 0.5, 1, 1.5, 2.0])
 
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
@@ -246,7 +246,7 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
             ax.annotate(
                 f"$z =$ {round(df.redshift, 1)}",
                 xy=(time[snapnum], slopes[snapnum]), xycoords='data',
-                xytext=(-20, -30), textcoords='offset points',
+                xytext=(-20, 30), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->", linewidth=0.75),
                 fontsize=6, zorder=11)
     s = ax.scatter(time, slopes, c=pvalues, s=10, zorder=10, vmin=0, vmax=0.1,
@@ -274,7 +274,7 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
     ax.set_xlim(0, 14)
     ax.set_ylim(-1, 1.5)
     ax.set_xticks([2, 4, 6, 8, 10, 12])
-    ax.set_yticks([-1, 0, 1])
+    ax.set_yticks([-1, -0.5, 0, 0.5, 1, 1.5])
 
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
