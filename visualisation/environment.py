@@ -13,7 +13,15 @@ def _get_data(galaxy: str) -> pd.DataFrame:
 
 
 def _get_auriga_data() -> pd.DataFrame:
-    df = pd.read_csv("data/iza_et_al_2022/environment_delta_1200.csv")
+    df = dict()
+    for i in range(1, 31):
+        data = pd.read_csv(f"data/auriga/au{i}/environment_evolution.csv")
+        if "Time_Gyr" not in df:
+            df["Time_Gyr"] = data["Time_Gyr"]
+            df["Redshift"] = data["Redshift"]
+            df["ExpansionFactor"] = data["ExpansionFactor"]
+        df[f"Delta1200_Au{i}"] = data["Delta1200"]
+    df = pd.DataFrame(df)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         df["Delta1200Mean"] = np.nanmean(
@@ -35,11 +43,11 @@ def make_plot() -> None:
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(0.1, 100)
+        ax.set_ylim(1, 100)
         ax.set_yscale("log")
         ax.set_xticks([2, 4, 6, 8, 10, 12])
-        ax.set_yticks([0.1, 1, 10, 100])
-        ax.set_yticklabels(["0.1", "1", "10", "100"])
+        ax.set_yticks([1, 10, 100])
+        ax.set_yticklabels(["1", "10", "100"])
         ax.set_ylabel(
             r'$\delta_{1200}$')
         ax.set_xlabel(r'Time [Gyr]')

@@ -25,8 +25,8 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         data = np.loadtxt(f"data/auriga/au{galaxy}/baryon_mass.csv")
         m_star.append(data[snapnum, 1])
         m_gas.append(data[snapnum, 0])
-        data = pd.read_csv("data/iza_et_al_2022/environment_delta_1200.csv")
-        delta.append(data[f"Delta1200_Au{galaxy}"].to_numpy()[snapnum])
+        data = pd.read_csv(f"data/auriga/au{galaxy}/environment_evolution.csv")
+        delta.append(data[f"Delta1200"].to_numpy()[snapnum])
         galaxies.append(f"Au{galaxy}")
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
@@ -42,7 +42,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
             delta.append(environment["Delta"].to_numpy()[snapnum])
             galaxies.append(f"{simulation}_{galaxy}")
 
-    colors = ["dimgray"] * 30
+    colors = ["tab:gray"] * 30
     for s in Settings.SIMULATIONS:
         for _ in Settings.GALAXIES:
             colors.append(Settings.SIMULATION_COLORS[s])
@@ -183,16 +183,16 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     ax.set_xlabel("Time [Gyr]")
     ax.set_ylabel("Regression Slope")
     ax.set_xlim(0, 14)
-    ax.set_ylim(0, 2)
+    ax.set_ylim(0, 5)
     ax.set_xticks([2, 4, 6, 8, 10, 12])
     ax.set_yticks([0, 0.5, 1, 1.5, 2.0])
 
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
     ax1.set_xlabel(r"$\log_{10} \delta_{1200}$")
-    ax1.set_xlim(-1, 1.5)
+    ax1.set_xlim(0.4, 1.2)
     ax1.set_ylim(-0.4, 1.6)
-    ax1.set_xticks([-0.5, 0, 0.5, 1])
+    ax1.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1])
     ax1.set_yticks([0, 0.5, 1])
     ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
@@ -222,12 +222,6 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
                     [r.slope * axs[i].get_xlim()[0] + r.intercept,
                      r.slope * axs[i].get_xlim()[1] + r.intercept],
                     c="black", lw=0.75, ls="--")
-
-    for i in range(len(axs)):
-        r = Rectangle(
-            (0.5, axs[i].get_ylim()[0]), 0.7, np.diff(axs[i].get_ylim())[0],
-            color='gainsboro', zorder=-11)
-        axs[i].add_patch(r)
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -279,10 +273,10 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
     ax1.set_xlabel(r"$\log_{10} \delta_{1200}$")
-    ax1.set_xlim(-1, 1.5)
-    ax1.set_ylim(-2.5, 0.5)
-    ax1.set_xticks([-0.5, 0, 0.5, 1.0])
-    ax1.set_yticks([-2, -1, 0])
+    ax1.set_xlim(0.4, 1.2)
+    ax1.set_ylim(-1.5, 0.5)
+    ax1.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1])
+    ax1.set_yticks([-1, 0])
     ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
     ax2.tick_params(axis="y", labelleft=False, labelright=True)
@@ -313,12 +307,6 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
                     [r.slope * axs[i].get_xlim()[0] + r.intercept,
                      r.slope * axs[i].get_xlim()[1] + r.intercept],
                     c="black", lw=0.75, ls="--")
-
-    for i in range(len(axs)):
-        r = Rectangle(
-            (0.5, axs[i].get_ylim()[0]), 0.7, np.diff(axs[i].get_ylim())[0],
-            color='gainsboro', zorder=-11)
-        axs[i].add_patch(r)
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
