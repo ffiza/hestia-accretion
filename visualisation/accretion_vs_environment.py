@@ -4,7 +4,6 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.stats import linregress
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
@@ -29,6 +28,18 @@ def _get_data(config: dict) -> pd.DataFrame:
                 data = json.load(file)
                 in_rate += data["InflowRate_Msun/yr"]
                 out_rate += data["OutflowRate_Msun/yr"]
+
+    # for i in range(1, 31):
+    #     data = pd.read_csv("data/iza_et_al_2022/accretion_rate_tracers.csv")
+    #     if f"InflowRate_Au{i}_Msun/yr" in data.columns:
+    #         print(len(data))
+    #         in_rate += data[f"InflowRate_Au{i}_Msun/yr"].to_list()
+    #         out_rate += data[f"OutflowRate_Au{i}_Msun/yr"].to_list()
+    #         galaxies += [f"Au{i}"] * len(data)
+    #         time += data["Time_Gyr"].to_list()
+    #         env = pd.read_csv(f"data/auriga/au{i}/environment_evolution.csv")
+    #         print(len(env))
+    #         delta += env["Delta1200"].to_list()
 
     df = pd.DataFrame({
         "Galaxy": galaxies,
