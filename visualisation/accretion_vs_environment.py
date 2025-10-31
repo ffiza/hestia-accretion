@@ -4,7 +4,6 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.stats import linregress
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
@@ -25,7 +24,8 @@ def _get_data(config: dict) -> pd.DataFrame:
             time += environment["Times_Gyr"].to_list()
             galaxies += [f"{simulation}_{galaxy}"] * len(environment)
 
-            with open(f'results/{simulation}_{galaxy}/accretion_tracers_{config["RUN_CODE"]}.json', 'r') as file:
+            with open(f'results/{simulation}_{galaxy}/accretion_tracers_'
+                      f'{config["RUN_CODE"]}.json', 'r') as file:
                 data = json.load(file)
                 in_rate += data["InflowRate_Msun/yr"]
                 out_rate += data["OutflowRate_Msun/yr"]
@@ -41,7 +41,7 @@ def _get_data(config: dict) -> pd.DataFrame:
     return df
 
 
-def plot_prop_comparison(config: dict) -> None:
+def plot_accretion_vs_environment(config: dict) -> None:
     df = _get_data(config)
 
     fig = plt.figure(figsize=(3.0, 4.0))
@@ -96,6 +96,74 @@ def plot_prop_comparison(config: dict) -> None:
     plt.close(fig)
 
 
+def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
+    TICK_LABELS_FONTSIZE = 7.0
+    XLIM = (0, 1.5)
+    YLIM = (1E-1, 600)
+    GALAXY_NAME_CBAR_PLACEMENT = "17_11_M31"
+
+    df = _get_data(config)
+
+    fig, axs = plt.subplots(figsize=(6.0, 4.0), nrows=2, ncols=3,
+                            sharex=True, sharey=True)
+    fig.subplots_adjust(hspace=0, wspace=0)
+
+    for ax in axs.flatten():
+        ax.set_xlim(XLIM)
+        ax.set_ylim(YLIM)
+        ax.set_yscale("log")
+        ax.set_xticks(ticks=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
+                      labels=["0.2", "0.4", "0.6", "0.8", "1.0", "1.2", "1.4"],
+                      fontsize=TICK_LABELS_FONTSIZE)
+        ax.set_yticks(ticks=[1, 10, 100],
+                      labels=["1", "10", "100"],
+                      fontsize=TICK_LABELS_FONTSIZE)
+        ax.set_xlabel(r"$\log_{10} \delta_{1200}$")
+        ax.set_ylabel(
+            r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
+            r" \, \mathrm{yr}^{-1}]$")
+        ax.set_axisbelow(True)
+        ax.label_outer()
+        ax.scatter(
+            np.log10(df["Delta1200"].to_numpy()),
+            df["InflowRate_Msun/yr"].to_numpy(),
+            s=5, marker="o", alpha=0.25, edgecolor="none",
+            color="tab:gray", zorder=10,
+        )
+
+    for simulation in Settings.SIMULATIONS:
+        for galaxy in Settings.GALAXIES:
+            subset = df[(df["Galaxy"] == f"{simulation}_{galaxy}")]
+            ax = axs[Settings.GALAXIES.index(galaxy),
+                     Settings.SIMULATIONS.index(simulation)]
+            s = ax.scatter(
+                np.log10(subset["Delta1200"].to_numpy()),
+                subset["InflowRate_Msun/yr"].to_numpy(),
+                s=5, marker='o', edgecolor="none", zorder=11,
+                c=subset["Time_Gyr"], vmin=0, vmax=14, cmap="gnuplot2",
+            )
+            ax.text(
+                x=0.05, y=0.95,
+                s=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
+                transform=ax.transAxes, fontsize=7.0,
+                verticalalignment='top', horizontalalignment='left',
+                color=Settings.SIMULATION_COLORS[simulation])
+
+            if f"{simulation}_{galaxy}" == GALAXY_NAME_CBAR_PLACEMENT:
+                cbax = ax.inset_axes([0.1, 0.1, 0.8, 0.025],
+                                     transform=ax.transAxes)
+                cb = plt.colorbar(s, cax=cbax, orientation="horizontal")
+                cbax.set_xlim(0, 14)
+                cb.set_ticks([0, 2, 4, 6, 8, 10, 12, 14])
+                cb.set_ticklabels(['0', '2', '4', '6', '8', '10', '12', '14'],
+                                  fontsize=4)
+                cbax.set_xlabel("Time [Gyr]", fontsize=5)
+                cbax.xaxis.set_label_position('top')
+
+    plt.savefig("images/accretion_vs_environment_by_galaxy.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     figure_setup()
 
@@ -107,4 +175,5 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_prop_comparison(config)
+    # plot_accretion_vs_environment(config)
+    plot_inflows_vs_environment_by_galaxy(config)
