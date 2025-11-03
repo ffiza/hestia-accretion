@@ -111,7 +111,8 @@ def plot_accretion_vs_environment(config: dict) -> None:
         c="k", label="Hestia",
     )
 
-    plt.savefig("images/accretion_vs_environment.pdf")
+    plt.savefig(
+        f"images/accretion_vs_environment_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
@@ -165,7 +166,8 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
-    plt.savefig("images/accretion_vs_environment_by_galaxy.pdf")
+    plt.savefig(
+        f"images/accretion_vs_environment_by_galaxy_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
