@@ -30,17 +30,17 @@ def _get_data(config: dict) -> pd.DataFrame:
                 in_rate += data["InflowRate_Msun/yr"]
                 out_rate += data["OutflowRate_Msun/yr"]
 
-    # for i in range(1, 31):
-    #     data = pd.read_csv("data/iza_et_al_2022/accretion_rate_tracers.csv")
-    #     if f"InflowRate_Au{i}_Msun/yr" in data.columns:
-    #         print(len(data))
-    #         in_rate += data[f"InflowRate_Au{i}_Msun/yr"].to_list()
-    #         out_rate += data[f"OutflowRate_Au{i}_Msun/yr"].to_list()
-    #         galaxies += [f"Au{i}"] * len(data)
-    #         time += data["Time_Gyr"].to_list()
-    #         env = pd.read_csv(f"data/auriga/au{i}/environment_evolution.csv")
-    #         print(len(env))
-    #         delta += env["Delta1200"].to_list()
+    for i in range(1, 31):
+        data = pd.read_csv("data/iza_et_al_2022/accretion_rate_tracers.csv")
+        if f"InflowRate_Au{i}_Msun/yr" in data.columns:
+            in_rate += data[f"InflowRate_Au{i}_Msun/yr"].to_list()
+            out_rate += data[f"OutflowRate_Au{i}_Msun/yr"].to_list()
+            galaxies += [f"Au{i}"] * len(data)
+            time += data["Time_Gyr"].to_list()
+            env = pd.read_csv(
+                f"data/auriga/au{i}_rerun/environment_evolution.csv")
+            env = env.iloc[1:]
+            delta += env["Delta1200"].to_list()
 
     df = pd.DataFrame({
         "Galaxy": galaxies,
@@ -55,81 +55,84 @@ def _get_data(config: dict) -> pd.DataFrame:
 
 def plot_accretion_vs_environment(config: dict) -> None:
     df = _get_data(config)
+    is_auriga = df["Galaxy"].str.startswith("Au")
 
     fig = plt.figure(figsize=(3.0, 4.0))
     gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, wspace=0.4)
     axs = np.array(gs.subplots(sharex=True, sharey=False))
 
-    axs[0].set_xlim(0, 1.5)
+    axs[0].set_xlim(0, 1.4)
     axs[0].set_ylim(1E-1, 600)
     axs[0].set_yscale("log")
-    axs[0].set_yticks([1, 10, 100])
-    axs[0].set_yticklabels(["1", "10", "100"])
+    axs[0].set_yticks(ticks=[1, 10, 100],
+                      labels=["1", "10", "100"],
+                      fontsize=7)
     axs[0].set_ylabel(
         r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
         r" \, \mathrm{yr}^{-1}]$")
     axs[0].scatter(
-        np.log10(df["Delta1200"].to_numpy()),
-        df["InflowRate_Msun/yr"].to_numpy(),
-        s=5, marker="o", alpha=0.75, edgecolor="none", c=df["Time_Gyr"],
-        vmin=0, vmax=14, cmap="gnuplot2",
+        np.log10(df[is_auriga]["Delta1200"].to_numpy()),
+        df[is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
+        s=5, marker="X", alpha=0.25, edgecolor="none",
+        c="tab:gray", label="Auriga",
     )
+    axs[0].scatter(
+        np.log10(df[~is_auriga]["Delta1200"].to_numpy()),
+        df[~is_auriga]["InflowRate_Msun/yr"].to_numpy(),
+        s=5, marker="o", alpha=0.75, edgecolor="none",
+        c="k", label="Hestia",
+    )
+    axs[0].legend(fontsize=5, loc="upper left", frameon=False)
 
     axs[1].set_ylim(1E-1, 600)
     axs[1].set_yscale("log")
-    axs[1].set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4])
-    axs[1].set_yticks([1, 10, 100])
-    axs[1].set_yticklabels(["1", "10", "100"])
+    axs[1].set_xticks(ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
+                      labels=["0", "0.2", "0.4", "0.6", "0.8",
+                              "1.0", "1.2", "1.4"],
+                      fontsize=7)
+    axs[1].set_yticks(ticks=[1, 10, 100],
+                      labels=["1", "10", "100"],
+                      fontsize=7)
     axs[1].set_ylabel(
         r"$\dot{M}_\mathrm{out} \, [\mathrm{M}_\odot"
         r" \, \mathrm{yr}^{-1}]$")
     axs[1].set_xlabel(r"$\log_{10} \delta_{1200}$")
-    s = axs[1].scatter(
-        np.log10(df["Delta1200"].to_numpy()),
-        df["OutflowRate_Msun/yr"].to_numpy(),
-        s=5, marker="o", alpha=0.75, edgecolor="none", c=df["Time_Gyr"],
-        vmin=0, vmax=14, cmap="gnuplot2",
+
+    axs[1].scatter(
+        np.log10(df[is_auriga]["Delta1200"].to_numpy()),
+        df[is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
+        s=5, marker="X", alpha=0.2, edgecolor="none",
+        c="tab:gray", label="Auriga",
     )
-
-    cbax = axs[0].inset_axes([0.45, 0.1, 0.5, 0.025],
-                             transform=axs[0].transAxes)
-    cb = plt.colorbar(s, cax=cbax, orientation="horizontal")
-    cbax.set_xlim(0, 14)
-    cb.set_ticks([0, 2, 4, 6, 8, 10, 12, 14])
-    cb.set_ticklabels(['0', '2', '4', '6', '8', '10', '12', '14'],
-                      fontsize=5.0)
-    cbax.set_xlabel("Time [Gyr]", fontsize=6)
-    cbax.xaxis.set_label_position('top')
-
-    for ax in axs.flatten():
-        ax.set_axisbelow(True)
+    axs[1].scatter(
+        np.log10(df[~is_auriga]["Delta1200"].to_numpy()),
+        df[~is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
+        s=5, marker="o", alpha=0.75, edgecolor="none",
+        c="k", label="Hestia",
+    )
 
     plt.savefig("images/accretion_vs_environment.pdf")
     plt.close(fig)
 
 
 def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
-    TICK_LABELS_FONTSIZE = 7.0
-    XLIM = (0, 1.5)
-    YLIM = (1E-1, 600)
-    GALAXY_NAME_CBAR_PLACEMENT = "17_11_M31"
-
     df = _get_data(config)
+    is_auriga = df["Galaxy"].str.startswith("Au")
 
     fig, axs = plt.subplots(figsize=(6.0, 4.0), nrows=2, ncols=3,
                             sharex=True, sharey=True)
     fig.subplots_adjust(hspace=0, wspace=0)
 
     for ax in axs.flatten():
-        ax.set_xlim(XLIM)
-        ax.set_ylim(YLIM)
+        ax.set_xlim(0, 1.5)
+        ax.set_ylim(1E-1, 600)
         ax.set_yscale("log")
         ax.set_xticks(ticks=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
                       labels=["0.2", "0.4", "0.6", "0.8", "1.0", "1.2", "1.4"],
-                      fontsize=TICK_LABELS_FONTSIZE)
+                      fontsize=7)
         ax.set_yticks(ticks=[1, 10, 100],
                       labels=["1", "10", "100"],
-                      fontsize=TICK_LABELS_FONTSIZE)
+                      fontsize=7)
         ax.set_xlabel(r"$\log_{10} \delta_{1200}$")
         ax.set_ylabel(
             r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
@@ -137,10 +140,10 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
         ax.set_axisbelow(True)
         ax.label_outer()
         ax.scatter(
-            np.log10(df["Delta1200"].to_numpy()),
-            df["InflowRate_Msun/yr"].to_numpy(),
-            s=5, marker="o", alpha=0.25, edgecolor="none",
-            color="tab:gray", zorder=10,
+            np.log10(df[is_auriga]["Delta1200"].to_numpy()),
+            df[is_auriga]["InflowRate_Msun/yr"].to_numpy(),
+            s=5, marker="X", alpha=0.2, edgecolor="none",
+            color="tab:gray", zorder=10, label="Auriga",
         )
 
     for simulation in Settings.SIMULATIONS:
@@ -148,11 +151,12 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
             subset = df[(df["Galaxy"] == f"{simulation}_{galaxy}")]
             ax = axs[Settings.GALAXIES.index(galaxy),
                      Settings.SIMULATIONS.index(simulation)]
-            s = ax.scatter(
+            ax.scatter(
                 np.log10(subset["Delta1200"].to_numpy()),
-                subset["InflowRate_Msun/yr"].to_numpy(),
-                s=5, marker='o', edgecolor="none", zorder=11,
-                c=subset["Time_Gyr"], vmin=0, vmax=14, cmap="gnuplot2",
+                subset["InflowRate_Msun/yr"].to_numpy(), alpha=0.75,
+                s=5, edgecolor="none", zorder=11, label="_Hestia",
+                marker=Settings.GALAXY_SYMBOLS[galaxy],
+                c=Settings.SIMULATION_COLORS[simulation],
             )
             ax.text(
                 x=0.05, y=0.95,
@@ -160,17 +164,6 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
                 transform=ax.transAxes, fontsize=7.0,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
-
-            if f"{simulation}_{galaxy}" == GALAXY_NAME_CBAR_PLACEMENT:
-                cbax = ax.inset_axes([0.1, 0.1, 0.8, 0.025],
-                                     transform=ax.transAxes)
-                cb = plt.colorbar(s, cax=cbax, orientation="horizontal")
-                cbax.set_xlim(0, 14)
-                cb.set_ticks([0, 2, 4, 6, 8, 10, 12, 14])
-                cb.set_ticklabels(['0', '2', '4', '6', '8', '10', '12', '14'],
-                                  fontsize=4)
-                cbax.set_xlabel("Time [Gyr]", fontsize=5)
-                cbax.xaxis.set_label_position('top')
 
     plt.savefig("images/accretion_vs_environment_by_galaxy.pdf")
     plt.close(fig)
@@ -187,5 +180,5 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    # plot_accretion_vs_environment(config)
+    plot_accretion_vs_environment(config)
     plot_inflows_vs_environment_by_galaxy(config)
