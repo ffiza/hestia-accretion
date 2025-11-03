@@ -125,11 +125,11 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
     fig.subplots_adjust(hspace=0, wspace=0)
 
     for ax in axs.flatten():
-        ax.set_xlim(0, 1.5)
+        ax.set_xlim(0, 1.4)
         ax.set_ylim(1E-1, 600)
         ax.set_yscale("log")
-        ax.set_xticks(ticks=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
-                      labels=["0.2", "0.4", "0.6", "0.8", "1.0", "1.2", "1.4"],
+        ax.set_xticks(ticks=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+                      labels=["0.2", "0.4", "0.6", "0.8", "1.0", "1.2"],
                       fontsize=7)
         ax.set_yticks(ticks=[1, 10, 100],
                       labels=["1", "10", "100"],
