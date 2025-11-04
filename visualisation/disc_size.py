@@ -80,8 +80,7 @@ def plot_disc_radius(config: dict) -> None:
                 transform=ax.transAxes, fontsize=7.0,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
-        
-        #region TestAurigaData
+
         ax.fill_between(
             df_auriga["Time_Gyr"],
             (df_auriga["DiscRadiusMean_ckpc"]
@@ -93,7 +92,6 @@ def plot_disc_radius(config: dict) -> None:
                 df_auriga["DiscRadiusMean_ckpc"]
                 * df_auriga["ExpansionFactor"],
                 ls="-", color="darkgray", lw=1, zorder=10)
-        #endregion
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
@@ -132,7 +130,6 @@ def plot_disc_height(config: dict) -> None:
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
-        #region TestAurigaData
         ax.fill_between(
             df_auriga["Time_Gyr"],
             (df_auriga["DiscHeightMean_ckpc"]
@@ -144,7 +141,6 @@ def plot_disc_height(config: dict) -> None:
                 df_auriga["DiscHeightMean_ckpc"]
                 * df_auriga["ExpansionFactor"],
                 ls="-", color="darkgray", lw=1, zorder=10)
-        #endregion
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 

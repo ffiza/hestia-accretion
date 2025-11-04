@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
-from matplotlib.patches import Rectangle
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
@@ -26,7 +25,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         m_star.append(data[snapnum, 1])
         m_gas.append(data[snapnum, 0])
         data = pd.read_csv(f"data/auriga/au{galaxy}/environment_evolution.csv")
-        delta.append(data[f"Delta1200"].to_numpy()[snapnum])
+        delta.append(data["Delta1200"].to_numpy()[snapnum])
         galaxies.append(f"Au{galaxy}")
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
