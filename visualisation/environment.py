@@ -1,4 +1,6 @@
+import yaml
 import warnings
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -33,7 +35,7 @@ def _get_auriga_data() -> pd.DataFrame:
     return df
 
 
-def make_plot() -> None:
+def make_plot(config: dict) -> None:
     auriga = _get_auriga_data()
 
     fig = plt.figure(figsize=(5.0, 2.0))
@@ -74,7 +76,6 @@ def make_plot() -> None:
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
-        #region TestAurigaData
         ax.fill_between(
             auriga["Time_Gyr"],
             auriga["Delta1200Mean"] - auriga["Delta1200Std"],
@@ -83,14 +84,22 @@ def make_plot() -> None:
         ax.plot(auriga["Time_Gyr"],
                 auriga["Delta1200Mean"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
-        #endregion
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
-    plt.savefig("images/delta1200.pdf")
+    plt.savefig(f"images/delta1200_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
 if __name__ == "__main__":
     figure_setup()
-    make_plot()
+
+    # Get arguments from user
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, required=True)
+    args = parser.parse_args()
+
+    # Load configuration file
+    config = yaml.safe_load(open(f"configs/{args.config}.yml"))
+
+    make_plot(config)
