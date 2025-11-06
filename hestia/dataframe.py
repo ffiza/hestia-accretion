@@ -1,3 +1,4 @@
+from matplotlib.pylab import f
 import numpy
 import numpy as np
 import pandas as pd
@@ -450,6 +451,7 @@ def _make_dataframe_tracers(
     df.time = SnapTime_Gyr
     df.redshift = Redshift
     df.snapshot_number = SnapNo
+    df.simulation = f'{SimName}_{MW_or_M31}'
 
     # Add target gas mass value to dataframe
     df.target_gas_mass = yaml.safe_load(
