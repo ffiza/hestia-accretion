@@ -19,7 +19,9 @@ DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc",
 
 def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                         t1_gyr: float, t2_gyr: float,
-                        accretion_region: AccretionRegion) -> tuple:
+                        accretion_region: AccretionRegion,
+                        export_ids: bool = False,
+                        ) -> tuple:
     """
     This method calculates the accretion rates between two snapshots using
     tarcer particles. It takes two data frames, `df1` and `df2`, with the
@@ -47,6 +49,9 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
         Time of the second snapshot in Gyr.
     accretion_region : AccretionRegion
         The region onto which to calculate the accretion rate.
+    export_ids : bool, optional
+        Whether to export the IDs of the inflowing and outflowing particles,
+        by default False.
     """
 
     for df in [df1, df2]:  # Check all columns are in the data frames
@@ -73,18 +78,30 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
         df["IsGeometry"] = accretion_region.select(df, FilterType.IN)
 
     # Compute the amount of inflowing/outflowing particles
-    inflowing_number = (
-        (df1["IsGeometry"] == 0) &
-        (df1["ParentCellType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]) &
-        (df2["IsGeometry"] == 1) &
+    is_inflowing = \
+        (df1["IsGeometry"] == 0) & \
+        (df1["ParentCellType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]) & \
+        (df2["IsGeometry"] == 1) & \
         ((df2["ParentCellType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]) |
-         (df2["ParentCellType"] == GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]))).sum()
-    outflowing_number = (
-        (df1["IsGeometry"] == 1) &
-        (df1["ParentCellType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]) &
-        (df2["IsGeometry"] == 0) &
+         (df2["ParentCellType"] == GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]))
+    is_outflowing = \
+        (df1["IsGeometry"] == 1) & \
+        (df1["ParentCellType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]) & \
+        (df2["IsGeometry"] == 0) & \
         ((df2["ParentCellType"] == GLOBAL_CONFIG["GAS_PARTICLE_TYPE"]) |
-         (df2["ParentCellType"] == GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]))).sum()
+         (df2["ParentCellType"] == GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]))
+    inflowing_number = is_inflowing.sum()
+    outflowing_number = is_outflowing.sum()
+
+    # Export IDs if requested
+    if export_ids:
+        ids_to_export = {
+            "InflowingTracerIDs": df2[is_inflowing]["TracerID"].to_list(),
+            "OutflowingTracerIDs": df2[is_outflowing]["TracerID"].to_list(),
+        }
+        with open(f'results/{df2.simulation}/'
+                  f'accreted_ids_snap{df2.snapshot_number}.json', 'w') as f:
+            json.dump(ids_to_export, f)
 
     # Compute rates in Msun/yr
     in_rate = inflowing_number * df1.target_gas_mass / delta_time
@@ -93,11 +110,13 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
     return (in_rate, out_rate)
 
 
-def calculate_accretion_evolution(simulation: str,
-                                  galaxy: str,
-                                  config: dict,
-                                  accretion_region_type: AccretionRegionType
-                                  ) -> None:
+def calculate_accretion_evolution(
+        simulation: str,
+        galaxy: str,
+        config: dict,
+        accretion_region_type: AccretionRegionType,
+        export_ids_snapshots: list[int] = [],
+        ) -> None:
     """
     This method calculates the evolution of the accretion rates for tracers
     for a given simulation.
@@ -136,8 +155,6 @@ def calculate_accretion_evolution(simulation: str,
         simulation, GLOBAL_CONFIG["FIRST_SNAPSHOT"], galaxy, config,
         DFType.TRACERS, np.inf)
     for i in range(GLOBAL_CONFIG["FIRST_SNAPSHOT"] + 1, n_snapshots):
-        print(np.shape(df1))
-
         # Define geometry of the accretion region
         match accretion_region_type:
             case AccretionRegionType.STELLAR_DISC:
@@ -152,9 +169,11 @@ def calculate_accretion_evolution(simulation: str,
 
         df2 = make_dataframe(
             simulation, i, galaxy, config, DFType.TRACERS, np.inf)
+
         inflow_rate, outflow_rate = calculate_accretion(
             df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
-            accretion_region=accretion_region)
+            accretion_region=accretion_region,
+            export_ids=i in export_ids_snapshots)
 
         data["Times_Gyr"][i] = df2.time
         data["Redshift"][i] = df2.redshift
@@ -177,6 +196,8 @@ def calculate_accretion_evolution(simulation: str,
 
 
 def main():
+    EXPORT_IDS_SNAPSHOTS: list[int] = [104, 105, 106]
+
     # Get arguments from user
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
@@ -185,11 +206,13 @@ def main():
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    arguments = [(simulation, galaxy, config, accretion_region_type)
-			 for simulation in Settings.SIMULATIONS
-			 for galaxy in Settings.GALAXIES
-			 for accretion_region_type in [AccretionRegionType.STELLAR_DISC,
-										   AccretionRegionType.HALO]]
+    arguments = [
+        (simulation, galaxy, config,
+         accretion_region_type, EXPORT_IDS_SNAPSHOTS)
+        for simulation in Settings.SIMULATIONS
+        for galaxy in Settings.GALAXIES
+        for accretion_region_type in [AccretionRegionType.STELLAR_DISC,
+                                      AccretionRegionType.HALO]]
     Pool(GLOBAL_CONFIG["N_PROCESSES"]).starmap(
         calculate_accretion_evolution, arguments)
 
