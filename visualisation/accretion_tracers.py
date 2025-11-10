@@ -192,10 +192,12 @@ def plot_halo_disc_relation(
         ax.set_ylim(0.1, 400)
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.set_xticks([0.1, 1, 10, 100])
-        ax.set_yticks([0.1, 1, 10, 100])
-        ax.set_xticklabels(["0.1", "1", "10", "100"])
-        ax.set_yticklabels(["0.1", "1", "10", "100"])
+        ax.set_xticks(ticks=[0.1, 1, 10, 100],
+                      labels=["0.1", "1", "10", "100"],
+                      fontsize=7)
+        ax.set_yticks(ticks=[0.1, 1, 10, 100],
+                      labels=["0.1", "1", "10", "100"],
+                      fontsize=7)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.label_outer()
@@ -250,13 +252,13 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_accretion_evolution(
-        config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
-    plot_accretion_evolution(
-        config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
-    plot_accretion_evolution(
-        config, RateType.INFLOW, AccretionRegionType.HALO)
-    plot_accretion_evolution(
-        config, RateType.OUTFLOW, AccretionRegionType.HALO)
+    # plot_accretion_evolution(
+    #     config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
+    # plot_accretion_evolution(
+    #     config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
+    # plot_accretion_evolution(
+    #     config, RateType.INFLOW, AccretionRegionType.HALO)
+    # plot_accretion_evolution(
+    #     config, RateType.OUTFLOW, AccretionRegionType.HALO)
     plot_halo_disc_relation(config, RateType.INFLOW)
     plot_halo_disc_relation(config, RateType.OUTFLOW)

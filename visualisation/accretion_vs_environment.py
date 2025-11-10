@@ -19,7 +19,8 @@ def _get_data(config: dict) -> pd.DataFrame:
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
             environment = pd.read_csv(
-                f"results/{simulation}_{galaxy}/delta_1200.csv")
+                f"results/{simulation}_{galaxy}/"
+                f"delta_1200_{config['RUN_CODE']}.csv")
             delta += environment["Delta"].to_list()
             time += environment["Times_Gyr"].to_list()
             galaxies += [f"{simulation}_{galaxy}"] * len(environment)
@@ -68,7 +69,7 @@ def plot_accretion_vs_environment(config: dict) -> None:
                       labels=["1", "10", "100"],
                       fontsize=7)
     axs[0].set_ylabel(
-        r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
+        r"$\dot{M}_\mathrm{in}^\mathrm{disc} \, [\mathrm{M}_\odot"
         r" \, \mathrm{yr}^{-1}]$")
     axs[0].scatter(
         np.log10(df[is_auriga]["Delta1200"].to_numpy()),
@@ -79,8 +80,7 @@ def plot_accretion_vs_environment(config: dict) -> None:
     axs[0].scatter(
         np.log10(df[~is_auriga]["Delta1200"].to_numpy()),
         df[~is_auriga]["InflowRate_Msun/yr"].to_numpy(),
-        s=5, marker="o", alpha=0.75, edgecolor="none",
-        c="k", label="Hestia",
+        s=1, cmap="viridis", c=df[~is_auriga]["Time_Gyr"], label="_Hestia",
     )
     axs[0].legend(fontsize=5, loc="upper left", frameon=False)
 
@@ -94,7 +94,7 @@ def plot_accretion_vs_environment(config: dict) -> None:
                       labels=["1", "10", "100"],
                       fontsize=7)
     axs[1].set_ylabel(
-        r"$\dot{M}_\mathrm{out} \, [\mathrm{M}_\odot"
+        r"$\dot{M}_\mathrm{out}^\mathrm{disc} \, [\mathrm{M}_\odot"
         r" \, \mathrm{yr}^{-1}]$")
     axs[1].set_xlabel(r"$\log_{10} \delta_{1200}$")
 
@@ -107,8 +107,7 @@ def plot_accretion_vs_environment(config: dict) -> None:
     axs[1].scatter(
         np.log10(df[~is_auriga]["Delta1200"].to_numpy()),
         df[~is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
-        s=5, marker="o", alpha=0.75, edgecolor="none",
-        c="k", label="Hestia",
+        s=1, cmap="viridis", c=df[~is_auriga]["Time_Gyr"], label="_Hestia",
     )
 
     plt.savefig(
@@ -120,7 +119,7 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
     df = _get_data(config)
     is_auriga = df["Galaxy"].str.startswith("Au")
 
-    fig, axs = plt.subplots(figsize=(6.0, 4.0), nrows=2, ncols=3,
+    fig, axs = plt.subplots(figsize=(5.0, 3.0), nrows=2, ncols=3,
                             sharex=True, sharey=True)
     fig.subplots_adjust(hspace=0, wspace=0)
 
@@ -154,10 +153,9 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
                      Settings.SIMULATIONS.index(simulation)]
             ax.scatter(
                 np.log10(subset["Delta1200"].to_numpy()),
-                subset["InflowRate_Msun/yr"].to_numpy(), alpha=0.75,
-                s=5, edgecolor="none", zorder=11, label="_Hestia",
-                marker=Settings.GALAXY_SYMBOLS[galaxy],
-                c=Settings.SIMULATION_COLORS[simulation],
+                subset["InflowRate_Msun/yr"].to_numpy(),
+                s=1, zorder=11, label="_Hestia",
+                c=subset["Time_Gyr"], cmap="viridis",
             )
             ax.text(
                 x=0.05, y=0.95,
