@@ -11,6 +11,7 @@ from hestia.images import figure_setup
 from hestia.tools import windowed_average
 from hestia.accretion_region import (AccretionRegionType,
                                      get_accretion_region_suffix)
+from hestia.auriga import AurigaData
 
 
 class RateType(Enum):
@@ -18,29 +19,56 @@ class RateType(Enum):
     OUTFLOW = 2
 
 
-RATE_TYPE_STRING: dict = {
-    RateType.INFLOW: "Inflow",
-    RateType.OUTFLOW: "Outflow"
-}
+class Helpers:
+    @staticmethod
+    def get_rate_type_string(rate_type: RateType) -> str:
+        if rate_type == RateType.INFLOW:
+            return 'Inflow'
+        elif rate_type == RateType.OUTFLOW:
+            return 'Outflow'
+        else:
+            raise ValueError("Invalid RateType.")
 
+    @staticmethod
+    def get_file_prefix(rate_type: RateType) -> str:
+        if rate_type == RateType.INFLOW:
+            return 'inflow_accretion_tracers'
+        elif rate_type == RateType.OUTFLOW:
+            return 'outflow_accretion_tracers'
+        else:
+            raise ValueError("Invalid RateType.")
 
-RATE_TYPE_AX_LABEL: dict = {
-    RateType.INFLOW:
-        r'$\dot{M}_\mathrm{in}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]',
-    RateType.OUTFLOW:
-        r'$\dot{M}_\mathrm{out}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]',
-}
+    @staticmethod
+    def get_feat_name(rate_type: RateType) -> str:
+        if rate_type == RateType.INFLOW:
+            return 'InflowRate_Msun/yr'
+        elif rate_type == RateType.OUTFLOW:
+            return 'OutflowRate_Msun/yr'
+        else:
+            raise ValueError("Invalid RateType.")
 
-
-RATE_TYPE_FEAT_NAME: dict = {
-    RateType.INFLOW: 'InflowRate_Msun/yr',
-    RateType.OUTFLOW: 'OutflowRate_Msun/yr',
-}
-
-RATE_TYPE_FILE_PREFIX: dict = {
-    RateType.INFLOW: 'inflow_accretion_tracers',
-    RateType.OUTFLOW: 'outflow_accretion_tracers',
-}
+    @staticmethod
+    def get_ylabel(rate_type: RateType,
+                   accretion_region_type: AccretionRegionType) -> str:
+        if rate_type == RateType.INFLOW \
+                and accretion_region_type == AccretionRegionType.STELLAR_DISC:
+            label = r'$\dot{M}_\mathrm{in}^\mathrm{disc}$' \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+        elif rate_type == RateType.INFLOW \
+                and accretion_region_type == AccretionRegionType.HALO:
+            label = r'$\dot{M}_\mathrm{in}^\mathrm{halo}$' \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+        elif rate_type == RateType.OUTFLOW \
+                and accretion_region_type == AccretionRegionType.STELLAR_DISC:
+            label = r'$\dot{M}_\mathrm{out}^\mathrm{disc}$' \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+        elif rate_type == RateType.OUTFLOW \
+                and accretion_region_type == AccretionRegionType.HALO:
+            label = r'$\dot{M}_\mathrm{out}^\mathrm{halo}$' \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+        else:
+            raise ValueError("Invalid combination of inputs.")
+        return label
 
 
 def _get_data(galaxy: str, config: dict,
@@ -63,69 +91,34 @@ def _get_data(galaxy: str, config: dict,
     return df
 
 
-def _get_auriga_data(config: dict) -> pd.DataFrame:
-    AURIGA_RERUNS: list = [5, 6, 9, 13, 17, 23, 24, 26, 28]
-    window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
-    df = pd.read_csv("data/iza_et_al_2022/accretion_rate_tracers.csv")
-    for i in AURIGA_RERUNS:
-        inflow_rate = df[f"InflowRate_Au{i}_Msun/yr"].to_numpy()
-        outflow_rate = df[f"OutflowRate_Au{i}_Msun/yr"].to_numpy()
-        time = df["Time_Gyr"].to_numpy()
-        df[f"InflowRateSmoothed_Au{i}_Msun/yr"] = windowed_average(
-            time, inflow_rate, window_length)
-        df[f"OutflowRateSmoothed_Au{i}_Msun/yr"] = windowed_average(
-            time, outflow_rate, window_length)
-    df["InflowRateSmoothedMin_Msun/yr"] = df[[
-        f"InflowRateSmoothed_Au{i}_Msun/yr" for i in AURIGA_RERUNS]].min(
-            axis=1)
-    df["InflowRateSmoothedMax_Msun/yr"] = df[[
-        f"InflowRateSmoothed_Au{i}_Msun/yr" for i in AURIGA_RERUNS]].max(
-            axis=1)
-    df["InflowRateSmoothedMean_Msun/yr"] = np.nanmean(
-        df[[f"InflowRateSmoothed_Au{i}_Msun/yr" for i in
-            AURIGA_RERUNS]].to_numpy(),
-        axis=1)
-    df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-        df[[f"InflowRateSmoothed_Au{i}_Msun/yr" for i in
-            AURIGA_RERUNS]].to_numpy(),
-        axis=1)
-    df["OutflowRateSmoothedMin_Msun/yr"] = df[[
-        f"OutflowRateSmoothed_Au{i}_Msun/yr" for i in AURIGA_RERUNS]].min(
-            axis=1)
-    df["OutflowRateSmoothedMax_Msun/yr"] = df[[
-        f"OutflowRateSmoothed_Au{i}_Msun/yr" for i in AURIGA_RERUNS]].max(
-            axis=1)
-    df["OutflowRateSmoothedMean_Msun/yr"] = np.nanmean(
-        df[[f"OutflowRateSmoothed_Au{i}_Msun/yr" for i in
-            AURIGA_RERUNS]].to_numpy(),
-        axis=1)
-    df["OutflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-        df[[f"OutflowRateSmoothed_Au{i}_Msun/yr" for i in
-            AURIGA_RERUNS]].to_numpy(),
-        axis=1)
-    df = df.dropna()
-    return df
-
-
-def _add_auriga_data_to_ax(ax, rate_type: RateType, config: dict) -> None:
-    df_auriga = _get_auriga_data(config)
+def _add_auriga_data_to_ax(
+        ax,
+        rate_type: RateType,
+        accretion_region_type: AccretionRegionType,
+        config: dict) -> None:
+    df_auriga = AurigaData.get_accretion(config, accretion_region_type)
     ax.fill_between(
         df_auriga["Time_Gyr"],
-        df_auriga[f"{RATE_TYPE_STRING[rate_type]}RateSmoothedMean_Msun/yr"]
-        - df_auriga[
-            f"{RATE_TYPE_STRING[rate_type]}RateSmoothedStd_Msun/yr"],
-        df_auriga[f"{RATE_TYPE_STRING[rate_type]}RateSmoothedMean_Msun/yr"]
+        df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
+                  "RateSmoothedMean_Msun/yr"]
+        - df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
+                    "RateSmoothedStd_Msun/yr"],
+        df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
+                  "RateSmoothedMean_Msun/yr"]
         + df_auriga[
-            f"{RATE_TYPE_STRING[rate_type]}RateSmoothedStd_Msun/yr"],
+            f"{Helpers.get_rate_type_string(rate_type)}"
+            "RateSmoothedStd_Msun/yr"],
         color="k", alpha=0.1, label="Auriga", lw=0)
     ax.plot(df_auriga["Time_Gyr"],
             df_auriga[
-                f"{RATE_TYPE_STRING[rate_type]}RateSmoothedMean_Msun/yr"],
+                f"{Helpers.get_rate_type_string(rate_type)}"
+                "RateSmoothedMean_Msun/yr"],
             ls="-", color="darkgray", lw=1, zorder=10)
 
 
 def plot_accretion_evolution(
-        config: dict, rate_type: RateType,
+        config: dict,
+        rate_type: RateType,
         accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
@@ -141,7 +134,7 @@ def plot_accretion_evolution(
         ax.set_xticks([2, 4, 6, 8, 10, 12])
         ax.set_yticks([0.1, 1, 10, 100])
         ax.set_yticklabels(["0.1", "1", "10", "100"])
-        ax.set_ylabel(RATE_TYPE_AX_LABEL[rate_type])
+        ax.set_ylabel(Helpers.get_ylabel(rate_type, accretion_region_type))
         ax.set_xlabel(r'Time [Gyr]')
         ax.label_outer()
 
@@ -153,7 +146,7 @@ def plot_accretion_evolution(
             ax.plot(df["Time_Gyr"].to_numpy(),
                     windowed_average(
                         df["Time_Gyr"].to_numpy(),
-                        df[RATE_TYPE_FEAT_NAME[rate_type]].to_numpy(),
+                        df[Helpers.get_feat_name(rate_type)].to_numpy(),
                         window_length
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
@@ -165,14 +158,13 @@ def plot_accretion_evolution(
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
-        if accretion_region_type == AccretionRegionType.STELLAR_DISC:
-            _add_auriga_data_to_ax(ax, rate_type, config)
+        _add_auriga_data_to_ax(ax, rate_type, accretion_region_type, config)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(
-        f"images/{RATE_TYPE_FILE_PREFIX[rate_type]}{suffix}"
+        f"images/{Helpers.get_file_prefix(rate_type)}{suffix}"
         f"_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
@@ -216,10 +208,10 @@ def plot_halo_disc_relation(
             df_halo = _get_data(f"{simulation}_{galaxy}", config,
                                 AccretionRegionType.HALO)
             ax.scatter(
-                df_disc[RATE_TYPE_FEAT_NAME[rate_type]].to_numpy(),
-                df_halo[RATE_TYPE_FEAT_NAME[rate_type]].to_numpy(),
+                df_disc[Helpers.get_feat_name(rate_type)].to_numpy(),
+                df_halo[Helpers.get_feat_name(rate_type)].to_numpy(),
                 c=df_disc["Time_Gyr"].to_numpy(),
-                s=1, cmap="viridis")
+                s=1, cmap="viridis", zorder=11)
             ax.text(
                 x=0.05, y=0.95,
                 s=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
@@ -227,8 +219,22 @@ def plot_halo_disc_relation(
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
+    # Add Auriga data as background scatter
+    au_d = AurigaData.get_accretion(config, AccretionRegionType.STELLAR_DISC)
+    au_h = AurigaData.get_accretion(config, AccretionRegionType.HALO)
+    for g in AurigaData.RERUNS:
+        for ax in axs.flatten():
+            ax.scatter(
+                au_d[f"{Helpers.get_rate_type_string(rate_type)}"
+                     f"Rate_Au{g}_Msun/yr"],
+                au_h[f"{Helpers.get_rate_type_string(rate_type)}"
+                     f"Rate_Au{g}_Msun/yr"],
+                s=5, marker="X", alpha=0.25, edgecolor="none",
+                c="tab:gray", label="Auriga", zorder=10,
+            )
+
     plt.savefig(
-        f"images/{RATE_TYPE_FILE_PREFIX[rate_type]}_relation"
+        f"images/{Helpers.get_file_prefix(rate_type)}_relation"
         f"_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
@@ -244,13 +250,13 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_accretion_evolution(config, RateType.INFLOW,
-                             AccretionRegionType.STELLAR_DISC)
-    plot_accretion_evolution(config, RateType.OUTFLOW,
-                             AccretionRegionType.STELLAR_DISC)
-    plot_accretion_evolution(config, RateType.INFLOW,
-                             AccretionRegionType.HALO)
-    plot_accretion_evolution(config, RateType.OUTFLOW,
-                             AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.HALO)
     plot_halo_disc_relation(config, RateType.INFLOW)
     plot_halo_disc_relation(config, RateType.OUTFLOW)
