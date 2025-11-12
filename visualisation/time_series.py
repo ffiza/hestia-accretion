@@ -61,7 +61,7 @@ def make_plot(config: dict) -> None:
     axs = gs.subplots(sharex=True, sharey=False)
 
     for i in range(3):
-        axs[0, i].set_ylim(0, 400)
+        axs[0, i].set_ylim(0, 300)
         axs[0, i].set_yticks(ticks=[0, 100, 200, 300],
                              labels=["0", "100", "200", "300"],
                              fontsize=TICK_LABEL_FONTSIZE)
@@ -98,7 +98,7 @@ def make_plot(config: dict) -> None:
         axs[7, i].set_yticks(ticks=[1, 10, 100],
                              labels=["1", "10", "100"],
                              fontsize=TICK_LABEL_FONTSIZE)
-    axs[0, 0].set_ylabel(r'$R_{200}$' + '\n[ckpc]', fontsize=LABEL_FONTSIZE)
+    axs[0, 0].set_ylabel(r'$R_{200}$' + '\n[kpc]', fontsize=LABEL_FONTSIZE)
     axs[1, 0].set_ylabel(
         r'$R_\mathrm{d}$' + '\n[kpc]', fontsize=LABEL_FONTSIZE)
     axs[2, 0].set_ylabel(
@@ -131,7 +131,8 @@ def make_plot(config: dict) -> None:
         for galaxy in Settings.GALAXIES:
             df = _get_data(galaxy=f"{simulation}_{galaxy}", config=config)
             axs[0, i].plot(
-                df["Time_Gyr"], df["VirialRadius_ckpc"],
+                df["Time_Gyr"],
+                df["ExpansionFactor"] * df["VirialRadius_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation], lw=1,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
