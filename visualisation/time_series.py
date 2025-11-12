@@ -134,49 +134,49 @@ def make_plot(config: dict) -> None:
                 df["Time_Gyr"],
                 df["ExpansionFactor"] * df["VirialRadius_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[1, i].plot(
                 df["Time_Gyr"], df["ExpansionFactor"] * df["DiscRadius_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[2, i].plot(
                 df["Time_Gyr"], df["ExpansionFactor"] * df["DiscHeight_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[3, i].plot(
                 df["Time_Gyr"], df["Delta1200"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[4, i].plot(
                 df["Time_Gyr"], df["InflowRate_Disc_Msun/yr"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[5, i].plot(
                 df["Time_Gyr"], df["OutflowRate_Disc_Msun/yr"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[6, i].plot(
                 df["Time_Gyr"], df["OutflowRate_Halo_Msun/yr"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[7, i].plot(
                 df["Time_Gyr"], df["OutflowRate_Halo_Msun/yr"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
-                color=Settings.SIMULATION_COLORS[simulation], lw=1,
+                color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
 
