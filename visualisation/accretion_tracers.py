@@ -235,6 +235,10 @@ def plot_halo_disc_relation(
                 c="tab:gray", label="Auriga", zorder=10,
             )
 
+    for ax in axs.flatten():
+        ax.plot(ax.get_xlim(), ax.get_ylim(), c='k', ls='--',
+                lw=0.5, zorder=12)
+
     plt.savefig(
         f"images/{Helpers.get_file_prefix(rate_type)}_relation"
         f"_{config['RUN_CODE']}.pdf")
