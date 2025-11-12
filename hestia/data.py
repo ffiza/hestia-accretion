@@ -1,6 +1,7 @@
 import json
 import yaml
 import argparse
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -42,45 +43,48 @@ class HestiaData:
                     df[f"OutflowRate_{s}_{g}_Msun/yr"].to_numpy(),
                     window_length)
 
-        sample_inflow = df[[
-            f"InflowRate_{s}_{g}_Msun/yr"
-            for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
-        df["InflowRateMin_Msun/yr"] = sample_inflow.min(axis=1)
-        df["InflowRateMax_Msun/yr"] = sample_inflow.max(axis=1)
-        df["InflowRateMean_Msun/yr"] = np.nanmean(
-            sample_inflow, axis=1)
-        df["InflowRateStd_Msun/yr"] = np.nanstd(
-            sample_inflow, axis=1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
 
-        sample_outflow = df[[
-            f"InflowRate_{s}_{g}_Msun/yr"
-            for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
-        df["OutflowRateMin_Msun/yr"] = sample_outflow.min(axis=1)
-        df["OutflowRateMax_Msun/yr"] = sample_outflow.max(axis=1)
-        df["OutflowRateMean_Msun/yr"] = np.nanmean(
-            sample_outflow, axis=1)
-        df["OutflowRateStd_Msun/yr"] = np.nanstd(
-            sample_outflow, axis=1)
+            sample_inflow = df[[
+                f"InflowRate_{s}_{g}_Msun/yr"
+                for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
+            df["InflowRateMin_Msun/yr"] = sample_inflow.min(axis=1)
+            df["InflowRateMax_Msun/yr"] = sample_inflow.max(axis=1)
+            df["InflowRateMean_Msun/yr"] = np.nanmean(
+                sample_inflow, axis=1)
+            df["InflowRateStd_Msun/yr"] = np.nanstd(
+                sample_inflow, axis=1)
 
-        sample_inflow = df[[
-            f"InflowRateSmoothed_{s}_{g}_Msun/yr"
-            for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
-        df["InflowRateSmoothedMin_Msun/yr"] = sample_inflow.min(axis=1)
-        df["InflowRateSmoothedMax_Msun/yr"] = sample_inflow.max(axis=1)
-        df["InflowRateSmoothedMean_Msun/yr"] = np.nanmean(
-            sample_inflow, axis=1)
-        df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-            sample_inflow, axis=1)
+            sample_outflow = df[[
+                f"OutflowRate_{s}_{g}_Msun/yr"
+                for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
+            df["OutflowRateMin_Msun/yr"] = sample_outflow.min(axis=1)
+            df["OutflowRateMax_Msun/yr"] = sample_outflow.max(axis=1)
+            df["OutflowRateMean_Msun/yr"] = np.nanmean(
+                sample_outflow, axis=1)
+            df["OutflowRateStd_Msun/yr"] = np.nanstd(
+                sample_outflow, axis=1)
 
-        sample_outflow = df[[
-            f"InflowRateSmoothed_{s}_{g}_Msun/yr"
-            for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
-        df["OutflowRateSmoothedMin_Msun/yr"] = sample_outflow.min(axis=1)
-        df["OutflowRateSmoothedMax_Msun/yr"] = sample_outflow.max(axis=1)
-        df["OutflowRateSmoothedMean_Msun/yr"] = np.nanmean(
-            sample_outflow, axis=1)
-        df["OutflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-            sample_outflow, axis=1)
+            sample_inflow = df[[
+                f"InflowRateSmoothed_{s}_{g}_Msun/yr"
+                for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
+            df["InflowRateSmoothedMin_Msun/yr"] = sample_inflow.min(axis=1)
+            df["InflowRateSmoothedMax_Msun/yr"] = sample_inflow.max(axis=1)
+            df["InflowRateSmoothedMean_Msun/yr"] = np.nanmean(
+                sample_inflow, axis=1)
+            df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
+                sample_inflow, axis=1)
+
+            sample_outflow = df[[
+                f"OutflowRateSmoothed_{s}_{g}_Msun/yr"
+                for s in Settings.SIMULATIONS for g in Settings.GALAXIES]]
+            df["OutflowRateSmoothedMin_Msun/yr"] = sample_outflow.min(axis=1)
+            df["OutflowRateSmoothedMax_Msun/yr"] = sample_outflow.max(axis=1)
+            df["OutflowRateSmoothedMean_Msun/yr"] = np.nanmean(
+                sample_outflow, axis=1)
+            df["OutflowRateSmoothedStd_Msun/yr"] = np.nanstd(
+                sample_outflow, axis=1)
 
         df = df.dropna()
 

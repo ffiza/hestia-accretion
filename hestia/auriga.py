@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -34,45 +35,48 @@ class AurigaData:
             df[f"OutflowRateSmoothed_Au{i}_Msun/yr"] = windowed_average(
                 time, outflow_rate, window_length)
 
-        sample_inflow = df[[
-            f"InflowRate_Au{i}_Msun/yr"
-            for i in AurigaData.RERUNS]]
-        df["InflowRateMin_Msun/yr"] = sample_inflow.min(axis=1)
-        df["InflowRateMax_Msun/yr"] = sample_inflow.max(axis=1)
-        df["InflowRateMean_Msun/yr"] = np.nanmean(
-            sample_inflow, axis=1)
-        df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-            sample_inflow, axis=1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
 
-        sample_outflow = df[[
-            f"InflowRate_Au{i}_Msun/yr"
-            for i in AurigaData.RERUNS]]
-        df["OutflowRateMin_Msun/yr"] = sample_outflow.min(axis=1)
-        df["OutflowRateMax_Msun/yr"] = sample_outflow.max(axis=1)
-        df["OutflowRateMean_Msun/yr"] = np.nanmean(
-            sample_outflow, axis=1)
-        df["OutflowRateStd_Msun/yr"] = np.nanstd(
-            sample_outflow, axis=1)
+            sample_inflow = df[[
+                f"InflowRate_Au{i}_Msun/yr"
+                for i in AurigaData.RERUNS]]
+            df["InflowRateMin_Msun/yr"] = sample_inflow.min(axis=1)
+            df["InflowRateMax_Msun/yr"] = sample_inflow.max(axis=1)
+            df["InflowRateMean_Msun/yr"] = np.nanmean(
+                sample_inflow, axis=1)
+            df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
+                sample_inflow, axis=1)
 
-        sample_inflow = df[[
-            f"InflowRateSmoothed_Au{i}_Msun/yr"
-            for i in AurigaData.RERUNS]]
-        df["InflowRateSmoothedMin_Msun/yr"] = sample_inflow.min(axis=1)
-        df["InflowRateSmoothedMax_Msun/yr"] = sample_inflow.max(axis=1)
-        df["InflowRateSmoothedMean_Msun/yr"] = np.nanmean(
-            sample_inflow, axis=1)
-        df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-            sample_inflow, axis=1)
+            sample_outflow = df[[
+                f"OutflowRate_Au{i}_Msun/yr"
+                for i in AurigaData.RERUNS]]
+            df["OutflowRateMin_Msun/yr"] = sample_outflow.min(axis=1)
+            df["OutflowRateMax_Msun/yr"] = sample_outflow.max(axis=1)
+            df["OutflowRateMean_Msun/yr"] = np.nanmean(
+                sample_outflow, axis=1)
+            df["OutflowRateStd_Msun/yr"] = np.nanstd(
+                sample_outflow, axis=1)
 
-        sample_outflow = df[[
-            f"InflowRateSmoothed_Au{i}_Msun/yr"
-            for i in AurigaData.RERUNS]]
-        df["OutflowRateSmoothedMin_Msun/yr"] = sample_outflow.min(axis=1)
-        df["OutflowRateSmoothedMax_Msun/yr"] = sample_outflow.max(axis=1)
-        df["OutflowRateSmoothedMean_Msun/yr"] = np.nanmean(
-            sample_outflow, axis=1)
-        df["OutflowRateSmoothedStd_Msun/yr"] = np.nanstd(
-            sample_outflow, axis=1)
+            sample_inflow = df[[
+                f"InflowRateSmoothed_Au{i}_Msun/yr"
+                for i in AurigaData.RERUNS]]
+            df["InflowRateSmoothedMin_Msun/yr"] = sample_inflow.min(axis=1)
+            df["InflowRateSmoothedMax_Msun/yr"] = sample_inflow.max(axis=1)
+            df["InflowRateSmoothedMean_Msun/yr"] = np.nanmean(
+                sample_inflow, axis=1)
+            df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
+                sample_inflow, axis=1)
+
+            sample_outflow = df[[
+                f"OutflowRateSmoothed_Au{i}_Msun/yr"
+                for i in AurigaData.RERUNS]]
+            df["OutflowRateSmoothedMin_Msun/yr"] = sample_outflow.min(axis=1)
+            df["OutflowRateSmoothedMax_Msun/yr"] = sample_outflow.max(axis=1)
+            df["OutflowRateSmoothedMean_Msun/yr"] = np.nanmean(
+                sample_outflow, axis=1)
+            df["OutflowRateSmoothedStd_Msun/yr"] = np.nanstd(
+                sample_outflow, axis=1)
 
         df = df.dropna()
         return df
