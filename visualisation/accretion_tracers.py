@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 from enum import Enum
+from scipy.stats import binned_statistic
 import matplotlib.pyplot as plt
 
 from hestia.settings import Settings
@@ -12,6 +13,7 @@ from hestia.tools import windowed_average
 from hestia.accretion_region import (AccretionRegionType,
                                      get_accretion_region_suffix)
 from hestia.auriga import AurigaData
+from hestia.data import HestiaData
 
 
 class RateType(Enum):
@@ -245,6 +247,88 @@ def plot_halo_disc_relation(
     plt.close(fig)
 
 
+def plot_simulation_comparison(config: dict) -> None:
+    fig = plt.figure(figsize=(4, 2))
+    gs = fig.add_gridspec(nrows=1, ncols=2, hspace=0.2, wspace=0.3)
+    axs = gs.subplots(sharex=True, sharey=False)
+
+    au = AurigaData.get_accretion(config, AccretionRegionType.STELLAR_DISC)
+    he = HestiaData.get_accretion(config, AccretionRegionType.STELLAR_DISC)
+
+    axs[0].set_xlabel(
+        r'$\dot{M}_\mathrm{in}^\mathrm{Au}$ [$\mathrm{M}_\odot'
+        r'\, \mathrm{yr}^{-1}$]', fontsize=7)
+    axs[0].set_ylabel(
+        r'$\dot{M}_\mathrm{in}^\mathrm{He}$ [$\mathrm{M}_\odot'
+        r'\, \mathrm{yr}^{-1}$]', fontsize=7)
+    axs[1].set_xlabel(
+        r'$\dot{M}_\mathrm{out}^\mathrm{Au}$ [$\mathrm{M}_\odot'
+        r'\, \mathrm{yr}^{-1}$]', fontsize=7)
+    axs[1].set_ylabel(
+        r'$\dot{M}_\mathrm{out}^\mathrm{He}$ [$\mathrm{M}_\odot'
+        r'\, \mathrm{yr}^{-1}$]', fontsize=7)
+    for ax in axs.flatten():
+        ax.set_axisbelow(True)
+        ax.set_xlim(0.1, 400)
+        ax.set_ylim(0.1, 400)
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xticks(ticks=[0.1, 1, 10, 100],
+                      labels=["0.1", "1", "10", "100"],
+                      fontsize=6)
+        ax.set_yticks(ticks=[0.1, 1, 10, 100],
+                      labels=["0.1", "1", "10", "100"],
+                      fontsize=6)
+
+    au_binned_inflow = binned_statistic(
+            au["Time_Gyr"].to_numpy(),
+            au["InflowRateMean_Msun/yr"].to_numpy(),
+            statistic="mean", bins=100, range=(0, 14),
+            )
+    bin_centers = au_binned_inflow[1][1:] - np.diff(au_binned_inflow[1]) / 2
+
+    axs[0].scatter(
+        au_binned_inflow[0],
+        binned_statistic(
+            he["Time_Gyr"].to_numpy(),
+            he["InflowRateMean_Msun/yr"].to_numpy(),
+            statistic="mean", bins=100, range=(0, 14),
+        )[0],
+        c=bin_centers, s=1, zorder=11, cmap="gnuplot", vmin=0, vmax=14)
+    s = axs[1].scatter(
+        binned_statistic(
+            au["Time_Gyr"].to_numpy(),
+            au["OutflowRateMean_Msun/yr"].to_numpy(),
+            statistic="mean", bins=100, range=(0, 14),
+        )[0],
+        binned_statistic(
+            he["Time_Gyr"].to_numpy(),
+            he["OutflowRateMean_Msun/yr"].to_numpy(),
+            statistic="mean", bins=100, range=(0, 14),
+        )[0],
+        c=bin_centers, s=1, zorder=11, cmap="gnuplot", vmin=0, vmax=14)
+
+    cbax = axs[0].inset_axes(
+        [0.1, 0.1, 0.8, 0.025],
+        transform=axs[0].transAxes)
+    cb = plt.colorbar(s, cax=cbax, orientation="horizontal")
+    cbax.set_xlim(0, 14)
+    cb.set_ticks(ticks=[0, 2, 4, 6, 8, 10, 12, 14],
+                 labels=['0', '2', '4', '6', '8', '10', '12', '14'],
+                 fontsize=5)
+    cbax.set_xlabel("Time [Gyr]", fontsize=5)
+    cbax.xaxis.set_label_position('top')
+
+    for ax in axs.flatten():
+        ax.plot(ax.get_xlim(), ax.get_ylim(), c='k', ls='--',
+                lw=0.5, zorder=12)
+
+    plt.savefig(
+        f"images/accretion_tracers_simulation_comparison"
+        f"_{config['RUN_CODE']}.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     figure_setup()
 
@@ -264,5 +348,6 @@ if __name__ == "__main__":
     #     config, RateType.INFLOW, AccretionRegionType.HALO)
     # plot_accretion_evolution(
     #     config, RateType.OUTFLOW, AccretionRegionType.HALO)
-    plot_halo_disc_relation(config, RateType.INFLOW)
-    plot_halo_disc_relation(config, RateType.OUTFLOW)
+    # plot_halo_disc_relation(config, RateType.INFLOW)
+    # plot_halo_disc_relation(config, RateType.OUTFLOW)
+    plot_simulation_comparison(config)
