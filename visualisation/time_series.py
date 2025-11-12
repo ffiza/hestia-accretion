@@ -1,8 +1,6 @@
 import json
-from tkinter import font
 import yaml
 import argparse
-import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -55,6 +53,8 @@ def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
 
 
 def make_plot(config: dict) -> None:
+    TICK_LABEL_FONTSIZE: float = 6
+    LABEL_FONTSIZE: float = 6
 
     fig = plt.figure(figsize=(5.0, 7.0))
     gs = fig.add_gridspec(nrows=8, ncols=3, hspace=0.1, wspace=0)
@@ -64,57 +64,68 @@ def make_plot(config: dict) -> None:
         axs[0, i].set_ylim(0, 400)
         axs[0, i].set_yticks(ticks=[0, 100, 200, 300],
                              labels=["0", "100", "200", "300"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[1, i].set_ylim(0, 40)
         axs[1, i].set_yticks(ticks=[0, 10, 20, 30],
                              labels=["0", "10", "20", "30"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[2, i].set_ylim(0, 4)
         axs[2, i].set_yticks(ticks=[0, 1, 2, 3],
                              labels=["0", "1", "2", "3"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[3, i].set_yscale('log')
         axs[3, i].set_ylim(1, 40)
         axs[3, i].set_yticks(ticks=[1, 10],
                              labels=["1", "10"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[4, i].set_yscale('log')
         axs[4, i].set_ylim(1, 400)
         axs[4, i].set_yticks(ticks=[1, 10, 100],
                              labels=["1", "10", "100"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[5, i].set_yscale('log')
         axs[5, i].set_ylim(1, 400)
         axs[5, i].set_yticks(ticks=[1, 10, 100],
                              labels=["1", "10", "100"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[6, i].set_yscale('log')
         axs[6, i].set_ylim(1, 400)
         axs[6, i].set_yticks(ticks=[1, 10, 100],
                              labels=["1", "10", "100"],
-                             fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
         axs[7, i].set_yscale('log')
         axs[7, i].set_ylim(1, 400)
         axs[7, i].set_yticks(ticks=[1, 10, 100],
                              labels=["1", "10", "100"],
-                             fontsize=7)
-    axs[0, 0].set_ylabel(r'$R_{200}$ [ckpc]', fontsize=7)
-    axs[1, 0].set_ylabel(r'$R_\mathrm{d}$ [kpc]', fontsize=7)
-    axs[2, 0].set_ylabel(r'$h_\mathrm{d}$ [kpc]', fontsize=7)
-    axs[3, 0].set_ylabel(r'$\delta_{1200}$', fontsize=7)
-    axs[4, 0].set_ylabel(r'$\dot{M}_\mathrm{in}^\mathrm{disc}$', fontsize=7)
-    axs[5, 0].set_ylabel(r'$\dot{M}_\mathrm{out}^\mathrm{disc}$', fontsize=7)
-    axs[6, 0].set_ylabel(r'$\dot{M}_\mathrm{in}^\mathrm{halo}$', fontsize=7)
-    axs[7, 0].set_ylabel(r'$\dot{M}_\mathrm{out}^\mathrm{halo}$', fontsize=7)
+                             fontsize=TICK_LABEL_FONTSIZE)
+    axs[0, 0].set_ylabel(r'$R_{200}$' + '\n[ckpc]', fontsize=LABEL_FONTSIZE)
+    axs[1, 0].set_ylabel(
+        r'$R_\mathrm{d}$' + '\n[kpc]', fontsize=LABEL_FONTSIZE)
+    axs[2, 0].set_ylabel(
+        r'$h_\mathrm{d}$' + '\n[kpc]', fontsize=LABEL_FONTSIZE)
+    axs[3, 0].set_ylabel(r'$\delta_{1200}$', fontsize=LABEL_FONTSIZE)
+    axs[4, 0].set_ylabel(
+        r'$\dot{M}_\mathrm{in}^\mathrm{disc}$' + '\n'
+        r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]', fontsize=LABEL_FONTSIZE)
+    axs[5, 0].set_ylabel(
+        r'$\dot{M}_\mathrm{out}^\mathrm{disc}$' + '\n'
+        r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]', fontsize=LABEL_FONTSIZE)
+    axs[6, 0].set_ylabel(
+        r'$\dot{M}_\mathrm{in}^\mathrm{halo}$' + '\n'
+        r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]', fontsize=LABEL_FONTSIZE)
+    axs[7, 0].set_ylabel(
+        r'$\dot{M}_\mathrm{out}^\mathrm{halo}$' + '\n'
+        r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]', fontsize=LABEL_FONTSIZE)
 
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
         ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
                       labels=["2", "4", "6", "8", "10", "12"],
-                      fontsize=7)
-        ax.set_xlabel('Time [Gyr]', fontsize=7)
+                      fontsize=TICK_LABEL_FONTSIZE)
+        ax.set_xlabel('Time [Gyr]', fontsize=LABEL_FONTSIZE)
         ax.label_outer()
+        ax.yaxis.set_label_coords(-0.2, 0.5)
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
         for galaxy in Settings.GALAXIES:
