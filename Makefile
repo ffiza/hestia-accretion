@@ -10,3 +10,4 @@ create-plots:
 	python ./visualisation/accretion_tracers.py --config 01
 	python ./visualisation/environment.py --config 01
 	python ./visualisation/prop_comparison.py --config 01
+	python ./visualisation/time_series.py --config 01
