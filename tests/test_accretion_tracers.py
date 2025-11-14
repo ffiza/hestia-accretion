@@ -11,6 +11,7 @@ DF_COLUMNS = ["TracerID", "xPosition_ckpc", "yPosition_ckpc",
               "zPosition_ckpc", "ParentCellType"]
 
 
+# TODO: This should be imported, not copied.
 def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
                         t1_gyr: float, t2_gyr: float,
                         accretion_region: AccretionRegion) -> tuple:
