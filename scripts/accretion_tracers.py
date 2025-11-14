@@ -153,7 +153,7 @@ def calculate_accretion_evolution(simulation: str,
         df2 = make_dataframe(
             simulation, i, galaxy, config, DFType.TRACERS, np.inf)
         inflow_rate, outflow_rate = calculate_accretion(
-            df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,
+            df1=df1, df2=df2, t1_gyr=df1.time, t2_gyr=df2.time,  # type: ignore
             accretion_region=accretion_region)
 
         data["Times_Gyr"][i] = df2.time
@@ -186,10 +186,11 @@ def main():
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     arguments = [(simulation, galaxy, config, accretion_region_type)
-			 for simulation in Settings.SIMULATIONS
-			 for galaxy in Settings.GALAXIES
-			 for accretion_region_type in [AccretionRegionType.STELLAR_DISC,
-										   AccretionRegionType.HALO]]
+                 for simulation in Settings.SIMULATIONS
+                 for galaxy in Settings.GALAXIES
+                 for accretion_region_type in [
+                    AccretionRegionType.STELLAR_DISC,
+                    AccretionRegionType.HALO]]
     Pool(GLOBAL_CONFIG["N_PROCESSES"]).starmap(
         calculate_accretion_evolution, arguments)
 
