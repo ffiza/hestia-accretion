@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 from multiprocessing import Pool
+import os
 
 from hestia.df_type import DFType
 from hestia.settings import Settings
@@ -92,15 +93,17 @@ def calculate_accretion(df1: pd.DataFrame, df2: pd.DataFrame,
          (df2["ParentCellType"] == GLOBAL_CONFIG["STAR_PARTICLE_TYPE"]))
     inflowing_number = is_inflowing.sum()
     outflowing_number = is_outflowing.sum()
-
+    print(f'{inflowing_number} particles inflowing, {outflowing_number} particles outflowing')
     # Export IDs if requested
     if export_ids:
         ids_to_export = {
             "InflowingTracerIDs": df2[is_inflowing]["TracerID"].to_list(),
             "OutflowingTracerIDs": df2[is_outflowing]["TracerID"].to_list(),
         }
+
+        suffix = get_accretion_region_suffix(accretion_region.accretion_region_type)
         with open(f'results/{df2.simulation}/'
-                  f'accreted_ids_snap{df2.snapshot_number}.json', 'w') as f:
+                  f'accreted_ids{suffix}_snap{df2.snapshot_number}.json', 'w') as f:
             json.dump(ids_to_export, f)
 
     # Compute rates in Msun/yr
@@ -193,10 +196,11 @@ def calculate_accretion_evolution(
         + f"accretion_tracers{suffix}_{config['RUN_CODE']}.json"
     with open(path, "w") as f:
         json.dump(data, f)
-
+        f.flush()                  # limpia el buffer de Python
+        os.fsync(f.fileno())       # fuerza a escribir al filesystem (evita null bytes)
 
 def main():
-    EXPORT_IDS_SNAPSHOTS: list[int] = [104, 105, 106]
+    EXPORT_IDS_SNAPSHOTS: list[int] = list(np.arange(GLOBAL_CONFIG['FIRST_SNAPSHOT'], GLOBAL_CONFIG['N_SNAPSHOTS']))
 
     # Get arguments from user
     parser = argparse.ArgumentParser()
