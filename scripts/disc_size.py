@@ -152,10 +152,12 @@ def main():
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    calculate_disc_size(simulation="09_18", galaxy="MW", config=config)
-    calculate_disc_size(simulation="09_18", galaxy="M31", config=config)
-    calculate_disc_size(simulation="37_11", galaxy="MW", config=config)
-    calculate_disc_size(simulation="37_11", galaxy="M31", config=config)
+    calculate_disc_size(simulation="17_11", galaxy="MW", config=config)
+    calculate_disc_size(simulation="17_11", galaxy="M31", config=config)
+    # calculate_disc_size(simulation="09_18", galaxy="MW", config=config)
+    # calculate_disc_size(simulation="09_18", galaxy="M31", config=config)
+    # calculate_disc_size(simulation="37_11", galaxy="MW", config=config)
+    # calculate_disc_size(simulation="37_11", galaxy="M31", config=config)
 
 
 if __name__ == "__main__":

@@ -6,5 +6,5 @@ STAR_PARTICLE_TYPE:                     4
 BH_PARTICLE_TYPE:                       5
 TRACER_PARTICLE_TYPE:                   6
 FIRST_SNAPSHOT:                         35
-N_SNAPSHOTS:                            127
+N_SNAPSHOTS:                            128
 N_PROCESSES:                            4
