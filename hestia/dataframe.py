@@ -1,3 +1,4 @@
+from matplotlib.pylab import f
 import numpy
 import numpy as np
 import pandas as pd
@@ -73,6 +74,7 @@ def _make_dataframe_cells(
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
 
+    print(f'Analysing {SimName}...')
     print(f'Running make_dataframe() for snapshot {SnapNo}...')
 
     if MW_or_M31 not in ["MW", "M31"]:
@@ -162,19 +164,42 @@ def _make_dataframe_cells(
     else:
         BHPos, BHIDs, BHMass = None, None, None
 
-    # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
-    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
-    Snaps = Snaps.astype(int)
-    Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
-    Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
-    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps == SnapNo], Tracked_Numbers_M31[Snaps == SnapNo]
+    # # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
+    # Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
+    # Snaps = Snaps.astype(int)
+    # Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
+    # Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
+    # SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps == SnapNo], Tracked_Numbers_M31[Snaps == SnapNo]
 
-    # Read in subhaloes position and velocities:
-    GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST  # ckpc
-    SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime)  # km s^-1
-    MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
-    M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
+    # # Read in subhaloes position and velocities:
+    # GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
+    # SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST  # ckpc
+    # SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime)  # km s^-1
+    # MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
+    # M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
+
+    # Switch to AHF for centering:
+    M31_MW_AHF_IDs = {
+                    '09_18': [127000000000002, 127000000000003],
+                    '17_11': [127000000000002, 127000000000003],
+                    '37_11': [127000000000001, 127000000000002]
+                }
+    
+    
+    SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/output_2x2.5Mpc'.format(SimName)
+
+    AHF_path = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/AHF_output_2x2.5Mpc/'.format(SimName)
+    AHF_M31_ID = M31_MW_AHF_IDs[SimName][0]
+    AHF_MW_ID = M31_MW_AHF_IDs[SimName][1]
+
+    AHF_filename_M31 = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_M31_ID)
+    AHF_filename_MW = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_MW_ID)
+
+    AHF_table_M31 = np.loadtxt(AHF_path + AHF_filename_M31)
+    AHF_table_MW = np.loadtxt(AHF_path + AHF_filename_MW)
+    MW_pos  = AHF_table_MW[ AHF_table_MW[:, 1] // 1000000000000 == SnapNo ][0][6:9] / Cosmology.SMALL_HUBBLE_CONST
+    M31_pos = AHF_table_M31[ AHF_table_M31[:, 1] // 1000000000000 == SnapNo ][0][6:9] / Cosmology.SMALL_HUBBLE_CONST
+
 
     # Center system of reference on object of interest
     if MW_or_M31 == 'MW':
@@ -301,7 +326,7 @@ def _make_dataframe_tracers(
     max_radius : float, optional
         Radius of the sphere required for the df in ckpc. By default 100.0.
     """
-
+    print(f'Analysing {SimName}...')
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
     # These numbers come from cross-correlating with
@@ -365,18 +390,40 @@ def _make_dataframe_tracers(
     TracerParentID = Tracer_Attrs['ParentID']
 
 
-    # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
-    Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
-    Snaps = Snaps.astype(int)
-    Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
-    Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
-    SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
+    # # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
+    # Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
+    # Snaps = Snaps.astype(int)
+    # Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
+    # Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
+    # SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
 
-    # Read in subhaloes position and velocities:
-    GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST # ckpc
-    MW_pos = SubhaloPos[SubhaloNumberMW]
-    M31_pos = SubhaloPos[SubhaloNumberM31]
+    # # Read in subhaloes position and velocities:
+    # GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
+    # SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST # ckpc
+    # MW_pos = SubhaloPos[SubhaloNumberMW]
+    # M31_pos = SubhaloPos[SubhaloNumberM31]
+
+    # Switch to AHF for centering:
+    M31_MW_AHF_IDs = {
+                    '09_18': [127000000000002, 127000000000003],
+                    '17_11': [127000000000002, 127000000000003],
+                    '37_11': [127000000000001, 127000000000002]
+                }
+    
+    
+    SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/output_2x2.5Mpc'.format(SimName)
+
+    AHF_path = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/AHF_output_2x2.5Mpc/'.format(SimName)
+    AHF_M31_ID = M31_MW_AHF_IDs[SimName][0]
+    AHF_MW_ID = M31_MW_AHF_IDs[SimName][1]
+
+    AHF_filename_M31 = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_M31_ID)
+    AHF_filename_MW = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_MW_ID)
+
+    AHF_table_M31 = np.loadtxt(AHF_path + AHF_filename_M31)
+    AHF_table_MW = np.loadtxt(AHF_path + AHF_filename_MW)
+    MW_pos  = AHF_table_MW[ AHF_table_MW[:, 1] // 1000000000000 == SnapNo ][0][6:9] / Cosmology.SMALL_HUBBLE_CONST
+    M31_pos = AHF_table_M31[ AHF_table_M31[:, 1] // 1000000000000 == SnapNo ][0][6:9] / Cosmology.SMALL_HUBBLE_CONST
 
     # We center particle's positions:
     if MW_or_M31 == 'MW':
@@ -450,11 +497,15 @@ def _make_dataframe_tracers(
     df.time = SnapTime_Gyr
     df.redshift = Redshift
     df.snapshot_number = SnapNo
+    df.simulation = f'{SimName}_{MW_or_M31}'
 
     # Add target gas mass value to dataframe
     df.target_gas_mass = yaml.safe_load(
         open("data/hestia/target_gas_mass.yml"))[SimName] \
         * 1E10 / Cosmology.SMALL_HUBBLE_CONST  # Msun
+
+    N_tracers = np.size(df['TracerID'])
+    print(f'There are {N_tracers} tracer particles in this dataframe.')
 
     return df
 
