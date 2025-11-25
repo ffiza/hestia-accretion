@@ -340,14 +340,14 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    # plot_accretion_evolution(
-    #     config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
-    # plot_accretion_evolution(
-    #     config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
-    # plot_accretion_evolution(
-    #     config, RateType.INFLOW, AccretionRegionType.HALO)
-    # plot_accretion_evolution(
-    #     config, RateType.OUTFLOW, AccretionRegionType.HALO)
-    # plot_halo_disc_relation(config, RateType.INFLOW)
-    # plot_halo_disc_relation(config, RateType.OUTFLOW)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.HALO)
+    plot_halo_disc_relation(config, RateType.INFLOW)
+    plot_halo_disc_relation(config, RateType.OUTFLOW)
     plot_simulation_comparison(config)
