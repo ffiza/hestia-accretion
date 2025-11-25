@@ -95,6 +95,16 @@ def make_plot(config: dict,
     gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
+    match accretion_region_type:
+        case AccretionRegionType.STELLAR_DISC:
+            ylabel = r'$\dot{M}_\mathrm{net}$ '
+            r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+        case AccretionRegionType.HALO:
+            ylabel = r'$\dot{M}_\mathrm{net}^\mathrm{halo}$ '
+            r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+        case _:
+            raise ValueError("Invalid accretion region type.")
+
     for ax in axs:
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
@@ -106,9 +116,7 @@ def make_plot(config: dict,
         ax.set_yticks(ticks=[0.1, 1, 10, 100],
                       labels=["0.1", "1", "10", "100"],
                       fontsize=6)
-        ax.set_ylabel(
-            r'$\dot{M}_\mathrm{net}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]',
-            fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8)
         ax.set_xlabel(r'Time [Gyr]',
                       fontsize=8)
         ax.label_outer()
