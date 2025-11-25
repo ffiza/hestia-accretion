@@ -37,7 +37,8 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
             m_gas.append(
                 data["Mgas"][data["SnapNo"] == snapnum].values[0] / 1e10)
             environment = pd.read_csv(
-                f"results/{simulation}_{galaxy}/delta_1200.csv")
+                f"results/{simulation}_{galaxy}/"
+                f"delta_1200_{config['RUN_CODE']}.csv")
             delta.append(environment["Delta"].to_numpy()[snapnum])
             galaxies.append(f"{simulation}_{galaxy}")
 
@@ -184,7 +185,7 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 5)
     ax.set_xticks([2, 4, 6, 8, 10, 12])
-    ax.set_yticks([0, 0.5, 1, 1.5, 2.0])
+    ax.set_yticks([0, 1, 2, 3, 4, 5])
 
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
