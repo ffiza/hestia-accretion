@@ -9,8 +9,8 @@ from hestia.settings import Settings
 from hestia.images import figure_setup
 
 
-def _get_data(galaxy: str) -> pd.DataFrame:
-    path = f"results/{galaxy}/delta_1200.csv"
+def _get_data(galaxy: str, config: dict) -> pd.DataFrame:
+    path = f"results/{galaxy}/delta_1200_{config['RUN_CODE']}.csv"
     return pd.read_csv(path)
 
 
@@ -59,7 +59,7 @@ def make_plot(config: dict) -> None:
         ax = axs[i]
         for galaxy in Settings.GALAXIES:
             try:
-                df = _get_data(galaxy=f"{simulation}_{galaxy}")
+                df = _get_data(f"{simulation}_{galaxy}", config)
             except FileNotFoundError:
                 warnings.warn(
                     f"Data for {simulation}_{galaxy} not found. "
