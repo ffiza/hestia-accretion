@@ -47,7 +47,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         for _ in Settings.GALAXIES:
             colors.append(Settings.SIMULATION_COLORS[s])
 
-    symbols = ["o"] * 30
+    symbols = ["X"] * 30
     for _ in Settings.SIMULATIONS:
         for g in Settings.GALAXIES:
             symbols.append(Settings.GALAXY_SYMBOLS[g])
@@ -80,15 +80,22 @@ def plot_prop_comparison(config: dict) -> None:
 
     axs[0, 0].set_xlim(10.4, 11.2)
     axs[0, 0].set_ylim(10.4, 11.4)
-    axs[0, 0].set_xticks([10.6, 10.8, 11])
-    axs[0, 0].set_xticklabels([])
-    axs[0, 0].set_yticks([10.6, 10.8, 11, 11.2])
-    axs[0, 0].set_ylabel(r"$\log_{10} M_\mathrm{gas} \, [\mathrm{M}_\odot]$")
+    axs[0, 0].set_xticks(
+        ticks=[10.6, 10.8, 11],
+        labels=[],
+        fontsize=6)
+    axs[0, 0].set_yticks(
+        ticks=[10.6, 10.8, 11, 11.2],
+        labels=["10.6", "10.8", "11.0", "11.2"],
+        fontsize=6)
+    axs[0, 0].set_ylabel(
+        r"$\log_{10} M_\mathrm{gas} \, [\mathrm{M}_\odot]$",
+        fontsize=8)
     axs[0, 0].scatter(
         np.log10(df_au["Mstar_10^10Msun"].to_numpy() * 1e10),
         np.log10(df_au["Mgas_10^10Msun"].to_numpy() * 1e10),
-        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
-        marker="o", label="Auriga",
+        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
+        marker="X", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[0, 0].scatter(
@@ -102,16 +109,25 @@ def plot_prop_comparison(config: dict) -> None:
 
     axs[1, 0].set_xlim(10.4, 11.2)
     axs[1, 0].set_ylim(-0.3, 1.3)
-    axs[1, 0].set_xticks([10.6, 10.8, 11])
-    axs[1, 0].set_yticks([-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1])
+    axs[1, 0].set_xticks(
+        ticks=[10.6, 10.8, 11],
+        labels=["10.6", "10.8", "11.0"],
+        fontsize=6)
+    axs[1, 0].set_yticks(
+        ticks=[-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1],
+        labels=["$-0.1$", "0.1", "0.3", "0.5", "0.7", "0.9", "1.1"],
+        fontsize=6)
     axs[1, 0].set_ylabel(
-        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$")
-    axs[1, 0].set_xlabel(r"$\log_{10} M_\mathrm{star} \, [\mathrm{M}_\odot]$")
+        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+        fontsize=8)
+    axs[1, 0].set_xlabel(
+        r"$\log_{10} M_\mathrm{star} \, [\mathrm{M}_\odot]$",
+        fontsize=8)
     axs[1, 0].scatter(
         np.log10(df_au["Mstar_10^10Msun"].to_numpy() * 1e10),
         np.log10(df_au["SFR_Msun/yr"].to_numpy()),
-        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
-        marker="o", label="Auriga",
+        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
+        marker="X", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[1, 0].scatter(
@@ -125,15 +141,22 @@ def plot_prop_comparison(config: dict) -> None:
 
     axs[0, 1].set_xlim(0.7, 1.4)
     axs[0, 1].set_ylim(-0.3, 1.3)
-    axs[0, 1].set_xticklabels([])
-    axs[0, 1].set_yticks([-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1])
+    axs[0, 1].set_xticks(
+        ticks=[0.8, 1.0, 1.2, 1.4],
+        labels=[],
+        fontsize=6)
+    axs[0, 1].set_yticks(
+        ticks=[-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1],
+        labels=["$-0.1$", "0.1", "0.3", "0.5", "0.7", "0.9", "1.1"],
+        fontsize=6)
     axs[0, 1].set_ylabel(
-        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$")
+        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+        fontsize=8)
     axs[0, 1].scatter(
         np.log10(df_au["Delta1200"].to_numpy()),
         np.log10(df_au["SFR_Msun/yr"].to_numpy()),
-        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
-        marker="o", label="Auriga",
+        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
+        marker="X", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[0, 1].scatter(
@@ -149,16 +172,26 @@ def plot_prop_comparison(config: dict) -> None:
 
     axs[1, 1].set_xlim(0.7, 1.4)
     axs[1, 1].set_ylim(-1.9, -0.7)
-    axs[1, 1].set_xticks([0.8, 1.0, 1.2, 1.4])
-    axs[1, 1].set_yticks([-1.8, -1.6, -1.4, -1.2, -1, -0.8])
-    axs[1, 1].set_ylabel(r"$\log_{10} \mathrm{sSFR} \, [\mathrm{Gyr}^{-1}]$")
-    axs[1, 1].set_xlabel(r"$\log_{10} \delta_{1200}$")
+    axs[1, 1].set_xticks(
+        ticks=[0.8, 1.0, 1.2, 1.4],
+        labels=["0.8", "1.0", "1.2", "1.4"],
+        fontsize=6)
+    axs[1, 1].set_yticks(
+        ticks=[-1.8, -1.6, -1.4, -1.2, -1, -0.8],
+        labels=["$-1.8$", "$-1.6$", "$-1.4$", "$-1.2$", "$-1.0$", "$-0.8$"],
+        fontsize=6)
+    axs[1, 1].set_ylabel(
+        r"$\log_{10} \mathrm{sSFR} \, [\mathrm{Gyr}^{-1}]$",
+        fontsize=8)
+    axs[1, 1].set_xlabel(
+        r"$\log_{10} \delta_{1200}$",
+        fontsize=8)
     ssfr = df_au["SFR_Msun/yr"].to_numpy() \
         / df_au["Mstar_10^10Msun"].to_numpy() / 10
     axs[1, 1].scatter(
         np.log10(df_au["Delta1200"].to_numpy()), np.log10(ssfr),
-        s=12, facecolors="none", edgecolor=df_au["Colors"].values[0],
-        marker="o", label="Auriga",
+        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
+        marker="X", label="Auriga",
     )
     for _, row in df_he.iterrows():
         axs[1, 1].scatter(
@@ -180,29 +213,38 @@ def plot_prop_comparison(config: dict) -> None:
 def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     fig, ax = plt.subplots(figsize=(2.5, 2.5))
 
-    ax.set_xlabel("Time [Gyr]")
-    ax.set_ylabel("Regression Slope")
+    ax.set_xlabel("Time [Gyr]", fontsize=8)
+    ax.set_ylabel("Regression Slope", fontsize=8)
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 5)
-    ax.set_xticks([2, 4, 6, 8, 10, 12])
-    ax.set_yticks([0, 1, 2, 3, 4, 5])
+    ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                  labels=["2", "4", "6", "8", "10", "12"],
+                  fontsize=6)
+    ax.set_yticks(ticks=[0, 1, 2, 3, 4, 5],
+                  labels=["0", "1", "2", "3", "4", "5"],
+                  fontsize=6)
 
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
-    ax1.set_xlabel(r"$\log_{10} \delta_{1200}$")
+    ax1.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
     ax1.set_xlim(0.4, 1.2)
     ax1.set_ylim(-0.4, 1.6)
-    ax1.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1])
-    ax1.set_yticks([0, 0.5, 1])
+    ax1.set_xticks(ticks=[0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1],
+                   labels=["0.5", "0.6", "0.7", "0.8", "0.9", "1", "1.1"],
+                   fontsize=6)
+    ax1.set_yticks(ticks=[0, 0.5, 1],
+                   labels=["0.0", "0.5", "1.0"],
+                   fontsize=6)
     ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
-    ax2.tick_params(axis="y", labelleft=False, labelright=True)
+    ax2.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
     ax2.set_ylabel(
-        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$")
+        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+        fontsize=8)
     ax2.yaxis.set_label_position("right")
     ax3 = ax.inset_axes([1, 2/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax3.tick_params(axis="x", labelbottom=False)
-    ax3.tick_params(axis="y", labelleft=False, labelright=True)
+    ax3.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
 
     axs = [ax1, ax2, ax3]
     snapnums = [61, 77, 95]
@@ -211,9 +253,16 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
         i = len(snapnums) - j - 1
         df = _get_data(snapnum, config)
         for _, row in df.iterrows():
-            axs[i].scatter(
-                np.log10(row["Delta1200"]), np.log10(row["SFR_Msun/yr"]), s=10,
-                color=row["Colors"], facecolors="none", marker=row["Symbols"])
+            if row["Galaxy"].startswith("Au"):
+                axs[i].scatter(
+                    np.log10(row["Delta1200"]), np.log10(row["SFR_Msun/yr"]),
+                    s=12, facecolor=row["Colors"], edgecolors="none",
+                    marker=row["Symbols"])
+            else:
+                axs[i].scatter(
+                    np.log10(row["Delta1200"]), np.log10(row["SFR_Msun/yr"]),
+                    s=12, color=row["Colors"], facecolors="none",
+                    marker=row["Symbols"])
         r = linregress(np.log10(df["Delta1200"]), np.log10(df["SFR_Msun/yr"]))
         axs[i].text(0.025, 0.95, f"$z =$ {round(df.redshift, 1)}",
                     transform=axs[i].transAxes,
@@ -263,29 +312,38 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
 def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
     fig, ax = plt.subplots(figsize=(2.5, 2.5))
 
-    ax.set_xlabel("Time [Gyr]")
-    ax.set_ylabel("Regression Slope")
+    ax.set_xlabel("Time [Gyr]", fontsize=8)
+    ax.set_ylabel("Regression Slope", fontsize=8)
     ax.set_xlim(0, 14)
     ax.set_ylim(-1, 1.5)
-    ax.set_xticks([2, 4, 6, 8, 10, 12])
-    ax.set_yticks([-1, -0.5, 0, 0.5, 1, 1.5])
+    ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                  labels=["2", "4", "6", "8", "10", "12"],
+                  fontsize=6)
+    ax.set_yticks(ticks=[-1, -0.5, 0, 0.5, 1, 1.5],
+                  labels=["$-1$", "$-0.5$", "0.0", "0.5", "1.0", "1.5"],
+                  fontsize=6)
 
     ax1 = ax.inset_axes([1, 0, 1, 1/3])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
-    ax1.set_xlabel(r"$\log_{10} \delta_{1200}$")
+    ax1.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
     ax1.set_xlim(0.4, 1.2)
     ax1.set_ylim(-1.5, 0.5)
-    ax1.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1])
-    ax1.set_yticks([-1, 0])
+    ax1.set_xticks(ticks=[0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1],
+                   labels=["0.5", "0.6", "0.7", "0.8", "0.9", "1", "1.1"],
+                   fontsize=6)
+    ax1.set_yticks(ticks=[-1, 0],
+                   labels=["$-1.0$", "0.0"],
+                   fontsize=6)
     ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
-    ax2.tick_params(axis="y", labelleft=False, labelright=True)
+    ax2.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
     ax2.set_ylabel(
-        r"$\log_{10} \mathrm{sSFR} \, [\mathrm{Gyr}^{-1}]$")
+        r"$\log_{10} \mathrm{sSFR} \, [\mathrm{Gyr}^{-1}]$",
+        fontsize=8)
     ax2.yaxis.set_label_position("right")
     ax3 = ax.inset_axes([1, 2/3, 1, 1/3], sharex=ax1, sharey=ax1)
     ax3.tick_params(axis="x", labelbottom=False)
-    ax3.tick_params(axis="y", labelleft=False, labelright=True)
+    ax3.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
 
     axs = [ax1, ax2, ax3]
     snapnums = [61, 77, 95]
@@ -295,9 +353,16 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
         df = _get_data(snapnum, config)
         for _, row in df.iterrows():
             ssfr = row["SFR_Msun/yr"] / row["Mstar_10^10Msun"] / 10
-            axs[i].scatter(
-                np.log10(row["Delta1200"]), np.log10(ssfr), s=10,
-                color=row["Colors"], facecolors="none", marker=row["Symbols"])
+            if row["Galaxy"].startswith("Au"):
+                axs[i].scatter(
+                    np.log10(row["Delta1200"]), np.log10(ssfr),
+                    s=12, facecolor=row["Colors"], edgecolors="none",
+                    marker=row["Symbols"])
+            else:
+                axs[i].scatter(
+                    np.log10(row["Delta1200"]), np.log10(ssfr),
+                    s=12, color=row["Colors"], facecolors="none",
+                    marker=row["Symbols"])
         ssfr = df["SFR_Msun/yr"] / df["Mstar_10^10Msun"] / 10
         r = linregress(np.log10(df["Delta1200"]), np.log10(ssfr))
         axs[i].text(0.025, 0.95, f"$z =$ {round(df.redshift, 1)}",

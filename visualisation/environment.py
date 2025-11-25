@@ -45,14 +45,16 @@ def make_plot(config: dict) -> None:
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(1, 100)
+        ax.set_ylim(1, 30)
         ax.set_yscale("log")
-        ax.set_xticks([2, 4, 6, 8, 10, 12])
-        ax.set_yticks([1, 10, 100])
-        ax.set_yticklabels(["1", "10", "100"])
-        ax.set_ylabel(
-            r'$\delta_{1200}$')
-        ax.set_xlabel(r'Time [Gyr]')
+        ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                      labels=["2", "4", "6", "8", "10", "12"],
+                      fontsize=6)
+        ax.set_yticks(ticks=[1, 3, 5, 10, 20],
+                      labels=["1", "3", "5", "10", "20"],
+                      fontsize=6)
+        ax.set_ylabel(r'$\delta_{1200}$', fontsize=8)
+        ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
@@ -72,7 +74,7 @@ def make_plot(config: dict) -> None:
                     lw=0.75, label=galaxy, zorder=11)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-            transform=ax.transAxes, fontsize=7.0,
+            transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 

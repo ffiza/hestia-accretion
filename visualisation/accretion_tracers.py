@@ -54,19 +54,19 @@ class Helpers:
                    accretion_region_type: AccretionRegionType) -> str:
         if rate_type == RateType.INFLOW \
                 and accretion_region_type == AccretionRegionType.STELLAR_DISC:
-            label = r'$\dot{M}_\mathrm{in}^\mathrm{disc}$' \
+            label = r'$\dot{M}_\mathrm{in}$ ' \
                 r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         elif rate_type == RateType.INFLOW \
                 and accretion_region_type == AccretionRegionType.HALO:
-            label = r'$\dot{M}_\mathrm{in}^\mathrm{halo}$' \
+            label = r'$\dot{M}_\mathrm{in}^\mathrm{halo}$ ' \
                 r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         elif rate_type == RateType.OUTFLOW \
                 and accretion_region_type == AccretionRegionType.STELLAR_DISC:
-            label = r'$\dot{M}_\mathrm{out}^\mathrm{disc}$' \
+            label = r'$\dot{M}_\mathrm{out}$ ' \
                 r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         elif rate_type == RateType.OUTFLOW \
                 and accretion_region_type == AccretionRegionType.HALO:
-            label = r'$\dot{M}_\mathrm{out}^\mathrm{halo}$' \
+            label = r'$\dot{M}_\mathrm{out}^\mathrm{halo}$ ' \
                 r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         else:
             raise ValueError("Invalid combination of inputs.")
@@ -115,7 +115,7 @@ def _add_auriga_data_to_ax(
             df_auriga[
                 f"{Helpers.get_rate_type_string(rate_type)}"
                 "RateSmoothedMean_Msun/yr"],
-            ls="-", color="darkgray", lw=1, zorder=10)
+            ls="-", color="darkgray", lw=0.75, zorder=10)
 
 
 def plot_accretion_evolution(
@@ -133,11 +133,15 @@ def plot_accretion_evolution(
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 400)
         ax.set_yscale("log")
-        ax.set_xticks([2, 4, 6, 8, 10, 12])
-        ax.set_yticks([0.1, 1, 10, 100])
-        ax.set_yticklabels(["0.1", "1", "10", "100"])
-        ax.set_ylabel(Helpers.get_ylabel(rate_type, accretion_region_type))
-        ax.set_xlabel(r'Time [Gyr]')
+        ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                      labels=["2", "4", "6", "8", "10", "12"],
+                      fontsize=6)
+        ax.set_yticks(ticks=[0.1, 1, 10, 100],
+                      labels=["0.1", "1", "10", "100"],
+                      fontsize=6)
+        ax.set_ylabel(Helpers.get_ylabel(rate_type, accretion_region_type),
+                      fontsize=8)
+        ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
@@ -153,10 +157,10 @@ def plot_accretion_evolution(
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
                     color=Settings.SIMULATION_COLORS[simulation],
-                    lw=1, label=galaxy, zorder=12)
+                    lw=0.75, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-            transform=ax.transAxes, fontsize=7.0,
+            transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
@@ -178,12 +182,12 @@ def plot_halo_disc_relation(
     axs = gs.subplots(sharex=True, sharey=False)
 
     if rate_type == RateType.INFLOW:
-        xlabel = r'$\dot{M}_\mathrm{in}^\mathrm{disc}$ [$\mathrm{M}_\odot' + \
+        xlabel = r'$\dot{M}_\mathrm{in}$ [$\mathrm{M}_\odot' + \
             r'\, \mathrm{yr}^{-1}$]'
         ylabel = r'$\dot{M}_\mathrm{in}^\mathrm{halo}$ [$\mathrm{M}_\odot' + \
             r'\, \mathrm{yr}^{-1}$]'
     elif rate_type == RateType.OUTFLOW:
-        xlabel = r'$\dot{M}_\mathrm{out}^\mathrm{disc}$ [$\mathrm{M}_\odot' + \
+        xlabel = r'$\dot{M}_\mathrm{out}$ [$\mathrm{M}_\odot' + \
             r'\, \mathrm{yr}^{-1}$]'
         ylabel = r'$\dot{M}_\mathrm{out}^\mathrm{halo}$ [$\mathrm{M}_\odot' + \
             r'\, \mathrm{yr}^{-1}$]'
@@ -196,12 +200,12 @@ def plot_halo_disc_relation(
         ax.set_yscale("log")
         ax.set_xticks(ticks=[0.1, 1, 10, 100],
                       labels=["0.1", "1", "10", "100"],
-                      fontsize=7)
+                      fontsize=6)
         ax.set_yticks(ticks=[0.1, 1, 10, 100],
                       labels=["0.1", "1", "10", "100"],
-                      fontsize=7)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+                      fontsize=6)
+        ax.set_xlabel(xlabel, fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
@@ -219,7 +223,7 @@ def plot_halo_disc_relation(
             ax.text(
                 x=0.05, y=0.95,
                 s=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
-                transform=ax.transAxes, fontsize=7.0,
+                transform=ax.transAxes, fontsize=6,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
@@ -248,7 +252,7 @@ def plot_halo_disc_relation(
 
 
 def plot_simulation_comparison(config: dict) -> None:
-    fig = plt.figure(figsize=(4, 2))
+    fig = plt.figure(figsize=(5, 2))
     gs = fig.add_gridspec(nrows=1, ncols=2, hspace=0.2, wspace=0.3)
     axs = gs.subplots(sharex=True, sharey=False)
 
@@ -294,7 +298,7 @@ def plot_simulation_comparison(config: dict) -> None:
             he["InflowRateMean_Msun/yr"].to_numpy(),
             statistic="mean", bins=100, range=(0, 14),
         )[0],
-        c=bin_centers, s=1, zorder=11, cmap="gnuplot", vmin=0, vmax=14)
+        c=bin_centers, s=1.5, zorder=11, cmap="gnuplot", vmin=0, vmax=14)
     s = axs[1].scatter(
         binned_statistic(
             au["Time_Gyr"].to_numpy(),
@@ -306,7 +310,7 @@ def plot_simulation_comparison(config: dict) -> None:
             he["OutflowRateMean_Msun/yr"].to_numpy(),
             statistic="mean", bins=100, range=(0, 14),
         )[0],
-        c=bin_centers, s=1, zorder=11, cmap="gnuplot", vmin=0, vmax=14)
+        c=bin_centers, s=1.5, zorder=11, cmap="gnuplot", vmin=0, vmax=14)
 
     cbax = axs[0].inset_axes(
         [0.1, 0.1, 0.8, 0.025],

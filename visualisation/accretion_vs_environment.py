@@ -54,67 +54,6 @@ def _get_data(config: dict) -> pd.DataFrame:
     return df
 
 
-def plot_accretion_vs_environment(config: dict) -> None:
-    df = _get_data(config)
-    is_auriga = df["Galaxy"].str.startswith("Au")
-
-    fig = plt.figure(figsize=(3.0, 4.0))
-    gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, wspace=0.4)
-    axs = np.array(gs.subplots(sharex=True, sharey=False))
-
-    axs[0].set_xlim(0, 1.4)
-    axs[0].set_ylim(1E-1, 600)
-    axs[0].set_yscale("log")
-    axs[0].set_yticks(ticks=[1, 10, 100],
-                      labels=["1", "10", "100"],
-                      fontsize=7)
-    axs[0].set_ylabel(
-        r"$\dot{M}_\mathrm{in}^\mathrm{disc} \, [\mathrm{M}_\odot"
-        r" \, \mathrm{yr}^{-1}]$")
-    axs[0].scatter(
-        np.log10(df[is_auriga]["Delta1200"].to_numpy()),
-        df[is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
-        s=5, marker="X", alpha=0.25, edgecolor="none",
-        c="tab:gray", label="Auriga",
-    )
-    axs[0].scatter(
-        np.log10(df[~is_auriga]["Delta1200"].to_numpy()),
-        df[~is_auriga]["InflowRate_Msun/yr"].to_numpy(),
-        s=1, cmap="viridis", c=df[~is_auriga]["Time_Gyr"], label="_Hestia",
-    )
-    axs[0].legend(fontsize=5, loc="upper left", frameon=False)
-
-    axs[1].set_ylim(1E-1, 600)
-    axs[1].set_yscale("log")
-    axs[1].set_xticks(ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4],
-                      labels=["0", "0.2", "0.4", "0.6", "0.8",
-                              "1.0", "1.2", "1.4"],
-                      fontsize=7)
-    axs[1].set_yticks(ticks=[1, 10, 100],
-                      labels=["1", "10", "100"],
-                      fontsize=7)
-    axs[1].set_ylabel(
-        r"$\dot{M}_\mathrm{out}^\mathrm{disc} \, [\mathrm{M}_\odot"
-        r" \, \mathrm{yr}^{-1}]$")
-    axs[1].set_xlabel(r"$\log_{10} \delta_{1200}$")
-
-    axs[1].scatter(
-        np.log10(df[is_auriga]["Delta1200"].to_numpy()),
-        df[is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
-        s=5, marker="X", alpha=0.2, edgecolor="none",
-        c="tab:gray", label="Auriga",
-    )
-    axs[1].scatter(
-        np.log10(df[~is_auriga]["Delta1200"].to_numpy()),
-        df[~is_auriga]["OutflowRate_Msun/yr"].to_numpy(),
-        s=1, cmap="viridis", c=df[~is_auriga]["Time_Gyr"], label="_Hestia",
-    )
-
-    plt.savefig(
-        f"images/accretion_vs_environment_{config['RUN_CODE']}.pdf")
-    plt.close(fig)
-
-
 def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
     df = _get_data(config)
     is_auriga = df["Galaxy"].str.startswith("Au")
@@ -129,13 +68,13 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
         ax.set_yscale("log")
         ax.set_xticks(ticks=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
                       labels=["0.2", "0.4", "0.6", "0.8", "1.0", "1.2"],
-                      fontsize=7)
+                      fontsize=6)
         ax.set_yticks(ticks=[1, 10, 100],
                       labels=["1", "10", "100"],
-                      fontsize=7)
+                      fontsize=6)
         ax.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
         ax.set_ylabel(
-            r"$\dot{M}_\mathrm{in}^\mathrm{disc} \, [\mathrm{M}_\odot"
+            r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
             r" \, \mathrm{yr}^{-1}]$", fontsize=8)
         ax.set_axisbelow(True)
         ax.label_outer()
@@ -160,7 +99,7 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
             ax.text(
                 x=0.05, y=0.95,
                 s=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
-                transform=ax.transAxes, fontsize=7.0,
+                transform=ax.transAxes, fontsize=6,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
@@ -180,5 +119,4 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_accretion_vs_environment(config)
     plot_inflows_vs_environment_by_galaxy(config)

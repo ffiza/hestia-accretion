@@ -59,11 +59,15 @@ def plot_disc_radius(config: dict) -> None:
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_xticks([2, 4, 6, 8, 10, 12])
-        ax.set_xlabel(r'Time [Gyr]')
+        ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                      labels=["2", "4", "6", "8", "10", "12"],
+                      fontsize=6)
+        ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.set_ylim(0, 40)
-        ax.set_yticks([0, 10, 20, 30, 40])
-        ax.set_ylabel(r'$R_\mathrm{d}$ [kpc]')
+        ax.set_yticks(ticks=[0, 10, 20, 30, 40],
+                      labels=["0", "10", "20", "30", "40"],
+                      fontsize=6)
+        ax.set_ylabel(r'$R_\mathrm{d}$ [kpc]', fontsize=8)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
@@ -75,9 +79,9 @@ def plot_disc_radius(config: dict) -> None:
                 df["Time_Gyr"], df["ExpansionFactor"] * df["DiscRadius_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
-                lw=1, label=galaxy, zorder=11)
+                lw=0.75, label=galaxy, zorder=11)
         ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-                transform=ax.transAxes, fontsize=7.0,
+                transform=ax.transAxes, fontsize=6,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
@@ -91,7 +95,7 @@ def plot_disc_radius(config: dict) -> None:
         ax.plot(df_auriga["Time_Gyr"],
                 df_auriga["DiscRadiusMean_ckpc"]
                 * df_auriga["ExpansionFactor"],
-                ls="-", color="darkgray", lw=1, zorder=10)
+                ls="-", color="darkgray", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
@@ -108,11 +112,15 @@ def plot_disc_height(config: dict) -> None:
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_xticks([2, 4, 6, 8, 10, 12])
-        ax.set_xlabel(r'Time [Gyr]')
+        ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                      labels=["2", "4", "6", "8", "10", "12"],
+                      fontsize=6)
+        ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.set_ylim(0, 4)
-        ax.set_yticks([0, 1, 2, 3, 4])
-        ax.set_ylabel(r'$h_\mathrm{d}$ [kpc]')
+        ax.set_yticks(ticks=[0, 1, 2, 3, 4],
+                      labels=["0", "1", "2", "3", "4"],
+                      fontsize=6)
+        ax.set_ylabel(r'$h_\mathrm{d}$ [kpc]', fontsize=8)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
@@ -124,9 +132,9 @@ def plot_disc_height(config: dict) -> None:
                 df["Time_Gyr"], df["ExpansionFactor"] * df["DiscHeight_ckpc"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
-                lw=1, label=galaxy, zorder=11)
+                lw=0.75, label=galaxy, zorder=11)
         ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-                transform=ax.transAxes, fontsize=7.0,
+                transform=ax.transAxes, fontsize=6,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
 
@@ -140,7 +148,7 @@ def plot_disc_height(config: dict) -> None:
         ax.plot(df_auriga["Time_Gyr"],
                 df_auriga["DiscHeightMean_ckpc"]
                 * df_auriga["ExpansionFactor"],
-                ls="-", color="darkgray", lw=1, zorder=10)
+                ls="-", color="darkgray", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 

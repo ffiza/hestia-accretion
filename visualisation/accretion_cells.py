@@ -84,7 +84,7 @@ def _add_auriga_data_to_ax(ax, config: dict) -> None:
         color="k", alpha=0.1, label="Auriga", lw=0)
     ax.plot(df_auriga["Time_Gyr"],
             df_auriga["AccretionRateSmoothedMean_Msun/yr"],
-            ls="-", color="darkgray", lw=1, zorder=10)
+            ls="-", color="darkgray", lw=0.75, zorder=10)
 
 
 def make_plot(config: dict,
@@ -100,12 +100,17 @@ def make_plot(config: dict,
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 400)
         ax.set_yscale("log")
-        ax.set_xticks([2, 4, 6, 8, 10, 12])
-        ax.set_yticks([0.1, 1, 10, 100])
-        ax.set_yticklabels(["0.1", "1", "10", "100"])
+        ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                      labels=["2", "4", "6", "8", "10", "12"],
+                      fontsize=6)
+        ax.set_yticks(ticks=[0.1, 1, 10, 100],
+                      labels=["0.1", "1", "10", "100"],
+                      fontsize=6)
         ax.set_ylabel(
-            r'$\dot{M}_\mathrm{net}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]')
-        ax.set_xlabel(r'Time [Gyr]')
+            r'$\dot{M}_\mathrm{net}$ [$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]',
+            fontsize=8)
+        ax.set_xlabel(r'Time [Gyr]',
+                      fontsize=8)
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
@@ -123,10 +128,10 @@ def make_plot(config: dict,
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
                     color=Settings.SIMULATION_COLORS[simulation],
-                    lw=1, label=galaxy, zorder=12)
+                    lw=0.75, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-            transform=ax.transAxes, fontsize=7.0,
+            transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
