@@ -1,6 +1,5 @@
 class Settings:
     SIMULATIONS: list = ["17_11", "09_18", "37_11"]
-    # SIMULATIONS: list = ["17_11"]
     GALAXIES: list = ["MW", "M31"]
     SIMULATION_COLORS: dict = {
         "17_11": "tab:red",
