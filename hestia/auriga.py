@@ -45,7 +45,7 @@ class AurigaData:
             df["InflowRateMax_Msun/yr"] = sample_inflow.max(axis=1)
             df["InflowRateMean_Msun/yr"] = np.nanmean(
                 sample_inflow, axis=1)
-            df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
+            df["InflowRateStd_Msun/yr"] = np.nanstd(
                 sample_inflow, axis=1)
 
             sample_outflow = df[[
