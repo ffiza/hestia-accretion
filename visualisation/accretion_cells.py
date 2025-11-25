@@ -40,6 +40,12 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
         rate[rate < 0.1] = np.nan
         df[f"AccretionRateSmoothed_Au{i}_Msun/yr"] = windowed_average(
             time, rate, window_length)
+    df["AccretionRateMin_Msun/yr"] = df[[
+        f"AccretionRate_Au{i}_Msun/yr" for i in range(1, 31)]].min(
+            axis=1)
+    df["AccretionRateMax_Msun/yr"] = df[[
+        f"AccretionRate_Au{i}_Msun/yr" for i in range(1, 31)]].max(
+            axis=1)
     df["AccretionRateSmoothedMin_Msun/yr"] = df[[
         f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].min(
             axis=1)
@@ -54,6 +60,14 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
             axis=1)
         df["AccretionRateSmoothedStd_Msun/yr"] = np.nanstd(
             df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
+        df["AccretionRateMean_Msun/yr"] = np.nanmean(
+            df[[f"AccretionRate_Au{i}_Msun/yr" for i in range(
+                1, 31)]].to_numpy(),
+            axis=1)
+        df["AccretionRateStd_Msun/yr"] = np.nanstd(
+            df[[f"AccretionRate_Au{i}_Msun/yr" for i in range(
                 1, 31)]].to_numpy(),
             axis=1)
     return df

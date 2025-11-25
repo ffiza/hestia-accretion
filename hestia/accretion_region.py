@@ -76,7 +76,7 @@ def get_accretion_region_suffix(accretion_region_type: AccretionRegionType
                                 ) -> str:
     match accretion_region_type:
         case AccretionRegionType.STELLAR_DISC:
-            return "_stellar_disc"
+            return ""
         case AccretionRegionType.HALO:
             return "_halo"
         case _:
