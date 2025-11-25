@@ -133,10 +133,10 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
         ax.set_yticks(ticks=[1, 10, 100],
                       labels=["1", "10", "100"],
                       fontsize=7)
-        ax.set_xlabel(r"$\log_{10} \delta_{1200}$")
+        ax.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
         ax.set_ylabel(
-            r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
-            r" \, \mathrm{yr}^{-1}]$")
+            r"$\dot{M}_\mathrm{in}^\mathrm{disc} \, [\mathrm{M}_\odot"
+            r" \, \mathrm{yr}^{-1}]$", fontsize=8)
         ax.set_axisbelow(True)
         ax.label_outer()
         ax.scatter(
