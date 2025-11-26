@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 from enum import Enum
-from scipy.stats import binned_statistic
+from scipy.stats import binned_statistic, ks_2samp
 import matplotlib.pyplot as plt
 
 from hestia.settings import Settings
@@ -333,6 +333,106 @@ def plot_simulation_comparison(config: dict) -> None:
     plt.close(fig)
 
 
+def perform_ks_test(config: dict) -> None:
+    # Perform Kolmogorov-Smirnov test
+    au = AurigaData.get_accretion(config, AccretionRegionType.STELLAR_DISC)
+    he = HestiaData.get_accretion(config, AccretionRegionType.STELLAR_DISC)
+
+    au_accumulated = pd.DataFrame({
+        "Time_Gyr": au[[
+            "Time_Gyr" for _ in AurigaData.RERUNS]].values.ravel(),
+        "InflowRate_Msun/yr": au[[
+            f"InflowRate_Au{i}_Msun/yr"
+            for i in AurigaData.RERUNS]].values.ravel(),
+    })
+    he_accumulated = pd.DataFrame({
+        "Time_Gyr": he[[
+            "Time_Gyr" for _ in Settings.GALAXIES
+            for _ in Settings.SIMULATIONS]].values.ravel(),
+        "InflowRate_Msun/yr": he[[
+            f"InflowRate_{s}_{g}_Msun/yr"
+            for s in Settings.SIMULATIONS
+            for g in Settings.GALAXIES]].values.ravel(),
+    })
+
+    bin_edges = np.linspace(0, 13.9, 57)
+    bin_centers = bin_edges[1:] - np.diff(bin_edges) / 2
+    pvalues = []
+    for bin_edge_start, bin_edge_end in zip(bin_edges[:-1], bin_edges[1:]):
+        au_values = au_accumulated[
+            (au_accumulated["Time_Gyr"] >= bin_edge_start)
+            & (au_accumulated["Time_Gyr"] < bin_edge_end)][
+                "InflowRate_Msun/yr"].to_numpy()
+        he_values = he_accumulated[
+            (he_accumulated["Time_Gyr"] >= bin_edge_start)
+            & (he_accumulated["Time_Gyr"] < bin_edge_end)][
+                "InflowRate_Msun/yr"].to_numpy()
+        pvalues.append(ks_2samp(au_values, he_values).pvalue)
+    print(pvalues)
+
+    # Plot results
+    fig = plt.figure(figsize=(3, 3))
+    gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, wspace=0)
+    axs = gs.subplots(sharex=True, sharey=False)
+
+
+    axs[0].set_ylabel(
+        r'$\dot{M}_\mathrm{in}$ [$\mathrm{M}_\odot'
+        r'\, \mathrm{yr}^{-1}$]', fontsize=7)
+    axs[0].set_yscale("log")
+    axs[0].set_yticks(
+        ticks=[0.1, 1, 10, 100],
+        labels=["0.1", "1", "10", "100"],
+        fontsize=6)
+
+    axs[1].set_xlabel("Time [Gyr]", fontsize=7)
+    axs[1].set_ylabel(r'$p$-value', fontsize=7)
+    axs[1].set_ylim(0, 1)
+    axs[1].set_yticks(
+        ticks=[0, 0.2, 0.4, 0.6, 0.8],
+        labels=["0", "0.2", "0.4", "0.6", "0.8"],
+        fontsize=6)
+
+    for ax in axs.flatten():
+        ax.set_axisbelow(True)
+        ax.set_xlim(0, 14)
+        ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
+                      labels=["2", "4", "6", "8", "10", "12"],
+                      fontsize=6)
+
+    axs[0].scatter(
+        au_accumulated["Time_Gyr"], au_accumulated["InflowRate_Msun/yr"],
+        s=5, zorder=11, edgecolor="none", facecolor="tab:blue", alpha=0.25)
+    au_binned_inflow = binned_statistic(
+            au_accumulated["Time_Gyr"].to_numpy(),
+            au_accumulated["InflowRate_Msun/yr"].to_numpy(),
+            statistic="mean", bins=bin_edges,
+            )
+    axs[0].plot(
+        bin_centers, au_binned_inflow[0],
+        lw=0.75, zorder=12, color="tab:blue")
+
+    axs[0].scatter(
+        he_accumulated["Time_Gyr"], he_accumulated["InflowRate_Msun/yr"],
+        s=5, zorder=11, edgecolor="none", facecolor="tab:red", alpha=0.25)
+    he_binned_inflow = binned_statistic(
+            he_accumulated["Time_Gyr"].to_numpy(),
+            he_accumulated["InflowRate_Msun/yr"].to_numpy(),
+            statistic="mean", bins=bin_edges,
+            )
+    axs[0].plot(
+        bin_centers, he_binned_inflow[0],
+        lw=0.75, zorder=12, color="tab:red")
+
+    axs[1].scatter(
+        bin_centers, pvalues,
+        s=5, zorder=11, edgecolor="none", facecolor="k")
+
+    plt.savefig(
+        f"images/accretion_tracers_ks_test_{config['RUN_CODE']}.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     figure_setup()
 
@@ -344,14 +444,15 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_accretion_evolution(
-        config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
-    plot_accretion_evolution(
-        config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
-    plot_accretion_evolution(
-        config, RateType.INFLOW, AccretionRegionType.HALO)
-    plot_accretion_evolution(
-        config, RateType.OUTFLOW, AccretionRegionType.HALO)
-    plot_halo_disc_relation(config, RateType.INFLOW)
-    plot_halo_disc_relation(config, RateType.OUTFLOW)
-    plot_simulation_comparison(config)
+    # plot_accretion_evolution(
+    #     config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
+    # plot_accretion_evolution(
+    #     config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
+    # plot_accretion_evolution(
+    #     config, RateType.INFLOW, AccretionRegionType.HALO)
+    # plot_accretion_evolution(
+    #     config, RateType.OUTFLOW, AccretionRegionType.HALO)
+    # plot_halo_disc_relation(config, RateType.INFLOW)
+    # plot_halo_disc_relation(config, RateType.OUTFLOW)
+    # plot_simulation_comparison(config)
+    perform_ks_test(config)
