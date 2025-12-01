@@ -11,9 +11,6 @@ from hestia.settings import Settings
 
 
 def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
-    if snapnum != 127:
-        raise NotImplementedError("Only snapnum 127 is implemented.")
-
     galaxies = []
 
     sfr = []
@@ -179,6 +176,10 @@ def plot_prop_comparison(config: dict) -> None:
                         transform=ax.transAxes, color=color,
                         ha="left", va='top', fontsize=4, zorder=12)
             ax.label_outer()
+
+    handles, labels = axs[0, 1].get_legend_handles_labels()
+    axs[0, 0].legend(handles, labels, frameon=False, fontsize=4,
+                     bbox_to_anchor=(0.5, 0.5), loc='center')
 
     plt.savefig("images/prop_comparison.pdf")
     plt.close(fig)
@@ -397,5 +398,5 @@ if __name__ == "__main__":
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     plot_prop_comparison(config)
-    plot_time_correlation_sfr_vs_delta(config)
-    plot_time_correlation_ssfr_vs_delta(config)
+    # plot_time_correlation_sfr_vs_delta(config)
+    # plot_time_correlation_ssfr_vs_delta(config)
