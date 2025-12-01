@@ -166,8 +166,8 @@ def plot_prop_comparison(config: dict) -> None:
                 rho = correlation.__getattribute__("statistic")
                 pvalue = correlation.__getattribute__("pvalue")
                 color = "tab:green" if pvalue < 0.05 else "tab:red"
-                stat_text = r"$\rho = $ " + f"{np.round(rho, 2)}" \
-                    if rho > 0 else r"$\rho = -$" + f"{np.abs(rho):.2f}"
+                stat_text = r"$r = $ " + f"{np.round(rho, 2)}" \
+                    if rho > 0 else r"$r = -$" + f"{np.abs(rho):.2f}"
                 ax.text(0.03, 0.97,
                         stat_text,
                         transform=ax.transAxes, color=color,
