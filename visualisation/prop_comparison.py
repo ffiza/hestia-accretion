@@ -4,19 +4,23 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.stats import linregress
+from scipy.stats import linregress, pearsonr
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
 
 
 def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
+    if snapnum != 127:
+        raise NotImplementedError("Only snapnum 127 is implemented.")
+
     galaxies = []
 
     sfr = []
     m_star = []
     m_gas = []
     delta = []
+    r200 = []
 
     for galaxy in range(1, 31):
         data = pd.read_csv("data/iza_et_al_2022/sfr.csv")
@@ -27,6 +31,9 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         data = pd.read_csv(f"data/auriga/au{galaxy}/environment_evolution.csv")
         delta.append(data["Delta1200"].to_numpy()[snapnum])
         galaxies.append(f"Au{galaxy}")
+        data = pd.read_csv("data/auriga/virial_radius.csv")
+        r200.append(data[f"VirialRadius_Au{galaxy}_ckpc"].to_numpy()[snapnum])
+
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
             data = pd.read_csv(
@@ -41,6 +48,9 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
                 f"delta_1200_{config['RUN_CODE']}.csv")
             delta.append(environment["Delta"].to_numpy()[snapnum])
             galaxies.append(f"{simulation}_{galaxy}")
+            data = pd.read_csv(
+                f"results/{simulation}_{galaxy}/virial_radius.csv")
+            r200.append(data["VirialRadius_ckpc"].to_numpy()[snapnum])
 
     colors = ["tab:gray"] * 30
     for s in Settings.SIMULATIONS:
@@ -58,9 +68,17 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         "Mstar_10^10Msun": np.array(m_star, np.float64),
         "Mgas_10^10Msun": np.array(m_gas, np.float64),
         "Delta1200": delta,
+        "VirialRadius_ckpc": r200,
         "Colors": colors,
         "Symbols": symbols,
+        "sSFR_Gyr^-1": sfr / np.array(m_star, np.float64) / 10,
     })
+
+    df["logSFR_Msun/yr"] = np.log10(df["SFR_Msun/yr"])
+    df["logMstar_Msun"] = np.log10(df["Mstar_10^10Msun"] * 1e10)
+    df["logMgas_Msun"] = np.log10(df["Mgas_10^10Msun"] * 1e10)
+    df["logDelta1200"] = np.log10(df["Delta1200"])
+    df["logsSFR_Gyr^-1"] = np.log10(df["sSFR_Gyr^-1"])
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -74,137 +92,93 @@ def plot_prop_comparison(config: dict) -> None:
     df_au = df[df["Galaxy"].str.contains("Au")]
     df_he = df[~df["Galaxy"].str.contains("Au")]
 
-    fig = plt.figure(figsize=(5.0, 4.0))
-    gs = fig.add_gridspec(nrows=2, ncols=2, hspace=0, wspace=0.4)
+    FEATS = [
+        "logSFR_Msun/yr",
+        "logMstar_Msun",
+        "logMgas_Msun",
+        "logDelta1200",
+        "VirialRadius_ckpc",
+        "logsSFR_Gyr^-1"]
+    AX_LIMIT = [
+        (-0.3, 1.6),
+        (10.4, 11.4),
+        (10.4, 11.5),
+        (0.7, 1.6),
+        (200, 320),
+        (-1.9, -0.4)]
+    AX_LABEL = [
+        r"$\log_{10} \mathrm{SFR}$" + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+        r"$\log_{10} M_\mathrm{star}$" + "\n" + r"$[\mathrm{M}_\odot]$",
+        r"$\log_{10} M_\mathrm{gas}$" + "\n" + r"$[\mathrm{M}_\odot]$",
+        r"$\log_{10} \delta_{1200}$",
+        r"$R_{200}$" + "\n" + r"$[\mathrm{ckpc}]$",
+        r"$\log_{10} \mathrm{sSFR}$" + "\n" + r"$[\mathrm{Gyr}^{-1}]$"]
+    AX_TICKS = [
+        [-0.1, 0.3, 0.7, 1.1],
+        [10.6, 10.8, 11.0],
+        [10.6, 10.8, 11.0, 11.2],
+        [0.8, 1.0, 1.2, 1.4],
+        [220, 240, 260, 280],
+        [-1.8, -1.6, -1.4, -1.2, -1.0, -0.8],
+    ]
+    AX_TICK_LABELS = [
+        ["$-0.1$", "0.3", "0.7", "1.1"],
+        ["10.6", "10.8", "11.0"],
+        ["10.6", "10.8", "11.0", "11.2"],
+        ["0.8", "1.0", "1.2", "2.4"],
+        ["220", "240", "260", "280"],
+        ["$-1.8$", "$-1.6$", "$-1.4$", "$-1.2$", "$-1.0$", "$-0.8$"],
+    ]
+
+    fig = plt.figure(figsize=(6, 6))
+    gs = fig.add_gridspec(nrows=6, ncols=6, hspace=0, wspace=0)
     axs = np.array(gs.subplots(sharex=False, sharey=False))
 
-    axs[0, 0].set_xlim(10.4, 11.2)
-    axs[0, 0].set_ylim(10.4, 11.4)
-    axs[0, 0].set_xticks(
-        ticks=[10.6, 10.8, 11],
-        labels=[],
-        fontsize=6)
-    axs[0, 0].set_yticks(
-        ticks=[10.6, 10.8, 11, 11.2],
-        labels=["10.6", "10.8", "11.0", "11.2"],
-        fontsize=6)
-    axs[0, 0].set_ylabel(
-        r"$\log_{10} M_\mathrm{gas} \, [\mathrm{M}_\odot]$",
-        fontsize=8)
-    axs[0, 0].scatter(
-        np.log10(df_au["Mstar_10^10Msun"].to_numpy() * 1e10),
-        np.log10(df_au["Mgas_10^10Msun"].to_numpy() * 1e10),
-        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
-        marker="X", label="Auriga",
-    )
-    for _, row in df_he.iterrows():
-        axs[0, 0].scatter(
-            np.log10(row["Mstar_10^10Msun"] * 1e10),
-            np.log10(row["Mgas_10^10Msun"] * 1e10),
-            s=12, facecolors="none",
-            marker=row["Symbols"],
-            edgecolor=row["Colors"],
-            label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
-        )
-
-    axs[1, 0].set_xlim(10.4, 11.2)
-    axs[1, 0].set_ylim(-0.3, 1.3)
-    axs[1, 0].set_xticks(
-        ticks=[10.6, 10.8, 11],
-        labels=["10.6", "10.8", "11.0"],
-        fontsize=6)
-    axs[1, 0].set_yticks(
-        ticks=[-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1],
-        labels=["$-0.1$", "0.1", "0.3", "0.5", "0.7", "0.9", "1.1"],
-        fontsize=6)
-    axs[1, 0].set_ylabel(
-        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
-        fontsize=8)
-    axs[1, 0].set_xlabel(
-        r"$\log_{10} M_\mathrm{star} \, [\mathrm{M}_\odot]$",
-        fontsize=8)
-    axs[1, 0].scatter(
-        np.log10(df_au["Mstar_10^10Msun"].to_numpy() * 1e10),
-        np.log10(df_au["SFR_Msun/yr"].to_numpy()),
-        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
-        marker="X", label="Auriga",
-    )
-    for _, row in df_he.iterrows():
-        axs[1, 0].scatter(
-            np.log10(row["Mstar_10^10Msun"] * 1e10),
-            np.log10(row["SFR_Msun/yr"]),
-            s=12, facecolors="none",
-            marker=row["Symbols"],
-            edgecolor=row["Colors"],
-            label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
-        )
-
-    axs[0, 1].set_xlim(0.7, 1.4)
-    axs[0, 1].set_ylim(-0.3, 1.3)
-    axs[0, 1].set_xticks(
-        ticks=[0.8, 1.0, 1.2, 1.4],
-        labels=[],
-        fontsize=6)
-    axs[0, 1].set_yticks(
-        ticks=[-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1],
-        labels=["$-0.1$", "0.1", "0.3", "0.5", "0.7", "0.9", "1.1"],
-        fontsize=6)
-    axs[0, 1].set_ylabel(
-        r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
-        fontsize=8)
-    axs[0, 1].scatter(
-        np.log10(df_au["Delta1200"].to_numpy()),
-        np.log10(df_au["SFR_Msun/yr"].to_numpy()),
-        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
-        marker="X", label="Auriga",
-    )
-    for _, row in df_he.iterrows():
-        axs[0, 1].scatter(
-            np.log10(row["Delta1200"]),
-            np.log10(row["SFR_Msun/yr"]),
-            s=12, facecolors="none",
-            marker=row["Symbols"],
-            edgecolor=row["Colors"],
-            label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
-        )
-    axs[0, 1].legend(frameon=False, fontsize=6, loc="upper left", ncol=1,
-                     bbox_to_anchor=(1, 1))
-
-    axs[1, 1].set_xlim(0.7, 1.4)
-    axs[1, 1].set_ylim(-1.9, -0.7)
-    axs[1, 1].set_xticks(
-        ticks=[0.8, 1.0, 1.2, 1.4],
-        labels=["0.8", "1.0", "1.2", "1.4"],
-        fontsize=6)
-    axs[1, 1].set_yticks(
-        ticks=[-1.8, -1.6, -1.4, -1.2, -1, -0.8],
-        labels=["$-1.8$", "$-1.6$", "$-1.4$", "$-1.2$", "$-1.0$", "$-0.8$"],
-        fontsize=6)
-    axs[1, 1].set_ylabel(
-        r"$\log_{10} \mathrm{sSFR} \, [\mathrm{Gyr}^{-1}]$",
-        fontsize=8)
-    axs[1, 1].set_xlabel(
-        r"$\log_{10} \delta_{1200}$",
-        fontsize=8)
-    ssfr = df_au["SFR_Msun/yr"].to_numpy() \
-        / df_au["Mstar_10^10Msun"].to_numpy() / 10
-    axs[1, 1].scatter(
-        np.log10(df_au["Delta1200"].to_numpy()), np.log10(ssfr),
-        s=12, edgecolor="none", facecolor=df_au["Colors"].values[0],
-        marker="X", label="Auriga",
-    )
-    for _, row in df_he.iterrows():
-        axs[1, 1].scatter(
-            np.log10(row["Delta1200"]),
-            np.log10(row["SFR_Msun/yr"] / row["Mstar_10^10Msun"] / 10),
-            s=12, facecolors="none",
-            marker=row["Symbols"],
-            edgecolor=row["Colors"],
-            label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
-        )
-
-    for ax in axs.flatten():
-        ax.set_axisbelow(True)
+    for i, f1 in enumerate(FEATS):
+        for j, f2 in enumerate(FEATS):
+            ax = np.array(axs)[i, j]
+            ax.set_xlim(AX_LIMIT[j])
+            ax.set_ylim(AX_LIMIT[i])
+            ax.set_xticks(
+                ticks=AX_TICKS[j], labels=AX_TICK_LABELS[j], fontsize=5,
+                rotation=45)
+            ax.set_yticks(
+                ticks=AX_TICKS[i], labels=AX_TICK_LABELS[i], fontsize=5)
+            ax.set_xlabel(AX_LABEL[j], fontsize=8)
+            ax.set_ylabel(AX_LABEL[i], fontsize=8)
+            ax.yaxis.set_label_coords(-0.4, 0.5)
+            ax.xaxis.set_label_coords(0.5, -0.4)
+            if i != j:
+                ax.scatter(
+                    df_au[f2].to_numpy(), df_au[f1].to_numpy(),
+                    s=12, edgecolor="none",
+                    facecolor=df_au["Colors"].values[0],
+                    marker="X", label="Auriga", zorder=10,
+                )
+                for _, row in df_he.iterrows():
+                    ax.scatter(
+                        row[f2], row[f1],
+                        s=12, facecolors="none", marker=row["Symbols"],
+                        edgecolor=row["Colors"], zorder=11,
+                        label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
+                    )
+                correlation = pearsonr(df[f2], df[f1])
+                rho = correlation.__getattribute__("statistic")
+                pvalue = correlation.__getattribute__("pvalue")
+                color = "tab:green" if pvalue < 0.05 else "tab:red"
+                stat_text = r"$\rho = $ " + f"{np.round(rho, 2)}" \
+                    if rho > 0 else r"$\rho = -$" + f"{np.abs(rho):.2f}"
+                ax.text(0.03, 0.97,
+                        stat_text,
+                        transform=ax.transAxes, color=color,
+                        ha="left", va='top', fontsize=4, zorder=12)
+                pvalue_text = r"$p$-value $ =$" + f" {np.round(pvalue, 2)}" \
+                    if pvalue > 0.01 else r"$p$-value $ <0.01$"
+                ax.text(0.03, 0.90,
+                        pvalue_text,
+                        transform=ax.transAxes, color=color,
+                        ha="left", va='top', fontsize=4, zorder=12)
+            ax.label_outer()
 
     plt.savefig("images/prop_comparison.pdf")
     plt.close(fig)
