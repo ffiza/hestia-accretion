@@ -168,7 +168,7 @@ def make_plot(config: dict) -> None:
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
                 zorder=11)
             axs[6, i].plot(
-                df["Time_Gyr"], df["OutflowRate_Halo_Msun/yr"],
+                df["Time_Gyr"], df["InflowRate_Halo_Msun/yr"],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation], lw=0.75,
                 label=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
