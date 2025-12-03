@@ -224,30 +224,35 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
                   labels=["0", "1", "2", "3", "4", "5"],
                   fontsize=6)
 
-    ax1 = ax.inset_axes([1, 0, 1, 1/3])
+    ax1 = ax.inset_axes([1, 0, 1, 1/4])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
     ax1.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
-    ax1.set_xlim(0.4, 1.2)
+    ax1.set_xlim(0.4, 1.4)
     ax1.set_ylim(-0.4, 1.6)
-    ax1.set_xticks(ticks=[0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1],
-                   labels=["0.5", "0.6", "0.7", "0.8", "0.9", "1", "1.1"],
-                   fontsize=6)
-    ax1.set_yticks(ticks=[0, 0.5, 1],
-                   labels=["0.0", "0.5", "1.0"],
-                   fontsize=6)
-    ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
+    ax1.set_xticks(
+        ticks=[0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3],
+        labels=["0.5", "0.6", "0.7", "0.8", "0.9", "1.0", "1.1", "1.2", "1.3"],
+        fontsize=6)
+    ax1.set_yticks(
+        ticks=[0, 0.5, 1],
+        labels=["0.0", "0.5", "1.0"],
+        fontsize=6)
+    ax2 = ax.inset_axes([1, 1/4, 1, 1/4], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
     ax2.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
     ax2.set_ylabel(
         r"$\log_{10} \mathrm{SFR} \, [\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
         fontsize=8)
-    ax2.yaxis.set_label_position("right")
-    ax3 = ax.inset_axes([1, 2/3, 1, 1/3], sharex=ax1, sharey=ax1)
+    ax2.yaxis.set_label_coords(1.2, 1)
+    ax3 = ax.inset_axes([1, 2/4, 1, 1/4], sharex=ax1, sharey=ax1)
     ax3.tick_params(axis="x", labelbottom=False)
     ax3.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
+    ax4 = ax.inset_axes([1, 3/4, 1, 1/4], sharex=ax1, sharey=ax1)
+    ax4.tick_params(axis="x", labelbottom=False)
+    ax4.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
 
-    axs = [ax1, ax2, ax3]
-    snapnums = [61, 77, 95]
+    axs = [ax1, ax2, ax3, ax4]
+    snapnums = [61, 77, 95, 127]
 
     for j, snapnum in enumerate(snapnums):
         i = len(snapnums) - j - 1
@@ -289,7 +294,7 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
             ax.annotate(
                 f"$z =$ {round(df.redshift, 1)}",
                 xy=(time[snapnum], slopes[snapnum]), xycoords='data',
-                xytext=(-20, 30), textcoords='offset points',
+                xytext=(-25, -15), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->", linewidth=0.75),
                 fontsize=6, zorder=11)
     s = ax.scatter(time, slopes, c=pvalues, s=10, zorder=10, vmin=0, vmax=0.1,
@@ -320,33 +325,37 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
                   labels=["2", "4", "6", "8", "10", "12"],
                   fontsize=6)
     ax.set_yticks(ticks=[-1, -0.5, 0, 0.5, 1, 1.5],
-                  labels=["$-1$", "$-0.5$", "0.0", "0.5", "1.0", "1.5"],
+                  labels=["$-1.0$", "$-0.5$", "0.0", "0.5", "1.0", "1.5"],
                   fontsize=6)
 
-    ax1 = ax.inset_axes([1, 0, 1, 1/3])
+    ax1 = ax.inset_axes([1, 0, 1, 1/4])
     ax1.tick_params(axis="y", labelleft=False, labelright=True)
     ax1.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
-    ax1.set_xlim(0.4, 1.2)
-    ax1.set_ylim(-1.5, 0.5)
-    ax1.set_xticks(ticks=[0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1],
-                   labels=["0.5", "0.6", "0.7", "0.8", "0.9", "1", "1.1"],
+    ax1.set_xlim(0.4, 1.4)
+    ax1.set_ylim(-2.5, 0.5)
+    ax1.set_xticks(
+        ticks=[0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3],
+        labels=["0.5", "0.6", "0.7", "0.8", "0.9", "1.0", "1.1", "1.2", "1.3"],
+        fontsize=6)
+    ax1.set_yticks(ticks=[-2, -1, 0],
+                   labels=["$-2$", "$-1$", "0"],
                    fontsize=6)
-    ax1.set_yticks(ticks=[-1, 0],
-                   labels=["$-1.0$", "0.0"],
-                   fontsize=6)
-    ax2 = ax.inset_axes([1, 1/3, 1, 1/3], sharex=ax1, sharey=ax1)
+    ax2 = ax.inset_axes([1, 1/4, 1, 1/4], sharex=ax1, sharey=ax1)
     ax2.tick_params(axis="x", labelbottom=False)
     ax2.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
     ax2.set_ylabel(
         r"$\log_{10} \mathrm{sSFR} \, [\mathrm{Gyr}^{-1}]$",
         fontsize=8)
-    ax2.yaxis.set_label_position("right")
-    ax3 = ax.inset_axes([1, 2/3, 1, 1/3], sharex=ax1, sharey=ax1)
+    ax2.yaxis.set_label_coords(1.2, 1)
+    ax3 = ax.inset_axes([1, 2/4, 1, 1/4], sharex=ax1, sharey=ax1)
     ax3.tick_params(axis="x", labelbottom=False)
     ax3.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
+    ax4 = ax.inset_axes([1, 3/4, 1, 1/4], sharex=ax1, sharey=ax1)
+    ax4.tick_params(axis="x", labelbottom=False)
+    ax4.tick_params(axis="y", labelleft=False, labelright=True, labelsize=6)
 
-    axs = [ax1, ax2, ax3]
-    snapnums = [61, 77, 95]
+    axs = [ax1, ax2, ax3, ax4]
+    snapnums = [61, 77, 95, 127]
 
     for j, snapnum in enumerate(snapnums):
         i = len(snapnums) - j - 1
@@ -391,7 +400,7 @@ def plot_time_correlation_ssfr_vs_delta(config: dict) -> None:
             ax.annotate(
                 f"$z =$ {round(df.redshift, 1)}",
                 xy=(time[snapnum], slopes[snapnum]), xycoords='data',
-                xytext=(-15, -40), textcoords='offset points',
+                xytext=(-25, -35), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->", linewidth=0.75),
                 fontsize=6, zorder=11)
     s = ax.scatter(time, slopes, c=pvalues, s=10, zorder=10, vmin=0, vmax=0.1,
@@ -422,6 +431,6 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_prop_comparison(config)
+    # plot_prop_comparison(config)
     plot_time_correlation_sfr_vs_delta(config)
     plot_time_correlation_ssfr_vs_delta(config)
