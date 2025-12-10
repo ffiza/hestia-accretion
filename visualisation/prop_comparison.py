@@ -18,6 +18,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
     m_gas = []
     delta = []
     r200 = []
+    m200 = []
 
     for galaxy in range(1, 31):
         data = pd.read_csv("data/iza_et_al_2022/sfr.csv")
@@ -30,6 +31,10 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         galaxies.append(f"Au{galaxy}")
         data = pd.read_csv("data/auriga/virial_radius.csv")
         r200.append(data[f"VirialRadius_Au{galaxy}_ckpc"].to_numpy()[snapnum])
+        if snapnum == 127:
+            data = pd.read_csv("data/iza_et_al_2022/table_1.csv",
+                               index_col="Galaxy")
+            m200.append(data.loc[galaxy, "VirialMass_10^10Msun"] * 1E10)
 
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
@@ -48,6 +53,10 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
             data = pd.read_csv(
                 f"results/{simulation}_{galaxy}/virial_radius.csv")
             r200.append(data["VirialRadius_ckpc"].to_numpy()[snapnum])
+            if snapnum == 127:
+                data = pd.read_csv(
+                    f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
+                m200.append(data["VirialMass_Msun"].to_numpy()[snapnum])
 
     colors = ["tab:gray"] * 30
     for s in Settings.SIMULATIONS:
@@ -77,6 +86,10 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
     df["logDelta1200"] = np.log10(df["Delta1200"])
     df["logsSFR_Gyr^-1"] = np.log10(df["sSFR_Gyr^-1"])
 
+    if snapnum == 127:
+        df["VirialMass_Msun"] = m200
+        df["logVirialMass_Msun"] = np.log10(df["VirialMass_Msun"])
+
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
     df.time = data["Original"]["Time_Gyr"][snapnum]
@@ -95,21 +108,27 @@ def plot_prop_comparison(config: dict) -> None:
         "logMgas_Msun",
         "logDelta1200",
         "VirialRadius_ckpc",
-        "logsSFR_Gyr^-1"]
+        "logsSFR_Gyr^-1",
+        "logVirialMass_Msun",
+    ]
     AX_LIMIT = [
         (-0.3, 1.6),
         (10.4, 11.4),
         (10.4, 11.5),
         (0.7, 1.6),
-        (200, 320),
-        (-1.9, -0.4)]
+        (180, 320),
+        (-1.9, -0.4),
+        (11.9, 12.6),
+    ]
     AX_LABEL = [
         r"$\log_{10} \mathrm{SFR}$" + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
         r"$\log_{10} M_\mathrm{star}$" + "\n" + r"$[\mathrm{M}_\odot]$",
         r"$\log_{10} M_\mathrm{gas}$" + "\n" + r"$[\mathrm{M}_\odot]$",
         r"$\log_{10} \delta_{1200}$",
         r"$R_{200}$" + "\n" + r"$[\mathrm{ckpc}]$",
-        r"$\log_{10} \mathrm{sSFR}$" + "\n" + r"$[\mathrm{Gyr}^{-1}]$"]
+        r"$\log_{10} \mathrm{sSFR}$" + "\n" + r"$[\mathrm{Gyr}^{-1}]$",
+        r"$\log_{10} M_\mathrm{200}$" + "\n" + r"$[\mathrm{M}_\odot]$",
+    ]
     AX_TICKS = [
         [-0.1, 0.3, 0.7, 1.1],
         [10.6, 10.8, 11.0],
@@ -117,6 +136,7 @@ def plot_prop_comparison(config: dict) -> None:
         [0.8, 1.0, 1.2, 1.4],
         [220, 240, 260, 280],
         [-1.8, -1.6, -1.4, -1.2, -1.0, -0.8],
+        [12.0, 12.1, 12.2, 12.3, 12.4, 12.5],
     ]
     AX_TICK_LABELS = [
         ["$-0.1$", "0.3", "0.7", "1.1"],
@@ -125,6 +145,7 @@ def plot_prop_comparison(config: dict) -> None:
         ["0.8", "1.0", "1.2", "2.4"],
         ["220", "240", "260", "280"],
         ["$-1.8$", "$-1.6$", "$-1.4$", "$-1.2$", "$-1.0$", "$-0.8$"],
+        ["12.0", "12.1", "12.2", "12.3", "12.4", "12.5"],
     ]
 
     fig = plt.figure(figsize=(6, 6))
