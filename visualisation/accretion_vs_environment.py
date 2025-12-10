@@ -7,9 +7,22 @@ import matplotlib.pyplot as plt
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
+from hestia.accretion_region import AccretionRegionType
 
 
-def _get_data(config: dict) -> pd.DataFrame:
+def _get_data(config: dict,
+              accretion_region_type: AccretionRegionType) -> pd.DataFrame:
+
+    match accretion_region_type:
+        case AccretionRegionType.STELLAR_DISC:
+            suffix = ""
+            au_filename = "accretion_rate_tracers"
+        case AccretionRegionType.HALO:
+            suffix = "_halo"
+            au_filename = "accretion_tracers_spherical_spacing_rvir"
+        case _:
+            raise ValueError("Invalid accretion region type.")
+
     galaxies = []
     delta = []
     time = []
@@ -25,14 +38,15 @@ def _get_data(config: dict) -> pd.DataFrame:
             time += environment["Times_Gyr"].to_list()
             galaxies += [f"{simulation}_{galaxy}"] * len(environment)
 
-            with open(f'results/{simulation}_{galaxy}/accretion_tracers_'
+            with open(f'results/{simulation}_{galaxy}/'
+                      f'accretion_tracers{suffix}_'
                       f'{config["RUN_CODE"]}.json', 'r') as file:
                 data = json.load(file)
                 in_rate += data["InflowRate_Msun/yr"]
                 out_rate += data["OutflowRate_Msun/yr"]
 
     for i in range(1, 31):
-        data = pd.read_csv("data/iza_et_al_2022/accretion_rate_tracers.csv")
+        data = pd.read_csv(f"data/iza_et_al_2022/{au_filename}.csv")
         if f"InflowRate_Au{i}_Msun/yr" in data.columns:
             in_rate += data[f"InflowRate_Au{i}_Msun/yr"].to_list()
             out_rate += data[f"OutflowRate_Au{i}_Msun/yr"].to_list()
@@ -54,8 +68,23 @@ def _get_data(config: dict) -> pd.DataFrame:
     return df
 
 
-def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
-    df = _get_data(config)
+def plot_inflows_vs_environment_by_galaxy(
+        config: dict,
+        accretion_region_type: AccretionRegionType) -> None:
+
+    match accretion_region_type:
+        case AccretionRegionType.STELLAR_DISC:
+            suffix = ""
+            ylabel = r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot" \
+                + r" \, \mathrm{yr}^{-1}]$"
+        case AccretionRegionType.HALO:
+            suffix = "_halo"
+            ylabel = r"$\dot{M}_\mathrm{in}^\mathrm{halo} \, " \
+                + r"[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$"
+        case _:
+            raise ValueError("Invalid accretion region type.")
+
+    df = _get_data(config, accretion_region_type)
     is_auriga = df["Galaxy"].str.startswith("Au")
 
     fig, axs = plt.subplots(figsize=(5.0, 3.0), nrows=2, ncols=3,
@@ -73,9 +102,7 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
                       labels=["1", "10", "100"],
                       fontsize=6)
         ax.set_xlabel(r"$\log_{10} \delta_{1200}$", fontsize=8)
-        ax.set_ylabel(
-            r"$\dot{M}_\mathrm{in} \, [\mathrm{M}_\odot"
-            r" \, \mathrm{yr}^{-1}]$", fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8)
         ax.set_axisbelow(True)
         ax.label_outer()
         ax.scatter(
@@ -104,7 +131,8 @@ def plot_inflows_vs_environment_by_galaxy(config: dict) -> None:
                 color=Settings.SIMULATION_COLORS[simulation])
 
     plt.savefig(
-        f"images/accretion_vs_environment_by_galaxy_{config['RUN_CODE']}.pdf")
+        f"images/accretion{suffix}_vs_environment"
+        f"_by_galaxy_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
@@ -119,4 +147,7 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_inflows_vs_environment_by_galaxy(config)
+    plot_inflows_vs_environment_by_galaxy(
+        config, AccretionRegionType.STELLAR_DISC)
+    plot_inflows_vs_environment_by_galaxy(
+        config, AccretionRegionType.HALO)
