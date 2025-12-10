@@ -128,57 +128,62 @@ def plot_prop_comparison(config: dict) -> None:
     ]
 
     fig = plt.figure(figsize=(6, 6))
-    gs = fig.add_gridspec(nrows=6, ncols=6, hspace=0, wspace=0)
+    gs = fig.add_gridspec(nrows=len(FEATS) - 1, ncols=len(FEATS) - 1,
+                          hspace=0, wspace=0)
     axs = np.array(gs.subplots(sharex=False, sharey=False))
 
-    for i, f1 in enumerate(FEATS):
-        for j, f2 in enumerate(FEATS):
-            ax = np.array(axs)[i, j]
-            ax.set_xlim(AX_LIMIT[j])
-            ax.set_ylim(AX_LIMIT[i])
+    for i in range(len(FEATS)):
+        f1 = FEATS[i]
+        for j in range(i + 1, len(FEATS)):
+            f2 = FEATS[j]
+            ax = np.array(axs)[j - 1, i]
+            ax.set_xlim(AX_LIMIT[i])
+            ax.set_ylim(AX_LIMIT[j])
             ax.set_xticks(
-                ticks=AX_TICKS[j], labels=AX_TICK_LABELS[j], fontsize=5,
+                ticks=AX_TICKS[i], labels=AX_TICK_LABELS[i], fontsize=5,
                 rotation=45)
             ax.set_yticks(
-                ticks=AX_TICKS[i], labels=AX_TICK_LABELS[i], fontsize=5)
-            ax.set_xlabel(AX_LABEL[j], fontsize=8)
-            ax.set_ylabel(AX_LABEL[i], fontsize=8)
-            ax.yaxis.set_label_coords(-0.4, 0.5)
-            ax.xaxis.set_label_coords(0.5, -0.4)
-            if i != j:
+                ticks=AX_TICKS[j], labels=AX_TICK_LABELS[j], fontsize=5)
+            ax.set_xlabel(AX_LABEL[i], fontsize=8)
+            ax.set_ylabel(AX_LABEL[j], fontsize=8)
+            ax.yaxis.set_label_coords(-0.3, 0.5)
+            ax.xaxis.set_label_coords(0.5, -0.3)
+            ax.scatter(
+                df_au[f1].to_numpy(), df_au[f2].to_numpy(),
+                s=12, edgecolor="none",
+                facecolor=df_au["Colors"].values[0],
+                marker="X", label="Auriga", zorder=10,
+            )
+            for _, row in df_he.iterrows():
                 ax.scatter(
-                    df_au[f2].to_numpy(), df_au[f1].to_numpy(),
-                    s=12, edgecolor="none",
-                    facecolor=df_au["Colors"].values[0],
-                    marker="X", label="Auriga", zorder=10,
+                    row[f1], row[f2],
+                    s=12, facecolors="none", marker=row["Symbols"],
+                    edgecolor=row["Colors"], zorder=11,
+                    label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
                 )
-                for _, row in df_he.iterrows():
-                    ax.scatter(
-                        row[f2], row[f1],
-                        s=12, facecolors="none", marker=row["Symbols"],
-                        edgecolor=row["Colors"], zorder=11,
-                        label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
-                    )
-                correlation = pearsonr(df[f2], df[f1])
-                rho = correlation.__getattribute__("statistic")
-                pvalue = correlation.__getattribute__("pvalue")
-                color = "tab:green" if pvalue < 0.05 else "tab:red"
-                stat_text = r"$r = $ " + f"{np.round(rho, 2)}" \
-                    if rho > 0 else r"$r = -$" + f"{np.abs(rho):.2f}"
-                ax.text(0.03, 0.97,
-                        stat_text,
-                        transform=ax.transAxes, color=color,
-                        ha="left", va='top', fontsize=4, zorder=12)
-                pvalue_text = r"$p$-value $ =$" + f" {np.round(pvalue, 2)}" \
-                    if pvalue > 0.01 else r"$p$-value $ <0.01$"
-                ax.text(0.03, 0.90,
-                        pvalue_text,
-                        transform=ax.transAxes, color=color,
-                        ha="left", va='top', fontsize=4, zorder=12)
+            correlation = pearsonr(df[f1], df[f2])
+            rho = correlation.__getattribute__("statistic")
+            pvalue = correlation.__getattribute__("pvalue")
+            color = "tab:green" if pvalue < 0.05 else "tab:red"
+            stat_text = r"$r = $ " + f"{np.round(rho, 2)}" \
+                if rho > 0 else r"$r = -$" + f"{np.abs(rho):.2f}"
+            ax.text(0.03, 0.97,
+                    stat_text,
+                    transform=ax.transAxes, color=color,
+                    ha="left", va='top', fontsize=4, zorder=12)
+            pvalue_text = r"$p$-value $ =$" + f" {np.round(pvalue, 2)}" \
+                if pvalue > 0.01 else r"$p$-value $ <0.01$"
+            ax.text(0.03, 0.90,
+                    pvalue_text,
+                    transform=ax.transAxes, color=color,
+                    ha="left", va='top', fontsize=4, zorder=12)
             ax.label_outer()
 
-    handles, labels = axs[0, 1].get_legend_handles_labels()
-    axs[0, 0].legend(handles, labels, frameon=False, fontsize=4,
+    for ax in axs[np.triu_indices_from(axs, k=1)]:
+        ax.axis('off')
+
+    handles, labels = axs[1, 0].get_legend_handles_labels()
+    axs[0, 1].legend(handles, labels, frameon=False, fontsize=5,
                      bbox_to_anchor=(0.5, 0.5), loc='center')
 
     plt.savefig("images/prop_comparison.pdf")
