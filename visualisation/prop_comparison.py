@@ -90,11 +90,12 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         data = json.load(file)
     df.time = data["Original"]["Time_Gyr"][snapnum]
     df.redshift = data["Original"]["Redshift"][snapnum]
+    df.expansion_factor = data["Original"]["ExpansionFactor"][snapnum]
     return df
 
 
-def plot_prop_comparison(config: dict) -> None:
-    df = _get_data(127, config)
+def plot_prop_comparison(config: dict, snapnum: int) -> None:
+    df = _get_data(snapnum, config)
     df_au = df[df["Galaxy"].str.contains("Au")]
     df_he = df[~df["Galaxy"].str.contains("Au")]
 
@@ -108,13 +109,13 @@ def plot_prop_comparison(config: dict) -> None:
         "logVirialMass_Msun",
     ]
     AX_LIMIT = [
-        (-0.3, 1.6),
-        (10.4, 11.4),
-        (10.4, 11.5),
-        (0.7, 1.6),
-        (180, 320),
-        (-1.9, -0.4),
-        (11.9, 12.6),
+        (-0.5, 1.6),
+        (8.5, 11.8),
+        (9.5, 11.8),
+        (0.3, 1.8),
+        (100, 400),
+        (-2.2, 1.0),
+        (11, 13),
     ]
     AX_LABEL = [
         r"$\log_{10} \mathrm{SFR}$" + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
@@ -127,21 +128,21 @@ def plot_prop_comparison(config: dict) -> None:
     ]
     AX_TICKS = [
         [-0.1, 0.3, 0.7, 1.1],
-        [10.6, 10.8, 11.0],
-        [10.6, 10.8, 11.0, 11.2],
-        [0.8, 1.0, 1.2, 1.4],
-        [220, 240, 260, 280],
-        [-1.8, -1.6, -1.4, -1.2, -1.0, -0.8],
-        [12.0, 12.1, 12.2, 12.3, 12.4, 12.5],
+        [9, 9.5, 10, 10.5, 11],
+        [10, 10.5, 11, 11.5],
+        [0.6, 0.8, 1.0, 1.2, 1.4, 1.6],
+        [140, 180, 220, 260, 300, 340],
+        [-1.8, -1.4, -1.0, -0.6, -0.2, 0.2],
+        [11.4, 11.7, 12.0, 12.3, 12.6],
     ]
     AX_TICK_LABELS = [
         ["$-0.1$", "0.3", "0.7", "1.1"],
-        ["10.6", "10.8", "11.0"],
-        ["10.6", "10.8", "11.0", "11.2"],
-        ["0.8", "1.0", "1.2", "2.4"],
-        ["220", "240", "260", "280"],
-        ["$-1.8$", "$-1.6$", "$-1.4$", "$-1.2$", "$-1.0$", "$-0.8$"],
-        ["12.0", "12.1", "12.2", "12.3", "12.4", "12.5"],
+        ["9.0", "9.5", "10.0", "10.5", "11.0"],
+        ["10.0", "10.5", "11.0", "11.5"],
+        ["0.6", "0.8", "1.0", "1.2", "1.4", "1.6"],
+        ["140", "180", "220", "260", "300", "340"],
+        ["$-1.8$", "$-1.4$", "$-1.0$", "$-0.6$", "$-0.2$", "$0.2$"],
+        ["11.4", "11.7", "12.0", "12.3", "12.6"],
     ]
 
     fig = plt.figure(figsize=(6, 6))
@@ -203,7 +204,21 @@ def plot_prop_comparison(config: dict) -> None:
     axs[0, 1].legend(handles, labels, frameon=False, fontsize=5,
                      bbox_to_anchor=(0.5, 0.5), loc='center')
 
-    plt.savefig(f"images/prop_comparison_{config['RUN_CODE']}.pdf")
+    axs[0, 0].text(2, 0.85, f"Snapshot: {snapnum}",
+                   ha="left", va='bottom', fontsize=5,
+                   transform=axs[0, 0].transAxes)
+    axs[0, 0].text(2, 0.7, f"Time: {round(df.time, 2)} Gyr",
+                   ha="left", va='bottom', fontsize=5,
+                   transform=axs[0, 0].transAxes)
+    axs[0, 0].text(2, 0.55, f"$z=$ {round(df.redshift, 2)}",
+                   ha="left", va='bottom', fontsize=5,
+                   transform=axs[0, 0].transAxes)
+    axs[0, 0].text(2, 0.4, f"$a=$ {round(df.expansion_factor, 2)}",
+                   ha="left", va='bottom', fontsize=5,
+                   transform=axs[0, 0].transAxes)
+
+    plt.savefig(
+        f"images/prop_comparison_snap{snapnum}_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
@@ -428,6 +443,9 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_prop_comparison(config)
+    plot_prop_comparison(config, 61)
+    plot_prop_comparison(config, 77)
+    plot_prop_comparison(config, 95)
+    plot_prop_comparison(config, 127)
     # plot_time_correlation_sfr_vs_delta(config)
     # plot_time_correlation_ssfr_vs_delta(config)
