@@ -29,12 +29,10 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         data = pd.read_csv(f"data/auriga/au{galaxy}/environment_evolution.csv")
         delta.append(data["Delta1200"].to_numpy()[snapnum])
         galaxies.append(f"Au{galaxy}")
-        data = pd.read_csv("data/auriga/virial_radius.csv")
-        r200.append(data[f"VirialRadius_Au{galaxy}_ckpc"].to_numpy()[snapnum])
-        if snapnum == 127:
-            data = pd.read_csv("data/iza_et_al_2022/table_1.csv",
-                               index_col="Galaxy")
-            m200.append(data.loc[galaxy, "VirialMass_10^10Msun"] * 1E10)
+        data = pd.read_csv("data/auriga/virial_properties.csv")
+        r200.append(data[f"R200_Au{galaxy}_ckpc"].to_numpy()[snapnum])
+        m200.append(
+            data[f"M200_Au{galaxy}_1E10Msun"].to_numpy()[snapnum] * 1E10)
 
     for simulation in Settings.SIMULATIONS:
         for galaxy in Settings.GALAXIES:
@@ -53,10 +51,9 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
             data = pd.read_csv(
                 f"results/{simulation}_{galaxy}/virial_radius.csv")
             r200.append(data["VirialRadius_ckpc"].to_numpy()[snapnum])
-            if snapnum == 127:
-                data = pd.read_csv(
-                    f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
-                m200.append(data["VirialMass_Msun"].to_numpy()[snapnum])
+            data = pd.read_csv(
+                f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
+            m200.append(data["VirialMass_Msun"].to_numpy()[snapnum])
 
     colors = ["tab:gray"] * 30
     for s in Settings.SIMULATIONS:
@@ -86,9 +83,8 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
     df["logDelta1200"] = np.log10(df["Delta1200"])
     df["logsSFR_Gyr^-1"] = np.log10(df["sSFR_Gyr^-1"])
 
-    if snapnum == 127:
-        df["VirialMass_Msun"] = m200
-        df["logVirialMass_Msun"] = np.log10(df["VirialMass_Msun"])
+    df["VirialMass_Msun"] = m200
+    df["logVirialMass_Msun"] = np.log10(df["VirialMass_Msun"])
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -167,8 +163,8 @@ def plot_prop_comparison(config: dict) -> None:
                 ticks=AX_TICKS[j], labels=AX_TICK_LABELS[j], fontsize=5)
             ax.set_xlabel(AX_LABEL[i], fontsize=8)
             ax.set_ylabel(AX_LABEL[j], fontsize=8)
-            ax.yaxis.set_label_coords(-0.3, 0.5)
-            ax.xaxis.set_label_coords(0.5, -0.3)
+            ax.yaxis.set_label_coords(-0.4, 0.5)
+            ax.xaxis.set_label_coords(0.5, -0.4)
             ax.scatter(
                 df_au[f1].to_numpy(), df_au[f2].to_numpy(),
                 s=12, edgecolor="none",
@@ -433,5 +429,5 @@ if __name__ == "__main__":
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     plot_prop_comparison(config)
-    plot_time_correlation_sfr_vs_delta(config)
-    plot_time_correlation_ssfr_vs_delta(config)
+    # plot_time_correlation_sfr_vs_delta(config)
+    # plot_time_correlation_ssfr_vs_delta(config)
