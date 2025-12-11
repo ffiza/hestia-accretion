@@ -203,7 +203,7 @@ def plot_prop_comparison(config: dict) -> None:
     axs[0, 1].legend(handles, labels, frameon=False, fontsize=5,
                      bbox_to_anchor=(0.5, 0.5), loc='center')
 
-    plt.savefig("images/prop_comparison.pdf")
+    plt.savefig(f"images/prop_comparison_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
 
