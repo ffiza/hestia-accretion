@@ -8,6 +8,8 @@ from scipy.signal import savgol_filter
 from hestia.dataframe import make_dataframe
 from hestia.df_type import DFType
 from hestia.tools import weighted_percentile
+from hestia.settings import Settings
+
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
@@ -152,12 +154,15 @@ def main():
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    calculate_disc_size(simulation="17_11", galaxy="MW", config=config)
-    calculate_disc_size(simulation="17_11", galaxy="M31", config=config)
-    calculate_disc_size(simulation="09_18", galaxy="MW", config=config)
-    calculate_disc_size(simulation="09_18", galaxy="M31", config=config)
-    calculate_disc_size(simulation="37_11", galaxy="MW", config=config)
-    calculate_disc_size(simulation="37_11", galaxy="M31", config=config)
+
+
+    for simulation in Settings.SIMULATIONS:
+        calculate_disc_size(simulation=simulation, galaxy="MW", config=config)
+        calculate_disc_size(simulation=simulation, galaxy="M31", config=config)
+        calculate_disc_size(simulation=simulation, galaxy="MW", config=config)
+        calculate_disc_size(simulation=simulation, galaxy="M31", config=config)
+        calculate_disc_size(simulation=simulation, galaxy="MW", config=config)
+        calculate_disc_size(simulation=simulation, galaxy="M31", config=config)
 
 
 if __name__ == "__main__":
