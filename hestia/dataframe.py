@@ -81,22 +81,43 @@ def _make_dataframe_cells(
         raise ValueError(
             "Incorrect value for `MW_or_M31`. Can be `MW` or `M31`.")
 
-    # These numbers come from cross-correlating with
-    # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.
-    if SimName == '17_11':
-        # subhalo_number = 1 if MW_or_M31 == "MW" else 0
-        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
-            + "17_11/output_2x2.5Mpc/"
-    elif SimName == '09_18':
-        # subhalo_number = 3911 if MW_or_M31 == "MW" else 2608
-        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
-            + "09_18/output_2x2.5Mpc/"
-    elif SimName == '37_11':
-        # subhalo_number = 920 if MW_or_M31 == "MW" else 0
-        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
-            + "37_11/output_2x2.5Mpc/"
+    # Switch to AHF for centering:
+    M31_MW_AHF_IDs = {
+                    '09_18': [127000000000002, 127000000000003],
+                    '17_11': [127000000000002, 127000000000003],
+                    '37_11': [127000000000001, 127000000000002],
+                    'i_09_10':       [127000000000003, 127000000000005], 
+                    'i_09_16':       [127000000000003, 127000000000005], 
+                    'i_09_17':       [127000000000002, 127000000000004], 
+                    'i_09_18':       [127000000000003, 127000000000004], 
+                    'i_09_19':       [127000000000002, 127000000000005], 
+                    'i_17_10':       [127000000000002, 127000000000003], 
+                    'i_17_11':       [127000000000002, 127000000000003], 
+                    'i_17_13':       [127000000000002, 127000000000003], 
+                    'i_17_14':       [127000000000002, 127000000000003], 
+                    'i_37_11':       [127000000000002, 127000000000001], 
+                    'i_37_12':       [127000000000001, 127000000000002], 
+                    'i_37_16':       [127000000000001, 127000000000002], 
+                    'i_37_17':       [127000000000001, 127000000000002]
+                    }
+
+    if SimName[0] == 'i':
+        SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/{}/output'.format(SimName.lstrip('i_'))
+        AHF_path = '/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/{}/AHF_output/'.format(SimName.lstrip('i_'))
     else:
-        raise ValueError("Invalid simulation name.")
+        SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/output_2x2.5Mpc'.format(SimName)
+        AHF_path = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/AHF_output_2x2.5Mpc/'.format(SimName)
+
+    AHF_M31_ID = M31_MW_AHF_IDs[SimName][0]
+    AHF_MW_ID = M31_MW_AHF_IDs[SimName][1]
+
+    if SimName[0] == 'i':
+        AHF_filename_M31 = 'HESTIA_100Mpc_4096_{}.127_halo_{}.dat'.format(SimName.lstrip('i_'), AHF_M31_ID)
+        AHF_filename_MW = 'HESTIA_100Mpc_4096_{}.127_halo_{}.dat'.format(SimName.lstrip('i_'), AHF_MW_ID)
+    else:
+        AHF_filename_M31 = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_M31_ID)
+        AHF_filename_MW = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_MW_ID)
+
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
         H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_MATTER)
@@ -164,36 +185,7 @@ def _make_dataframe_cells(
     else:
         BHPos, BHIDs, BHMass = None, None, None
 
-    # # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
-    # Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
-    # Snaps = Snaps.astype(int)
-    # Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
-    # Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
-    # SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps == SnapNo], Tracked_Numbers_M31[Snaps == SnapNo]
 
-    # # Read in subhaloes position and velocities:
-    # GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    # SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST  # ckpc
-    # SubhaloVel = GroupCatalog['/Subhalo/SubhaloVel'] * np.sqrt(SnapTime)  # km s^-1
-    # MW_pos, MW_vel = SubhaloPos[SubhaloNumberMW], SubhaloVel[SubhaloNumberMW]
-    # M31_pos, M31_vel = SubhaloPos[SubhaloNumberM31], SubhaloVel[SubhaloNumberM31]
-
-    # Switch to AHF for centering:
-    M31_MW_AHF_IDs = {
-                    '09_18': [127000000000002, 127000000000003],
-                    '17_11': [127000000000002, 127000000000003],
-                    '37_11': [127000000000001, 127000000000002]
-                }
-    
-    
-    SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/output_2x2.5Mpc'.format(SimName)
-
-    AHF_path = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/AHF_output_2x2.5Mpc/'.format(SimName)
-    AHF_M31_ID = M31_MW_AHF_IDs[SimName][0]
-    AHF_MW_ID = M31_MW_AHF_IDs[SimName][1]
-
-    AHF_filename_M31 = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_M31_ID)
-    AHF_filename_MW = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_MW_ID)
 
     AHF_table_M31 = np.loadtxt(AHF_path + AHF_filename_M31)
     AHF_table_MW = np.loadtxt(AHF_path + AHF_filename_MW)
@@ -329,22 +321,45 @@ def _make_dataframe_tracers(
     print(f'Analysing {SimName}...')
     print(f'Running make_dataframe for snapshot {SnapNo}...')
 
-    # These numbers come from cross-correlating with
-    # /z/nil/codes/HESTIA/FIND_LG/LGs_8192_GAL_FOR.txt andArepo's SUBFIND.
-    if SimName == '17_11':
-        # subhalo_number = 1 if MW_or_M31 == "MW" else 0
-        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
-            + "17_11/output_2x2.5Mpc/"
-    elif SimName == '09_18':
-        # subhalo_number = 3911 if MW_or_M31 == "MW" else 2608
-        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
-            + "09_18/output_2x2.5Mpc/"
-    elif SimName == '37_11':
-        # subhalo_number = 920 if MW_or_M31 == "MW" else 0
-        SimulationDirectory = "/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/" \
-            + "37_11/output_2x2.5Mpc/"
+
+    # Switch to AHF for centering:
+    M31_MW_AHF_IDs = {
+                    '09_18': [127000000000002, 127000000000003],
+                    '17_11': [127000000000002, 127000000000003],
+                    '37_11': [127000000000001, 127000000000002],
+                    'i_09_10':       [127000000000003, 127000000000005], 
+                    'i_09_16':       [127000000000003, 127000000000005], 
+                    'i_09_17':       [127000000000002, 127000000000004], 
+                    'i_09_18':       [127000000000003, 127000000000004], 
+                    'i_09_19':       [127000000000002, 127000000000005], 
+                    'i_17_10':       [127000000000002, 127000000000003], 
+                    'i_17_11':       [127000000000002, 127000000000003], 
+                    'i_17_13':       [127000000000002, 127000000000003], 
+                    'i_17_14':       [127000000000002, 127000000000003], 
+                    'i_37_11':       [127000000000002, 127000000000001], 
+                    'i_37_12':       [127000000000001, 127000000000002], 
+                    'i_37_16':       [127000000000001, 127000000000002], 
+                    'i_37_17':       [127000000000001, 127000000000002]
+                    }
+
+    if SimName[0] == 'i':
+        SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/{}/output'.format(SimName.lstrip('i_'))
+        AHF_path = '/store/clues/HESTIA/RE_SIMS/4096/GAL_FOR/{}/AHF_output/'.format(SimName.lstrip('i_'))
     else:
-        raise ValueError("Invalid simulation name.")
+        SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/output_2x2.5Mpc'.format(SimName)
+        AHF_path = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/AHF_output_2x2.5Mpc/'.format(SimName)
+
+    AHF_M31_ID = M31_MW_AHF_IDs[SimName][0]
+    AHF_MW_ID = M31_MW_AHF_IDs[SimName][1]
+
+    if SimName[0] == 'i':
+        AHF_filename_M31 = 'HESTIA_100Mpc_4096_{}.127_halo_{}.dat'.format(SimName.lstrip('i_'), AHF_M31_ID)
+        AHF_filename_MW = 'HESTIA_100Mpc_4096_{}.127_halo_{}.dat'.format(SimName.lstrip('i_'), AHF_MW_ID)
+    else:
+        AHF_filename_M31 = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_M31_ID)
+        AHF_filename_MW = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_MW_ID)
+
+
 
     cosmo = astropy.cosmology.FlatLambdaCDM(
         H0=Cosmology.HUBBLE_CONST, Om0=Cosmology.OMEGA_MATTER)
@@ -389,36 +404,6 @@ def _make_dataframe_tracers(
     TracerID = Tracer_Attrs['TracerID']
     TracerParentID = Tracer_Attrs['ParentID']
 
-
-    # # Reading progenitor numbers calculated with T.TrackProgenitor() from TrackGalaxy.py
-    # Snaps, Tracked_Numbers_MW, Tracked_Numbers_M31 = np.loadtxt('/z/lbiaus/hestia-accretion/data/progenitor_lists/snaps_MWprogs_M31progs_{}.txt'.format(SimName))
-    # Snaps = Snaps.astype(int)
-    # Tracked_Numbers_MW = Tracked_Numbers_MW.astype(int)
-    # Tracked_Numbers_M31 = Tracked_Numbers_M31.astype(int)
-    # SubhaloNumberMW, SubhaloNumberM31 = Tracked_Numbers_MW[Snaps==SnapNo], Tracked_Numbers_M31[Snaps==SnapNo]
-
-    # # Read in subhaloes position and velocities:
-    # GroupCatalog = T.GetGroups(SnapNo, Attrs=['/Subhalo/SubhaloPos', '/Subhalo/SubhaloVel'])
-    # SubhaloPos = 1000*GroupCatalog['/Subhalo/SubhaloPos'] / Cosmology.SMALL_HUBBLE_CONST # ckpc
-    # MW_pos = SubhaloPos[SubhaloNumberMW]
-    # M31_pos = SubhaloPos[SubhaloNumberM31]
-
-    # Switch to AHF for centering:
-    M31_MW_AHF_IDs = {
-                    '09_18': [127000000000002, 127000000000003],
-                    '17_11': [127000000000002, 127000000000003],
-                    '37_11': [127000000000001, 127000000000002]
-                }
-    
-    
-    SimulationDirectory = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/output_2x2.5Mpc'.format(SimName)
-
-    AHF_path = '/store/clues/HESTIA/RE_SIMS/8192/GAL_FOR/{}/AHF_output_2x2.5Mpc/'.format(SimName)
-    AHF_M31_ID = M31_MW_AHF_IDs[SimName][0]
-    AHF_MW_ID = M31_MW_AHF_IDs[SimName][1]
-
-    AHF_filename_M31 = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_M31_ID)
-    AHF_filename_MW = 'HESTIA_100Mpc_8192_{}.127_halo_{}.dat'.format(SimName, AHF_MW_ID)
 
     AHF_table_M31 = np.loadtxt(AHF_path + AHF_filename_M31)
     AHF_table_MW = np.loadtxt(AHF_path + AHF_filename_MW)
