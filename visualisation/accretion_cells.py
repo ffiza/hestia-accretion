@@ -91,8 +91,8 @@ def make_plot(config: dict,
               accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 6.0))
+    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     match accretion_region_type:
@@ -105,7 +105,7 @@ def make_plot(config: dict,
         case _:
             raise ValueError("Invalid accretion region type.")
 
-    for ax in axs:
+    for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 400)
@@ -122,7 +122,7 @@ def make_plot(config: dict,
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i]
+        ax = axs[i//4, i%4]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
                 f"{simulation}_{galaxy}", config, accretion_region_type)
@@ -138,7 +138,7 @@ def make_plot(config: dict,
                     color=Settings.SIMULATION_COLORS[simulation],
                     lw=0.75, label=galaxy, zorder=12)
         ax.text(
-            x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
+            x=0.05, y=0.95, s=simulation,
             transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])

@@ -52,8 +52,8 @@ def _get_auriga_data() -> pd.DataFrame:
 
 def plot_disc_radius(config: dict) -> None:
     df_auriga = _get_auriga_data()
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 6.0))
+    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     for ax in axs.flatten():
@@ -71,7 +71,7 @@ def plot_disc_radius(config: dict) -> None:
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i]
+        ax = axs[i//4, i%4]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
                 galaxy=f"{simulation}_{galaxy}", config=config)
@@ -80,7 +80,8 @@ def plot_disc_radius(config: dict) -> None:
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
                 lw=0.75, label=galaxy, zorder=11)
-        ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
+        # ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
+        ax.text(x=0.05, y=0.95, s=simulation,
                 transform=ax.transAxes, fontsize=6,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
@@ -105,8 +106,8 @@ def plot_disc_radius(config: dict) -> None:
 
 def plot_disc_height(config: dict) -> None:
     df_auriga = _get_auriga_data()
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 6.0))
+    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     for ax in axs.flatten():
@@ -124,7 +125,7 @@ def plot_disc_height(config: dict) -> None:
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i]
+        ax = axs[i//4, i%4]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
                 galaxy=f"{simulation}_{galaxy}", config=config)
@@ -133,7 +134,7 @@ def plot_disc_height(config: dict) -> None:
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
                 lw=0.75, label=galaxy, zorder=11)
-        ax.text(x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
+        ax.text(x=0.05, y=0.95, s=simulation,
                 transform=ax.transAxes, fontsize=6,
                 verticalalignment='top', horizontalalignment='left',
                 color=Settings.SIMULATION_COLORS[simulation])
