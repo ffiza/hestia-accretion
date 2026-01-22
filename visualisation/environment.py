@@ -58,7 +58,7 @@ def make_plot(config: dict) -> None:
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i//4, i%4]
+        ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             try:
                 df = _get_data(f"{simulation}_{galaxy}", config)
@@ -70,13 +70,12 @@ def make_plot(config: dict) -> None:
             ax.plot(df["Times_Gyr"],
                     df["Delta"],
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color=Settings.SIMULATION_COLORS[simulation],
-                    lw=0.75, label=galaxy, zorder=11)
+                    color='k', lw=0.75, label=galaxy, zorder=11)
         ax.text(
-            x=0.05, y=0.95, s=simulation,
+            x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
-            color=Settings.SIMULATION_COLORS[simulation])
+            color='k')
 
         ax.fill_between(
             auriga["Time_Gyr"],
@@ -87,7 +86,7 @@ def make_plot(config: dict) -> None:
                 auriga["Delta1200Mean"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
 
-        ax.legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/delta1200_{config['RUN_CODE']}.pdf")
     plt.close(fig)

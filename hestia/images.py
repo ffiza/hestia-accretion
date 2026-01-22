@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def figure_setup():
     params = {'axes.labelsize': 10.0,
               'axes.titlesize': 8.0,
-              'text.usetex': False,
+              'text.usetex': True,
               'figure.dpi': 500,
               'figure.facecolor': 'white',
               'font.size': 8.0,

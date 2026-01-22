@@ -124,11 +124,11 @@ def plot_accretion_evolution(
         accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 6.0))
+    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
-    for ax in axs:
+    for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 400)
@@ -145,7 +145,7 @@ def plot_accretion_evolution(
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i]
+        ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(f"{simulation}_{galaxy}", config,
                            accretion_region_type)
@@ -156,17 +156,16 @@ def plot_accretion_evolution(
                         window_length
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color=Settings.SIMULATION_COLORS[simulation],
-                    lw=0.75, label=galaxy, zorder=12)
+                    color='k', lw=0.75, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
-            color=Settings.SIMULATION_COLORS[simulation])
+            color='k')
 
         _add_auriga_data_to_ax(ax, rate_type, accretion_region_type, config)
 
-        ax.legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(
@@ -489,15 +488,15 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    # plot_accretion_evolution(
-    #     config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
-    # plot_accretion_evolution(
-    #     config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
-    # plot_accretion_evolution(
-    #     config, RateType.INFLOW, AccretionRegionType.HALO)
-    # plot_accretion_evolution(
-    #     config, RateType.OUTFLOW, AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.HALO)
     # plot_halo_disc_relation(config, RateType.INFLOW)
     # plot_halo_disc_relation(config, RateType.OUTFLOW)
-    plot_simulation_comparison(config)
+    # plot_simulation_comparison(config)
     # perform_ks_test(config)

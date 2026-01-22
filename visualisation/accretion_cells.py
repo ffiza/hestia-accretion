@@ -97,11 +97,11 @@ def make_plot(config: dict,
 
     match accretion_region_type:
         case AccretionRegionType.STELLAR_DISC:
-            ylabel = r'$\dot{M}_\mathrm{net}$ '
-            r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+            ylabel = r'$\dot{M}_\mathrm{net}$ ' + \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         case AccretionRegionType.HALO:
-            ylabel = r'$\dot{M}_\mathrm{net}^\mathrm{halo}$ '
-            r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+            ylabel = r'$\dot{M}_\mathrm{net}^\mathrm{halo}$ ' + \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         case _:
             raise ValueError("Invalid accretion region type.")
 
@@ -122,7 +122,7 @@ def make_plot(config: dict,
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i//4, i%4]
+        ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
                 f"{simulation}_{galaxy}", config, accretion_region_type)
@@ -135,18 +135,17 @@ def make_plot(config: dict,
                         window_length
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color=Settings.SIMULATION_COLORS[simulation],
-                    lw=0.75, label=galaxy, zorder=12)
+                    color='k', lw=0.75, label=galaxy, zorder=12)
         ax.text(
-            x=0.05, y=0.95, s=simulation,
+            x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
-            color=Settings.SIMULATION_COLORS[simulation])
+            color='k')
 
         if accretion_region_type == AccretionRegionType.STELLAR_DISC:
             _add_auriga_data_to_ax(ax, config)
 
-        ax.legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(f"images/net_accretion_cells{suffix}_{config['RUN_CODE']}.pdf")
