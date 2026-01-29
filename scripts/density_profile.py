@@ -76,7 +76,7 @@ def radial_density_healpix(
             "rho_med_cone": [np.nan] * nbins
             }
     
-    df = make_dataframe(simulation, SnapNo, galaxy, config, DFType.CELLS, max_radius=rmax)
+    df = make_dataframe(simulation, SnapNo, galaxy, config, DFType.CELLS, max_radius=rmax, align_with_disc=False)
 
     pos = df[["xPosition_ckpc", "yPosition_ckpc", "zPosition_ckpc"]]
     mass = df[["Mass_Msun"]]
