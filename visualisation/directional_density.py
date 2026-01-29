@@ -3,7 +3,6 @@ import yaml
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
@@ -13,7 +12,8 @@ class Helpers:
     @staticmethod
     def read_auriga_data() -> pd.DataFrame:
         df = pd.read_csv(
-            "data/auriga/directional_density.csv", index_col=False, comment="#")
+            "data/auriga/directional_density.csv",
+            index_col=False, comment="#")
         df["Avg_Rho50_Msun/ckpc3"] = df[
             [f"Au{i}_Rho50_Msun/ckpc3" for i in range(1, 31)]].mean(axis=1)
         return df
