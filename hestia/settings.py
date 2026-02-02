@@ -11,23 +11,23 @@ class Settings:
         "37_11": "tab:blue",
 
         # --- i_09_* ---
-        "i_09_10": "tab:orange",
-        "i_09_16": "tab:olive",
-        "i_09_17": "tab:brown",
-        "i_09_18": "tab:pink",
-        "i_09_19": "tab:purple",
+        "i_09_10": "tab:green",
+        "i_09_16": "tab:green",
+        "i_09_17": "tab:green",
+        "i_09_18": "tab:green",
+        "i_09_19": "tab:green",
 
         # --- i_17_* ---
-        "i_17_10": "tab:cyan",
-        "i_17_11": "tab:gray",
-        "i_17_13": "tab:blue",
+        "i_17_10": "tab:red",
+        "i_17_11": "tab:red",
+        "i_17_13": "tab:red",
         "i_17_14": "tab:red",
 
         # --- i_37_* ---
-        "i_37_11": "tab:green",
-        "i_37_12": "tab:orange",
-        "i_37_16": "tab:olive",
-        "i_37_17": "tab:brown",
+        "i_37_11": "tab:blue",
+        "i_37_12": "tab:blue",
+        "i_37_16": "tab:blue",
+        "i_37_17": "tab:blue",
     }
     GALAXY_LINESTYLES: dict = {
         "MW": "-",
