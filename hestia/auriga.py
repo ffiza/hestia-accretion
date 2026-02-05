@@ -67,6 +67,12 @@ class AurigaData:
                 sample_inflow, axis=1)
             df["InflowRateSmoothedStd_Msun/yr"] = np.nanstd(
                 sample_inflow, axis=1)
+            df["InflowRateSmoothedMedian_Msun/yr"] = np.nanmedian(
+                sample_inflow, axis=1)
+            df["InflowRateSmoothedPerc16_Msun/yr"] = np.nanpercentile(
+                sample_inflow, 16, axis=1)
+            df["InflowRateSmoothedPerc84_Msun/yr"] = np.nanpercentile(
+                sample_inflow, 84, axis=1)
 
             sample_outflow = df[[
                 f"OutflowRateSmoothed_Au{i}_Msun/yr"
@@ -77,6 +83,12 @@ class AurigaData:
                 sample_outflow, axis=1)
             df["OutflowRateSmoothedStd_Msun/yr"] = np.nanstd(
                 sample_outflow, axis=1)
+            df["OutflowRateSmoothedMedian_Msun/yr"] = np.nanmedian(
+                sample_outflow, axis=1)
+            df["OutflowRateSmoothedPerc16_Msun/yr"] = np.nanpercentile(
+                sample_outflow, 16, axis=1)
+            df["OutflowRateSmoothedPerc84_Msun/yr"] = np.nanpercentile(
+                sample_outflow, 84, axis=1)
 
         df = df.dropna()
         return df

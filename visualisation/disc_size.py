@@ -47,6 +47,22 @@ def _get_auriga_data() -> pd.DataFrame:
             df[[f"DiscHeight_Au{i}_ckpc" for i in range(
                 1, 31)]].to_numpy(),
             axis=1)
+        df["DiscRadiusPerc16_ckpc"] = np.nanpercentile(
+            df[[f"DiscRadius_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            q=16, axis=1)
+        df["DiscRadiusPerc84_ckpc"] = np.nanpercentile(
+            df[[f"DiscRadius_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            q=84, axis=1)
+        df["DiscHeightPerc16_ckpc"] = np.nanpercentile(
+            df[[f"DiscHeight_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            q=16, axis=1)
+        df["DiscHeightPerc84_ckpc"] = np.nanpercentile(
+            df[[f"DiscHeight_Au{i}_ckpc" for i in range(
+                1, 31)]].to_numpy(),
+            q=84, axis=1)
     return df
 
 
@@ -96,6 +112,14 @@ def plot_disc_radius(config: dict) -> None:
                 df_auriga["DiscRadiusMean_ckpc"]
                 * df_auriga["ExpansionFactor"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["DiscRadiusPerc16_ckpc"]
+                * df_auriga["ExpansionFactor"],
+                ls=":", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["DiscRadiusPerc84_ckpc"]
+                * df_auriga["ExpansionFactor"],
+                ls=":", color="darkgray", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
@@ -149,6 +173,14 @@ def plot_disc_height(config: dict) -> None:
                 df_auriga["DiscHeightMean_ckpc"]
                 * df_auriga["ExpansionFactor"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["DiscHeightPerc16_ckpc"]
+                * df_auriga["ExpansionFactor"],
+                ls=":", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(df_auriga["Time_Gyr"],
+                df_auriga["DiscHeightPerc84_ckpc"]
+                * df_auriga["ExpansionFactor"],
+                ls=":", color="darkgray", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 

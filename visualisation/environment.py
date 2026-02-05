@@ -32,6 +32,12 @@ def _get_auriga_data() -> pd.DataFrame:
         df["Delta1200Std"] = np.nanstd(
             df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
             axis=1)
+        df["Delta1200Perc16"] = np.nanpercentile(
+            df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
+            q=16, axis=1)
+        df["Delta1200Perc84"] = np.nanpercentile(
+            df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
+            q=84, axis=1)
     return df
 
 
@@ -86,6 +92,12 @@ def make_plot(config: dict) -> None:
         ax.plot(auriga["Time_Gyr"],
                 auriga["Delta1200Mean"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(auriga["Time_Gyr"],
+                auriga["Delta1200Perc16"],
+                ls=":", color="tab:orange", lw=0.75, zorder=10)
+        ax.plot(auriga["Time_Gyr"],
+                auriga["Delta1200Perc84"],
+                ls=":", color="tab:purple", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 

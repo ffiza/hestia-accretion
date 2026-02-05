@@ -116,6 +116,21 @@ def _add_auriga_data_to_ax(
                 f"{Helpers.get_rate_type_string(rate_type)}"
                 "RateSmoothedMean_Msun/yr"],
             ls="-", color="darkgray", lw=0.75, zorder=10)
+    ax.plot(df_auriga["Time_Gyr"],
+            df_auriga[
+                f"{Helpers.get_rate_type_string(rate_type)}"
+                "RateSmoothedMedian_Msun/yr"],
+            ls=":", color="darkgray", lw=0.75, zorder=10)
+    ax.plot(df_auriga["Time_Gyr"],
+            df_auriga[
+                f"{Helpers.get_rate_type_string(rate_type)}"
+                "RateSmoothedPerc16_Msun/yr"],
+            ls=":", color="tab:orange", lw=0.75, zorder=10)
+    ax.plot(df_auriga["Time_Gyr"],
+            df_auriga[
+                f"{Helpers.get_rate_type_string(rate_type)}"
+                "RateSmoothedPerc84_Msun/yr"],
+            ls=":", color="tab:purple", lw=0.75, zorder=10)
 
 
 def plot_accretion_evolution(
@@ -489,15 +504,15 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    # plot_accretion_evolution(
-    #     config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
-    # plot_accretion_evolution(
-    #     config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
-    # plot_accretion_evolution(
-    #     config, RateType.INFLOW, AccretionRegionType.HALO)
-    # plot_accretion_evolution(
-    #     config, RateType.OUTFLOW, AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.STELLAR_DISC)
+    plot_accretion_evolution(
+        config, RateType.INFLOW, AccretionRegionType.HALO)
+    plot_accretion_evolution(
+        config, RateType.OUTFLOW, AccretionRegionType.HALO)
     # plot_halo_disc_relation(config, RateType.INFLOW)
     # plot_halo_disc_relation(config, RateType.OUTFLOW)
-    plot_simulation_comparison(config)
+    # plot_simulation_comparison(config)
     # perform_ks_test(config)
