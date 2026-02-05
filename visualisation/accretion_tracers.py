@@ -102,35 +102,15 @@ def _add_auriga_data_to_ax(
     ax.fill_between(
         df_auriga["Time_Gyr"],
         df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
-                  "RateSmoothedMean_Msun/yr"]
-        - df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
-                    "RateSmoothedStd_Msun/yr"],
+                  "RateSmoothedPerc16_Msun/yr"],
         df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
-                  "RateSmoothedMean_Msun/yr"]
-        + df_auriga[
-            f"{Helpers.get_rate_type_string(rate_type)}"
-            "RateSmoothedStd_Msun/yr"],
+                  "RateSmoothedPerc84_Msun/yr"],
         color="k", alpha=0.1, label="Auriga", lw=0)
     ax.plot(df_auriga["Time_Gyr"],
             df_auriga[
                 f"{Helpers.get_rate_type_string(rate_type)}"
-                "RateSmoothedMean_Msun/yr"],
-            ls="-", color="darkgray", lw=0.75, zorder=10)
-    ax.plot(df_auriga["Time_Gyr"],
-            df_auriga[
-                f"{Helpers.get_rate_type_string(rate_type)}"
                 "RateSmoothedMedian_Msun/yr"],
-            ls=":", color="darkgray", lw=0.75, zorder=10)
-    ax.plot(df_auriga["Time_Gyr"],
-            df_auriga[
-                f"{Helpers.get_rate_type_string(rate_type)}"
-                "RateSmoothedPerc16_Msun/yr"],
-            ls=":", color="tab:orange", lw=0.75, zorder=10)
-    ax.plot(df_auriga["Time_Gyr"],
-            df_auriga[
-                f"{Helpers.get_rate_type_string(rate_type)}"
-                "RateSmoothedPerc84_Msun/yr"],
-            ls=":", color="tab:purple", lw=0.75, zorder=10)
+            ls="-", color="darkgray", lw=0.75, zorder=10)
 
 
 def plot_accretion_evolution(

@@ -31,19 +31,11 @@ def _get_auriga_data() -> pd.DataFrame:
     df = pd.read_csv("data/iza_et_al_2022/disc_size.csv")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        df["DiscRadiusMean_ckpc"] = np.nanmean(
+        df["DiscRadiusMedian_ckpc"] = np.nanmedian(
             df[[f"DiscRadius_Au{i}_ckpc" for i in range(
                 1, 31)]].to_numpy(),
             axis=1)
-        df["DiscHeightMean_ckpc"] = np.nanmean(
-            df[[f"DiscHeight_Au{i}_ckpc" for i in range(
-                1, 31)]].to_numpy(),
-            axis=1)
-        df["DiscRadiusStd_ckpc"] = np.nanstd(
-            df[[f"DiscRadius_Au{i}_ckpc" for i in range(
-                1, 31)]].to_numpy(),
-            axis=1)
-        df["DiscHeightStd_ckpc"] = np.nanstd(
+        df["DiscHeightMedian_ckpc"] = np.nanmedian(
             df[[f"DiscHeight_Au{i}_ckpc" for i in range(
                 1, 31)]].to_numpy(),
             axis=1)
@@ -103,23 +95,13 @@ def plot_disc_radius(config: dict) -> None:
 
         ax.fill_between(
             df_auriga["Time_Gyr"],
-            (df_auriga["DiscRadiusMean_ckpc"]
-             - df_auriga["DiscRadiusStd_ckpc"]) * df_auriga["ExpansionFactor"],
-            (df_auriga["DiscRadiusMean_ckpc"]
-             + df_auriga["DiscRadiusStd_ckpc"]) * df_auriga["ExpansionFactor"],
+            df_auriga["DiscRadiusPerc16_ckpc"] * df_auriga["ExpansionFactor"],
+            df_auriga["DiscRadiusPerc84_ckpc"] * df_auriga["ExpansionFactor"],
             color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["DiscRadiusMean_ckpc"]
-                * df_auriga["ExpansionFactor"],
-                ls="-", color="darkgray", lw=0.75, zorder=10)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["DiscRadiusPerc16_ckpc"]
-                * df_auriga["ExpansionFactor"],
-                ls=":", color="darkgray", lw=0.75, zorder=10)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["DiscRadiusPerc84_ckpc"]
-                * df_auriga["ExpansionFactor"],
-                ls=":", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(
+            df_auriga["Time_Gyr"],
+            df_auriga["DiscRadiusMedian_ckpc"] * df_auriga["ExpansionFactor"],
+            ls="-", color="darkgray", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 
@@ -164,23 +146,13 @@ def plot_disc_height(config: dict) -> None:
 
         ax.fill_between(
             df_auriga["Time_Gyr"],
-            (df_auriga["DiscHeightMean_ckpc"]
-             - df_auriga["DiscHeightStd_ckpc"]) * df_auriga["ExpansionFactor"],
-            (df_auriga["DiscHeightMean_ckpc"]
-             + df_auriga["DiscHeightStd_ckpc"]) * df_auriga["ExpansionFactor"],
+            df_auriga["DiscHeightPerc16_ckpc"] * df_auriga["ExpansionFactor"],
+            df_auriga["DiscHeightPerc84_ckpc"] * df_auriga["ExpansionFactor"],
             color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["DiscHeightMean_ckpc"]
-                * df_auriga["ExpansionFactor"],
-                ls="-", color="darkgray", lw=0.75, zorder=10)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["DiscHeightPerc16_ckpc"]
-                * df_auriga["ExpansionFactor"],
-                ls=":", color="darkgray", lw=0.75, zorder=10)
-        ax.plot(df_auriga["Time_Gyr"],
-                df_auriga["DiscHeightPerc84_ckpc"]
-                * df_auriga["ExpansionFactor"],
-                ls=":", color="darkgray", lw=0.75, zorder=10)
+        ax.plot(
+            df_auriga["Time_Gyr"],
+            df_auriga["DiscHeightMedian_ckpc"] * df_auriga["ExpansionFactor"],
+            ls="-", color="darkgray", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 

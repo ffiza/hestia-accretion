@@ -26,10 +26,7 @@ def _get_auriga_data() -> pd.DataFrame:
     df = pd.DataFrame(df)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        df["Delta1200Mean"] = np.nanmean(
-            df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
-            axis=1)
-        df["Delta1200Std"] = np.nanstd(
+        df["Delta1200Median"] = np.nanmedian(
             df[[f"Delta1200_Au{i}" for i in range(1, 31)]].to_numpy(),
             axis=1)
         df["Delta1200Perc16"] = np.nanpercentile(
@@ -86,18 +83,12 @@ def make_plot(config: dict) -> None:
 
         ax.fill_between(
             auriga["Time_Gyr"],
-            auriga["Delta1200Mean"] - auriga["Delta1200Std"],
-            auriga["Delta1200Mean"] + auriga["Delta1200Std"],
+            auriga["Delta1200Perc16"],
+            auriga["Delta1200Perc84"],
             color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
         ax.plot(auriga["Time_Gyr"],
-                auriga["Delta1200Mean"],
+                auriga["Delta1200Median"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
-        ax.plot(auriga["Time_Gyr"],
-                auriga["Delta1200Perc16"],
-                ls=":", color="tab:orange", lw=0.75, zorder=10)
-        ax.plot(auriga["Time_Gyr"],
-                auriga["Delta1200Perc84"],
-                ls=":", color="tab:purple", lw=0.75, zorder=10)
 
         ax.legend(loc="lower right", framealpha=0, fontsize=5)
 

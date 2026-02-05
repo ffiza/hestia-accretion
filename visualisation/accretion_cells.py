@@ -40,28 +40,8 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
         rate[rate < 0.1] = np.nan
         df[f"AccretionRateSmoothed_Au{i}_Msun/yr"] = windowed_average(
             time, rate, window_length)
-    df["AccretionRateMin_Msun/yr"] = df[[
-        f"AccretionRate_Au{i}_Msun/yr" for i in range(1, 31)]].min(
-            axis=1)
-    df["AccretionRateMax_Msun/yr"] = df[[
-        f"AccretionRate_Au{i}_Msun/yr" for i in range(1, 31)]].max(
-            axis=1)
-    df["AccretionRateSmoothedMin_Msun/yr"] = df[[
-        f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].min(
-            axis=1)
-    df["AccretionRateSmoothedMax_Msun/yr"] = df[[
-        f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(1, 31)]].max(
-            axis=1)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        df["AccretionRateSmoothedMean_Msun/yr"] = np.nanmean(
-            df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
-                1, 31)]].to_numpy(),
-            axis=1)
-        df["AccretionRateSmoothedStd_Msun/yr"] = np.nanstd(
-            df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
-                1, 31)]].to_numpy(),
-            axis=1)
         df["AccretionRateSmoothedMedian_Msun/yr"] = np.nanmedian(
             df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
                 1, 31)]].to_numpy(),
@@ -74,14 +54,6 @@ def _get_auriga_data(config: dict) -> pd.DataFrame:
             df[[f"AccretionRateSmoothed_Au{i}_Msun/yr" for i in range(
                 1, 31)]].to_numpy(),
             q=84, axis=1)
-        df["AccretionRateMean_Msun/yr"] = np.nanmean(
-            df[[f"AccretionRate_Au{i}_Msun/yr" for i in range(
-                1, 31)]].to_numpy(),
-            axis=1)
-        df["AccretionRateStd_Msun/yr"] = np.nanstd(
-            df[[f"AccretionRate_Au{i}_Msun/yr" for i in range(
-                1, 31)]].to_numpy(),
-            axis=1)
     return df
 
 
@@ -89,23 +61,12 @@ def _add_auriga_data_to_ax(ax, config: dict) -> None:
     df_auriga = _get_auriga_data(config)
     ax.fill_between(
         df_auriga["Time_Gyr"],
-        df_auriga["AccretionRateSmoothedMean_Msun/yr"]
-        - df_auriga["AccretionRateSmoothedStd_Msun/yr"],
-        df_auriga["AccretionRateSmoothedMean_Msun/yr"]
-        + df_auriga["AccretionRateSmoothedStd_Msun/yr"],
+        df_auriga["AccretionRateSmoothedPerc16_Msun/yr"],
+        df_auriga["AccretionRateSmoothedPerc84_Msun/yr"],
         color="k", alpha=0.1, label="Auriga", lw=0)
     ax.plot(df_auriga["Time_Gyr"],
-            df_auriga["AccretionRateSmoothedMean_Msun/yr"],
-            ls="-", color="darkgray", lw=0.75, zorder=10)
-    ax.plot(df_auriga["Time_Gyr"],
             df_auriga["AccretionRateSmoothedMedian_Msun/yr"],
-            ls=":", color="darkgray", lw=0.75, zorder=10)
-    ax.plot(df_auriga["Time_Gyr"],
-            df_auriga["AccretionRateSmoothedPerc16_Msun/yr"],
-            ls=":", color="darkgray", lw=0.75, zorder=10)
-    ax.plot(df_auriga["Time_Gyr"],
-            df_auriga["AccretionRateSmoothedPerc84_Msun/yr"],
-            ls=":", color="darkgray", lw=0.75, zorder=10)
+            ls="-", color="darkgray", lw=0.75, zorder=10)
 
 
 def make_plot(config: dict,
