@@ -44,7 +44,7 @@ def find_indices(a: np.array,
 
 def _make_dataframe_cells(
         SimName: str, SnapNo: int,  MW_or_M31: str, config: dict,
-        max_radius: float = 100.0) -> pd.DataFrame:
+        max_radius: float = 100.0, align_with_disc=True) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns:
 
@@ -235,13 +235,14 @@ def _make_dataframe_cells(
         BHIDs = BHIDs[index_of_nearby_BH]
 
     # Align positions with the stellar disc
-    alignment_distance = config["ROTATION_MATRIX_DISTANCE_CKPC"]
-    R = PCA_matrix(StarPos, StarVel, alignment_distance)
-    GasPos = np.dot(GasPos, R)
-    StarPos = np.dot(StarPos, R)
-    DMPos = np.dot(DMPos, R)
-    if BHPos is not None:
-        BHPos = np.dot(BHPos, R)
+    if align_with_disc:
+        alignment_distance = config["ROTATION_MATRIX_DISTANCE_CKPC"]
+        R = PCA_matrix(StarPos, StarVel, alignment_distance)
+        GasPos = np.dot(GasPos, R)
+        StarPos = np.dot(StarPos, R)
+        DMPos = np.dot(DMPos, R)
+        if BHPos is not None:
+            BHPos = np.dot(BHPos, R)
 
 
     if BHPos is not None:
@@ -290,7 +291,7 @@ def _make_dataframe_cells(
 
 def _make_dataframe_tracers(
         SimName: str, SnapNo: int, MW_or_M31: str, config: dict,
-        max_radius: float = 100.0) -> pd.DataFrame:
+        max_radius: float = 100.0, align_with_disc=True) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with the following columns
     related to tracer particles:
@@ -421,13 +422,14 @@ def _make_dataframe_tracers(
         BHPos = BHPos - M31_pos if BHPos is not None and len(BHPos) > 0 else None
 
     # Align positions with the stellar disc
-    alignment_distance = config["ROTATION_MATRIX_DISTANCE_CKPC"]
-    R = PCA_matrix(StarPos, StarVel, alignment_distance)
-    GasPos = np.dot(GasPos, R)
-    StarPos = np.dot(StarPos, R)
-    # DMPos = np.dot(DMPos, R)
-    if BHPos is not None:
-        BHPos = np.dot(BHPos, R)
+    if align_with_disc:
+        alignment_distance = config["ROTATION_MATRIX_DISTANCE_CKPC"]
+        R = PCA_matrix(StarPos, StarVel, alignment_distance)
+        GasPos = np.dot(GasPos, R)
+        StarPos = np.dot(StarPos, R)
+        # DMPos = np.dot(DMPos, R)
+        if BHPos is not None:
+            BHPos = np.dot(BHPos, R)
 
 
     # Build dictionaries for each type
@@ -497,7 +499,7 @@ def _make_dataframe_tracers(
 
 def make_dataframe(
         SimName: str, SnapNo: int, MW_or_M31: str, config: dict,
-        df_type: DFType, max_radius: float = 100.0) -> pd.DataFrame:
+        df_type: DFType, max_radius: float = 100.0, align_with_disc=True) -> pd.DataFrame:
     """
     Loads a snapshot and returns a dataframe with data pertaining to cells
     if `df_type=DFType.CELLS` or to tracer particles if
@@ -525,9 +527,9 @@ def make_dataframe(
     """
     if df_type == DFType.CELLS:
         return _make_dataframe_cells(
-            SimName, SnapNo, MW_or_M31, config, max_radius)
+            SimName, SnapNo, MW_or_M31, config, max_radius, align_with_disc)
     if df_type == DFType.TRACERS:
         return _make_dataframe_tracers(
-            SimName, SnapNo, MW_or_M31, config, max_radius)
+            SimName, SnapNo, MW_or_M31, config, max_radius, align_with_disc)
     raise ValueError(
         f"{df_type} can only be `DFType.CELLS` or `DFType.TRACERS`.")
