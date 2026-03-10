@@ -34,7 +34,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         m200.append(
             data[f"M200_Au{galaxy}_1E10Msun"].to_numpy()[snapnum] * 1E10)
 
-    for simulation in Settings.SIMULATIONS:
+    for simulation in Settings.HIGH_RES_SIMULATIONS:
         for galaxy in Settings.GALAXIES:
             data = pd.read_csv(
                 f"data/hestia/{galaxy}_M_SFR_t_Hestia{simulation}.csv")
@@ -55,13 +55,13 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
                 f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
             m200.append(data["VirialMass_Msun"].to_numpy()[snapnum])
 
-    colors = ["tab:gray"] * 30
-    for s in Settings.SIMULATIONS:
+    colors = ["#4d4d4d"] * 30
+    for s in Settings.HIGH_RES_SIMULATIONS:
         for _ in Settings.GALAXIES:
             colors.append(Settings.SIMULATION_COLORS[s])
 
-    symbols = ["X"] * 30
-    for _ in Settings.SIMULATIONS:
+    symbols = ["o"] * 30
+    for _ in Settings.HIGH_RES_SIMULATIONS:
         for g in Settings.GALAXIES:
             symbols.append(Settings.GALAXY_SYMBOLS[g])
 
@@ -168,9 +168,9 @@ def plot_prop_comparison(config: dict, snapnum: int) -> None:
             ax.xaxis.set_label_coords(0.5, -0.4)
             ax.scatter(
                 df_au[f1].to_numpy(), df_au[f2].to_numpy(),
-                s=12, edgecolor="none",
+                s=5, edgecolor="none",
                 facecolor=df_au["Colors"].values[0],
-                marker="X", label="Auriga", zorder=10,
+                marker=df_au["Symbols"].values[0], label="Auriga", zorder=10,
             )
             for _, row in df_he.iterrows():
                 # This prefix prevents the name from appearing in the legend
@@ -205,19 +205,6 @@ def plot_prop_comparison(config: dict, snapnum: int) -> None:
     handles, labels = axs[1, 0].get_legend_handles_labels()
     axs[0, 1].legend(handles, labels, frameon=False, fontsize=5,
                      bbox_to_anchor=(0.5, 0.5), loc='center')
-
-    axs[0, 0].text(2, 0.85, f"Snapshot: {snapnum}",
-                   ha="left", va='bottom', fontsize=5,
-                   transform=axs[0, 0].transAxes)
-    axs[0, 0].text(2, 0.7, f"Time: {round(df.time, 2)} Gyr",
-                   ha="left", va='bottom', fontsize=5,
-                   transform=axs[0, 0].transAxes)
-    axs[0, 0].text(2, 0.55, f"$z=$ {round(df.redshift, 2)}",
-                   ha="left", va='bottom', fontsize=5,
-                   transform=axs[0, 0].transAxes)
-    axs[0, 0].text(2, 0.4, f"$a=$ {round(df.expansion_factor, 2)}",
-                   ha="left", va='bottom', fontsize=5,
-                   transform=axs[0, 0].transAxes)
 
     plt.savefig(
         f"images/prop_comparison_snap{snapnum}_{config['RUN_CODE']}.pdf")
@@ -275,7 +262,7 @@ def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
             if row["Galaxy"].startswith("Au"):
                 axs[i].scatter(
                     np.log10(row["Delta1200"]), np.log10(row["SFR_Msun/yr"]),
-                    s=12, facecolor=row["Colors"], edgecolors="none",
+                    s=5, facecolor=row["Colors"], edgecolors="none",
                     marker=row["Symbols"])
             else:
                 axs[i].scatter(
@@ -446,8 +433,8 @@ if __name__ == "__main__":
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     plot_prop_comparison(config, 61)
-    # plot_prop_comparison(config, 77)
-    # plot_prop_comparison(config, 95)
-    # plot_prop_comparison(config, 127)
-    # plot_time_correlation_sfr_vs_delta(config)
-    # plot_time_correlation_ssfr_vs_delta(config)
+    plot_prop_comparison(config, 77)
+    plot_prop_comparison(config, 95)
+    plot_prop_comparison(config, 127)
+    plot_time_correlation_sfr_vs_delta(config)
+    plot_time_correlation_ssfr_vs_delta(config)

@@ -112,7 +112,7 @@ def plot_inflows_vs_environment_by_galaxy(
             color="tab:gray", zorder=10, label="Auriga",
         )
 
-    for simulation in Settings.SIMULATIONS:
+    for simulation in Settings.HIGH_RES_SIMULATIONS:
         for galaxy in Settings.GALAXIES:
             subset = df[(df["Galaxy"] == f"{simulation}_{galaxy}")]
             ax = axs[Settings.GALAXIES.index(galaxy),

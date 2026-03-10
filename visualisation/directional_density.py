@@ -33,46 +33,49 @@ def make_plot(config: dict) -> None:
 
     au = Helpers.read_auriga_data()
 
-    fig = plt.figure(figsize=(5.0, 6.0))
-    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 2.0))
+    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
-    for idx, simulation in enumerate(Settings.SIMULATIONS):
+    for idx, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         ax = axs.flat[idx]
         ax.set_xlim(0, 1000)
         ax.set_xticks(
             ticks=[200, 400, 600, 800],
             labels=["200", "400", "600", "800"],
-            fontsize=7)
+            fontsize=6)
         ax.set_yscale("log")
         ax.set_ylim(5E-1, 5E6)
         ax.set_yticks(
             ticks=[1E2, 1E4, 1E6],
             labels=[r"$10^2$", r"$10^4$", r"$10^6$"],
-            fontsize=7)
-        ax.set_xlabel("Distance [ckpc]", fontsize=9)
+            fontsize=6)
+        ax.set_xlabel("Distance [ckpc]", fontsize=8)
         ax.set_ylabel(
-            r"$\rho$ [$\mathrm{M}_\odot ~ \mathrm{ckpc}^{-3}$]", fontsize=9)
+            r"$\rho$ [$\mathrm{M}_\odot ~ \mathrm{ckpc}^{-3}$]", fontsize=8)
         ax.label_outer()
         ax.text(0.95, 0.95, r"$\texttt{" + simulation + r"}$",
-                transform=ax.transAxes, fontsize=6, va="top", ha="right")
+                transform=ax.transAxes, fontsize=7, va="top", ha="right",
+                color=Settings.SIMULATION_COLORS[simulation])
 
         # Auriga
         ax.plot(au["Radius_ckpc"], au["Avg_Rho50_Msun/ckpc3"],
-                ls='-.', color='tab:green', lw=0.75, zorder=12, label="Auriga")
+                ls='-', color='#4d4d4d', lw=0.75, zorder=12, label="Auriga")
 
         # Hestia
         data = Helpers.read_hestia_data(simulation, "MW", config)
         ax.plot(data["radii"], data["rho_med"],
-                ls='-', color='k', lw=0.75, zorder=12, label="Hestia")
+                ls='-', color=Settings.SIMULATION_COLORS[simulation],
+                lw=0.75, zorder=12, label="Hestia")
         ax.fill_between(
             data["radii"], data["rho_p16"], data["rho_p84"],
-            zorder=10, color="gainsboro", edgecolor=None)
+            zorder=10, color=Settings.SIMULATION_COLORS[simulation],
+            edgecolor=None, alpha=0.2)
         ax.plot(data["radii"], data["rho_med_cone"],
                 ls='--', color='tab:red', lw=0.75, zorder=12,
                 label="Hestia (MW to M31)")
 
-    axs[0, 0].legend(loc="lower left", framealpha=0, fontsize=4)
+    axs[0].legend(loc="lower left", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/directional_density_profile_{config['RUN_CODE']}.pdf")
     plt.close(fig)

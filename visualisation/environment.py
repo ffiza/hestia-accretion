@@ -41,8 +41,8 @@ def _get_auriga_data() -> pd.DataFrame:
 def make_plot(config: dict) -> None:
     auriga = _get_auriga_data()
 
-    fig = plt.figure(figsize=(5.0, 6.0))
-    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 2.0))
+    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     for ax in axs.flatten():
@@ -60,7 +60,7 @@ def make_plot(config: dict) -> None:
         ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.label_outer()
 
-    for i, simulation in enumerate(Settings.SIMULATIONS):
+    for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             try:
@@ -73,23 +73,24 @@ def make_plot(config: dict) -> None:
             ax.plot(df["Times_Gyr"],
                     df["Delta"],
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color='k', lw=0.75, label=galaxy, zorder=11)
+                    color=Settings.SIMULATION_COLORS[simulation],
+                    lw=0.75, label=galaxy, zorder=11)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-            transform=ax.transAxes, fontsize=6,
+            transform=ax.transAxes, fontsize=7,
             verticalalignment='top', horizontalalignment='left',
-            color='k')
+            color=Settings.SIMULATION_COLORS[simulation])
 
         ax.fill_between(
             auriga["Time_Gyr"],
             auriga["Delta1200Perc16"],
             auriga["Delta1200Perc84"],
-            color="k", alpha=0.1, label="Auriga", lw=0, zorder=10)
+            color="#e6e6e6", label="Auriga", lw=0, zorder=10)
         ax.plot(auriga["Time_Gyr"],
                 auriga["Delta1200Median"],
-                ls="-", color="darkgray", lw=0.75, zorder=10)
+                ls="-", color="#4d4d4d", lw=0.75, zorder=10)
 
-    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/delta1200_{config['RUN_CODE']}.pdf")
     plt.close(fig)

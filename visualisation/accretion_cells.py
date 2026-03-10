@@ -63,18 +63,18 @@ def _add_auriga_data_to_ax(ax, config: dict) -> None:
         df_auriga["Time_Gyr"],
         df_auriga["AccretionRateSmoothedPerc16_Msun/yr"],
         df_auriga["AccretionRateSmoothedPerc84_Msun/yr"],
-        color="k", alpha=0.1, label="Auriga", lw=0)
+        color="#e6e6e6", label="Auriga", lw=0)
     ax.plot(df_auriga["Time_Gyr"],
             df_auriga["AccretionRateSmoothedMedian_Msun/yr"],
-            ls="-", color="darkgray", lw=0.75, zorder=10)
+            ls="-", color="#4d4d4d", lw=0.75, zorder=10)
 
 
 def make_plot(config: dict,
               accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
-    fig = plt.figure(figsize=(5.0, 6.0))
-    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 2.0))
+    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     match accretion_region_type:
@@ -103,7 +103,7 @@ def make_plot(config: dict,
                       fontsize=8)
         ax.label_outer()
 
-    for i, simulation in enumerate(Settings.SIMULATIONS):
+    for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
@@ -117,17 +117,18 @@ def make_plot(config: dict,
                         window_length
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color='k', lw=0.75, label=galaxy, zorder=12)
+                    color=Settings.SIMULATION_COLORS[simulation],
+                    lw=0.75, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-            transform=ax.transAxes, fontsize=6,
+            transform=ax.transAxes, fontsize=7,
             verticalalignment='top', horizontalalignment='left',
-            color='k')
+            color=Settings.SIMULATION_COLORS[simulation])
 
         if accretion_region_type == AccretionRegionType.STELLAR_DISC:
             _add_auriga_data_to_ax(ax, config)
 
-    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(f"images/net_accretion_cells{suffix}_{config['RUN_CODE']}.pdf")

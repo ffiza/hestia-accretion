@@ -105,12 +105,12 @@ def _add_auriga_data_to_ax(
                   "RateSmoothedPerc16_Msun/yr"],
         df_auriga[f"{Helpers.get_rate_type_string(rate_type)}"
                   "RateSmoothedPerc84_Msun/yr"],
-        color="k", alpha=0.1, label="Auriga", lw=0)
+        color="#e6e6e6", label="Auriga", lw=0)
     ax.plot(df_auriga["Time_Gyr"],
             df_auriga[
                 f"{Helpers.get_rate_type_string(rate_type)}"
                 "RateSmoothedMedian_Msun/yr"],
-            ls="-", color="darkgray", lw=0.75, zorder=10)
+            ls="-", color="#4d4d4d", lw=0.75, zorder=10)
 
 
 def plot_accretion_evolution(
@@ -119,8 +119,8 @@ def plot_accretion_evolution(
         accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
-    fig = plt.figure(figsize=(5.0, 6.0))
-    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 2.0))
+    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     for ax in axs.flatten():
@@ -139,7 +139,7 @@ def plot_accretion_evolution(
         ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.label_outer()
 
-    for i, simulation in enumerate(Settings.SIMULATIONS):
+    for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(f"{simulation}_{galaxy}", config,
@@ -151,16 +151,17 @@ def plot_accretion_evolution(
                         window_length
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color='k', lw=0.75, label=galaxy, zorder=12)
+                    color=Settings.SIMULATION_COLORS[simulation],
+                    lw=0.75, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
-            transform=ax.transAxes, fontsize=6,
+            transform=ax.transAxes, fontsize=7,
             verticalalignment='top', horizontalalignment='left',
-            color='k')
+            color=Settings.SIMULATION_COLORS[simulation])
 
         _add_auriga_data_to_ax(ax, rate_type, accretion_region_type, config)
 
-    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(
@@ -202,7 +203,7 @@ def plot_halo_disc_relation(
         ax.set_ylabel(ylabel, fontsize=8)
         ax.label_outer()
 
-    for i, simulation in enumerate(Settings.SIMULATIONS):
+    for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         for j, galaxy in enumerate(Settings.GALAXIES):
             ax = axs[j, i]
             df_disc = _get_data(f"{simulation}_{galaxy}", config,
@@ -407,7 +408,6 @@ def perform_ks_test(config: dict) -> None:
             & (he_accumulated["Time_Gyr"] < bin_edge_end)][
                 "InflowRate_Msun/yr"].to_numpy()
         pvalues.append(ks_2samp(au_values, he_values).pvalue)
-    print(pvalues)
 
     # Plot results
     fig = plt.figure(figsize=(3, 3))
@@ -491,7 +491,7 @@ if __name__ == "__main__":
         config, RateType.INFLOW, AccretionRegionType.HALO)
     plot_accretion_evolution(
         config, RateType.OUTFLOW, AccretionRegionType.HALO)
-    # plot_halo_disc_relation(config, RateType.INFLOW)
-    # plot_halo_disc_relation(config, RateType.OUTFLOW)
+    plot_halo_disc_relation(config, RateType.INFLOW)
+    plot_halo_disc_relation(config, RateType.OUTFLOW)
     # plot_simulation_comparison(config)
     # perform_ks_test(config)
