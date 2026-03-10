@@ -73,21 +73,21 @@ def make_plot(config: dict,
               accretion_region_type: AccretionRegionType) -> None:
     window_length = config["TEMPORAL_AVERAGE_WINDOW_LENGTH"]
 
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 6.0))
+    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     match accretion_region_type:
         case AccretionRegionType.STELLAR_DISC:
-            ylabel = r'$\dot{M}_\mathrm{net}$ '
-            r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+            ylabel = r'$\dot{M}_\mathrm{net}$ ' + \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         case AccretionRegionType.HALO:
-            ylabel = r'$\dot{M}_\mathrm{net}^\mathrm{halo}$ '
-            r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
+            ylabel = r'$\dot{M}_\mathrm{net}^\mathrm{halo}$ ' + \
+                r'[$\mathrm{M}_\odot \, \mathrm{yr}^{-1}$]'
         case _:
             raise ValueError("Invalid accretion region type.")
 
-    for ax in axs:
+    for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
         ax.set_ylim(0.1, 400)
@@ -104,7 +104,7 @@ def make_plot(config: dict,
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i]
+        ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(
                 f"{simulation}_{galaxy}", config, accretion_region_type)
@@ -117,18 +117,17 @@ def make_plot(config: dict,
                         window_length
                     ),
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color=Settings.SIMULATION_COLORS[simulation],
-                    lw=0.75, label=galaxy, zorder=12)
+                    color='k', lw=0.75, label=galaxy, zorder=12)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
-            color=Settings.SIMULATION_COLORS[simulation])
+            color='k')
 
         if accretion_region_type == AccretionRegionType.STELLAR_DISC:
             _add_auriga_data_to_ax(ax, config)
 
-        ax.legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(f"images/net_accretion_cells{suffix}_{config['RUN_CODE']}.pdf")

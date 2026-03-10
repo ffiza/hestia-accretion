@@ -41,8 +41,8 @@ def _get_auriga_data() -> pd.DataFrame:
 def make_plot(config: dict) -> None:
     auriga = _get_auriga_data()
 
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 6.0))
+    gs = fig.add_gridspec(nrows=4, ncols=4, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     for ax in axs.flatten():
@@ -61,7 +61,7 @@ def make_plot(config: dict) -> None:
         ax.label_outer()
 
     for i, simulation in enumerate(Settings.SIMULATIONS):
-        ax = axs[i]
+        ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             try:
                 df = _get_data(f"{simulation}_{galaxy}", config)
@@ -73,13 +73,12 @@ def make_plot(config: dict) -> None:
             ax.plot(df["Times_Gyr"],
                     df["Delta"],
                     ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color=Settings.SIMULATION_COLORS[simulation],
-                    lw=0.75, label=galaxy, zorder=11)
+                    color='k', lw=0.75, label=galaxy, zorder=11)
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=6,
             verticalalignment='top', horizontalalignment='left',
-            color=Settings.SIMULATION_COLORS[simulation])
+            color='k')
 
         ax.fill_between(
             auriga["Time_Gyr"],
@@ -90,7 +89,7 @@ def make_plot(config: dict) -> None:
                 auriga["Delta1200Median"],
                 ls="-", color="darkgray", lw=0.75, zorder=10)
 
-        ax.legend(loc="lower right", framealpha=0, fontsize=5)
+    axs[0, 0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     plt.savefig(f"images/delta1200_{config['RUN_CODE']}.pdf")
     plt.close(fig)

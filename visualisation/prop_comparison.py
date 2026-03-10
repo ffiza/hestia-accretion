@@ -173,11 +173,13 @@ def plot_prop_comparison(config: dict, snapnum: int) -> None:
                 marker="X", label="Auriga", zorder=10,
             )
             for _, row in df_he.iterrows():
+                # This prefix prevents the name from appearing in the legend
+                prefix = "_" if row["Galaxy"].startswith("i_") else ""
                 ax.scatter(
                     row[f1], row[f2],
-                    s=12, facecolors="none", marker=row["Symbols"],
+                    s=5, facecolors="none", marker=row["Symbols"],
                     edgecolor=row["Colors"], zorder=11,
-                    label=r"$\texttt{" + f"{row['Galaxy']}" + "}$",
+                    label=prefix + r"$\texttt{" + f"{row['Galaxy']}" + "}$",
                 )
             correlation = pearsonr(df[f1], df[f2])
             rho = correlation.__getattribute__("statistic")
@@ -444,8 +446,8 @@ if __name__ == "__main__":
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     plot_prop_comparison(config, 61)
-    plot_prop_comparison(config, 77)
-    plot_prop_comparison(config, 95)
-    plot_prop_comparison(config, 127)
+    # plot_prop_comparison(config, 77)
+    # plot_prop_comparison(config, 95)
+    # plot_prop_comparison(config, 127)
     # plot_time_correlation_sfr_vs_delta(config)
     # plot_time_correlation_ssfr_vs_delta(config)
