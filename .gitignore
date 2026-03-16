@@ -16,3 +16,4 @@ Miniconda3-*.sh
 *.bak
 /hestia.egg-info
 /results/*/accreted_ids*.json
+/results/*/halo_to_disk_tracers.json
