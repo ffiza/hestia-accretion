@@ -1,0 +1,23 @@
+AVERAGES
+--------
+VirialRadius_kpc                230.020000
+VirialMass_10^10Msun            131.640000
+SubhaloStellarMass_10^10Msun      7.340000
+SubhaloGasMass_10^10Msun          9.793333
+SubhaloBaryonMass_10^10Msun      17.136667
+DiscToTotal                       0.673667
+DiscRadius_kpc                   18.810000
+DiscHeight_kpc                    2.626667
+dtype: float64
+
+STANDARD DEVIATIONS
+-------------------
+VirialRadius_kpc                15.220503
+VirialMass_10^10Msun            26.297576
+SubhaloStellarMass_10^10Msun     2.325362
+SubhaloGasMass_10^10Msun         2.459315
+SubhaloBaryonMass_10^10Msun      4.083988
+DiscToTotal                      0.159103
+DiscRadius_kpc                   6.455276
+DiscHeight_kpc                   0.591860
+dtype: float64
