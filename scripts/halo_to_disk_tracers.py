@@ -3,13 +3,36 @@ import os
 import yaml
 
 from hestia.settings import Settings
+import csv
 
+def load_snapshot_times(filepath):
+    snap_time = {}
+
+    with open(filepath) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+
+            if not row["Time_Gyr"] or not row["SnapshotNumber"]:
+                continue  # skip filas rotas
+
+            try:
+                snap = int(row["SnapshotNumber"])
+                time = float(row["Time_Gyr"])
+            except ValueError:
+                print("Skipping bad row:", row)
+                continue
+
+            snap_time[snap] = time
+
+    return snap_time
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 for simulation in Settings.HIGH_RES_SIMULATIONS:
     for galaxy in Settings.GALAXIES:
 
+        time_file = f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv"
+        snap_time = load_snapshot_times(time_file)
 
 
         # store first halo entry
@@ -68,12 +91,25 @@ for simulation in Settings.HIGH_RES_SIMULATIONS:
 
         # ---------- SAVE RESULTS ----------
 
+
         results = {}
 
         for tid in halo_entry:
+
+            h_snap = halo_entry[tid]
+            d_snap = disk_entry.get(tid, None)
+
+            if d_snap is not None:
+                delay = snap_time[d_snap] - snap_time[h_snap]
+            else:
+                delay = None
+
             results[tid] = {
-                "halo_snap": halo_entry[tid],
-                "disk_snap": disk_entry.get(tid, None)
+                "halo_snap": h_snap,
+                "disk_snap": d_snap,
+                "halo_time_Gyr": snap_time.get(h_snap, None),
+                "disk_time_Gyr": snap_time.get(d_snap, None) if d_snap else None,
+                "delay_Gyr": delay
             }
 
         with open(f"results/{simulation}_{galaxy}/halo_to_disk_tracers.json", "w") as f:
