@@ -170,82 +170,6 @@ def plot_accretion_evolution(
     plt.close(fig)
 
 
-def plot_halo_disc_relation(
-        config: dict, rate_type: RateType) -> None:
-    fig = plt.figure(figsize=(5.0, 3.0))
-    gs = fig.add_gridspec(nrows=2, ncols=3, hspace=0, wspace=0)
-    axs = gs.subplots(sharex=True, sharey=False)
-
-    if rate_type == RateType.INFLOW:
-        xlabel = r'$\dot{M}_\mathrm{in}$ [$\mathrm{M}_\odot' + \
-            r'\, \mathrm{yr}^{-1}$]'
-        ylabel = r'$\dot{M}_\mathrm{in}^\mathrm{halo}$ [$\mathrm{M}_\odot' + \
-            r'\, \mathrm{yr}^{-1}$]'
-    elif rate_type == RateType.OUTFLOW:
-        xlabel = r'$\dot{M}_\mathrm{out}$ [$\mathrm{M}_\odot' + \
-            r'\, \mathrm{yr}^{-1}$]'
-        ylabel = r'$\dot{M}_\mathrm{out}^\mathrm{halo}$ [$\mathrm{M}_\odot' + \
-            r'\, \mathrm{yr}^{-1}$]'
-
-    for ax in axs.flatten():
-        ax.set_axisbelow(True)
-        ax.set_xlim(0.1, 400)
-        ax.set_ylim(0.1, 400)
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_xticks(ticks=[0.1, 1, 10, 100],
-                      labels=["0.1", "1", "10", "100"],
-                      fontsize=6)
-        ax.set_yticks(ticks=[0.1, 1, 10, 100],
-                      labels=["0.1", "1", "10", "100"],
-                      fontsize=6)
-        ax.set_xlabel(xlabel, fontsize=8)
-        ax.set_ylabel(ylabel, fontsize=8)
-        ax.label_outer()
-
-    for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
-        for j, galaxy in enumerate(Settings.GALAXIES):
-            ax = axs[j, i]
-            df_disc = _get_data(f"{simulation}_{galaxy}", config,
-                                AccretionRegionType.STELLAR_DISC)
-            df_halo = _get_data(f"{simulation}_{galaxy}", config,
-                                AccretionRegionType.HALO)
-            ax.scatter(
-                df_disc[Helpers.get_feat_name(rate_type)].to_numpy(),
-                df_halo[Helpers.get_feat_name(rate_type)].to_numpy(),
-                c=df_disc["Time_Gyr"].to_numpy(),
-                s=1, cmap="viridis", zorder=11)
-            ax.text(
-                x=0.05, y=0.95,
-                s=r"$\texttt{" + f"{simulation}_{galaxy}" + "}$",
-                transform=ax.transAxes, fontsize=6,
-                verticalalignment='top', horizontalalignment='left',
-                color=Settings.SIMULATION_COLORS[simulation])
-
-    # Add Auriga data as background scatter
-    au_d = AurigaData.get_accretion(config, AccretionRegionType.STELLAR_DISC)
-    au_h = AurigaData.get_accretion(config, AccretionRegionType.HALO)
-    for g in AurigaData.RERUNS:
-        for ax in axs.flatten():
-            ax.scatter(
-                au_d[f"{Helpers.get_rate_type_string(rate_type)}"
-                     f"Rate_Au{g}_Msun/yr"],
-                au_h[f"{Helpers.get_rate_type_string(rate_type)}"
-                     f"Rate_Au{g}_Msun/yr"],
-                s=5, marker="X", alpha=0.25, edgecolor="none",
-                c="tab:gray", label="Auriga", zorder=10,
-            )
-
-    for ax in axs.flatten():
-        ax.plot(ax.get_xlim(), ax.get_ylim(), c='k', ls='--',
-                lw=0.5, zorder=12)
-
-    plt.savefig(
-        f"images/{Helpers.get_file_prefix(rate_type)}_relation"
-        f"_{config['RUN_CODE']}.pdf")
-    plt.close(fig)
-
-
 def plot_simulation_comparison(config: dict) -> None:
     fig = plt.figure(figsize=(5, 4))
     gs = fig.add_gridspec(nrows=2, ncols=2, hspace=0.2, wspace=0.05)
@@ -491,7 +415,5 @@ if __name__ == "__main__":
         config, RateType.INFLOW, AccretionRegionType.HALO)
     plot_accretion_evolution(
         config, RateType.OUTFLOW, AccretionRegionType.HALO)
-    plot_halo_disc_relation(config, RateType.INFLOW)
-    plot_halo_disc_relation(config, RateType.OUTFLOW)
     # plot_simulation_comparison(config)
     # perform_ks_test(config)
