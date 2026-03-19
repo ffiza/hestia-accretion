@@ -26,9 +26,23 @@ def load_snapshot_times(filepath):
     return snap_time
 
 
-for simulation in Settings.HIGH_RES_SIMULATIONS:
+# ---------- FIGURE SETUP ----------
+fig, axes = plt.subplots(
+    1,
+    len(Settings.HIGH_RES_SIMULATIONS),
+    figsize=(12, 4),
+    sharex=True,
+    sharey=True
+)
 
-    plt.figure()
+if len(Settings.HIGH_RES_SIMULATIONS) == 1:
+    axes = [axes]  # asegurar iterable
+
+
+# ---------- LOOP OVER SIMULATIONS ----------
+for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
+
+    ax = axes[i]
 
     for galaxy in Settings.GALAXIES:
 
@@ -38,7 +52,7 @@ for simulation in Settings.HIGH_RES_SIMULATIONS:
         with open(filepath) as f:
             data = json.load(f)
 
-        time_file = f"r200_t_{galaxy}_{simulation}.csv"
+        time_file = f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv"
         snap_time = load_snapshot_times(time_file)
 
         # ---------- GROUP BY HALO SNAP ----------
@@ -66,21 +80,43 @@ for simulation in Settings.HIGH_RES_SIMULATIONS:
         for s in snaps:
             delays = delays_by_snap[s]
 
-            if len(delays) == 0:
+            if len(delays) < 5:  # evitar ruido fuerte
+                continue
+
+            if s not in snap_time:
                 continue
 
             times.append(snap_time[s])
             mean_delays.append(np.mean(delays))
 
         # ---------- PLOT ----------
-        plt.plot(times, mean_delays, label=galaxy)
+        ax.plot(times, mean_delays, label=galaxy)
+        ax.set_xlim(0, 14)
 
-    plt.xlabel("Cosmic time [Gyr]")
-    plt.ylabel("Mean delay halo → disk [Gyr]")
-    plt.title(f"{simulation}")
-    plt.legend()
+    # label de simulación dentro del plot
+    ax.text(
+        0.05, 0.95,
+        simulation,
+        transform=ax.transAxes,
+        va='top',
+        ha='left'
+    )
 
-    plt.savefig(f"results/{simulation}_mean_delay_vs_time.png")
-    plt.close()
 
-    print(f"Saved plot for {simulation}")
+# ---------- LABELS ----------
+axes[0].set_ylabel("Mean delay halo → disk [Gyr]")
+
+for ax in axes:
+    ax.set_xlabel("Cosmic time [Gyr]")
+
+# ---------- LEGEND (solo en el primero) ----------
+axes[0].legend()
+
+# ---------- TIGHT LAYOUT ----------
+plt.subplots_adjust(wspace=0.05)
+
+# ---------- SAVE ----------
+plt.savefig("images/mean_delay_vs_time_all_sims.pdf", dpi=200)
+plt.close()
+
+print("Saved combined plot")
