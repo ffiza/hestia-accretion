@@ -2,6 +2,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
+import os
 
 from hestia.settings import Settings
 
@@ -92,6 +93,20 @@ for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         # ---------- PLOT ----------
         ax.plot(times, mean_delays, label=galaxy)
         ax.set_xlim(0, 14)
+
+        data_dict = {
+            'SnapshotNumbers': snaps,
+            'SnapshotTimes': times,
+            'SnapshotMeanDelay': mean_delays
+        }
+
+        # Save data
+        path = f"results/{simulation}_{galaxy}/" \
+            + f"halo_to_disk_delays.json"
+        with open(path, "w") as f:
+            json.dump(data_dict, f)
+            f.flush()                  # limpia el buffer de Python
+            os.fsync(f.fileno())       # fuerza a escribir al filesystem (evita null bytes)
 
     # label de simulación dentro del plot
     ax.text(
