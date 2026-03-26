@@ -140,3 +140,12 @@ def timer(method: Callable) -> Callable:
         return result
 
     return wrapper
+
+
+def save_df_with_metadata(df: pd.DataFrame,
+                          metadata: dict,
+                          path: str) -> None:
+    with open(path, "w", newline="") as f:
+        for key, value in metadata.items():
+            f.write(f"# {key}: {value}\n")
+        df.to_csv(f, index=False)
