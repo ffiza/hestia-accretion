@@ -1,6 +1,7 @@
 import json
 import yaml
 import argparse
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -24,9 +25,19 @@ class Helpers:
                          config: dict) -> pd.DataFrame:
         with open(f"results/{simulation}_{galaxy}/"
                   f"density_profile_{config['RUN_CODE']}.json",
-                  "r", encoding="utf-8") as f:
+                  "r",
+                  encoding="utf-8") as f:
             data = json.load(f)
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+
+        # Add the distance between M31 and MW as metadata
+        path = f"data/hestia/r200_t/r200_t_MW_{simulation}.csv"
+        data = pd.read_csv(
+            path,
+            index_col=False,
+            comment="#")
+        df.distance_kpc = data["d_MW_M31_kpc"].to_list()[-1]
+        return df
 
 
 def make_plot(config: dict) -> None:
@@ -39,43 +50,94 @@ def make_plot(config: dict) -> None:
 
     for idx, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         ax = axs.flat[idx]
+
+        ax.set_xlabel(
+            "Distance [ckpc]",
+            fontsize=8)
         ax.set_xlim(0, 1000)
         ax.set_xticks(
             ticks=[200, 400, 600, 800],
             labels=["200", "400", "600", "800"],
             fontsize=6)
+
+        ax.set_ylabel(
+            r"$\rho$ [$\mathrm{M}_\odot ~ \mathrm{ckpc}^{-3}$]",
+            fontsize=8)
         ax.set_yscale("log")
         ax.set_ylim(5E-1, 5E6)
         ax.set_yticks(
             ticks=[1E2, 1E4, 1E6],
             labels=[r"$10^2$", r"$10^4$", r"$10^6$"],
             fontsize=6)
-        ax.set_xlabel("Distance [ckpc]", fontsize=8)
-        ax.set_ylabel(
-            r"$\rho$ [$\mathrm{M}_\odot ~ \mathrm{ckpc}^{-3}$]", fontsize=8)
+
         ax.label_outer()
-        ax.text(0.95, 0.95, r"$\texttt{" + simulation + r"}$",
-                transform=ax.transAxes, fontsize=7, va="top", ha="right",
-                color=Settings.SIMULATION_COLORS[simulation])
+        ax.text(
+            0.05,
+            0.95,
+            r"$\texttt{" + simulation + r"}$",
+            transform=ax.transAxes,
+            fontsize=7,
+            va="top",
+            ha="left",
+            color=Settings.SIMULATION_COLORS[simulation])
 
         # Auriga
-        ax.plot(au["Radius_ckpc"], au["Avg_Rho50_Msun/ckpc3"],
-                ls='-', color='#4d4d4d', lw=0.75, zorder=12, label="Auriga")
+        ax.plot(
+            au["Radius_ckpc"],
+            au["Avg_Rho50_Msun/ckpc3"],
+            ls='-',
+            color='#4d4d4d',
+            lw=0.75,
+            zorder=12,
+            label="Auriga")
 
         # Hestia
-        data = Helpers.read_hestia_data(simulation, "MW", config)
-        ax.plot(data["radii"], data["rho_med"],
-                ls='-', color=Settings.SIMULATION_COLORS[simulation],
-                lw=0.75, zorder=12, label="Hestia")
+        he = Helpers.read_hestia_data(
+            simulation,
+            "MW",
+            config)
+        ax.plot(
+            he["radii"],
+            he["rho_med"],
+            ls='-',
+            color=Settings.SIMULATION_COLORS[simulation],
+            lw=0.75,
+            zorder=12,
+            label="Hestia")
         ax.fill_between(
-            data["radii"], data["rho_p16"], data["rho_p84"],
-            zorder=10, color=Settings.SIMULATION_COLORS[simulation],
-            edgecolor=None, alpha=0.2)
-        ax.plot(data["radii"], data["rho_med_cone"],
-                ls='--', color='tab:red', lw=0.75, zorder=12,
-                label="Hestia (MW to M31)")
+            he["radii"],
+            he["rho_p16"],
+            he["rho_p84"],
+            zorder=10,
+            color=Settings.SIMULATION_COLORS[simulation],
+            edgecolor=None,
+            alpha=0.2)
+        ax.plot(
+            he["radii"],
+            he["rho_med_cone"],
+            ls='--',
+            color='tab:red',
+            lw=0.75,
+            zorder=12,
+            label="Hestia (MW to M31)")
 
-    axs[0].legend(loc="lower left", framealpha=0, fontsize=5)
+        m31_pos_idx = np.argmin(np.abs(he["radii"] - he.distance_kpc))
+        y_max = he["rho_med_cone"].loc[m31_pos_idx]
+        factor = 4
+        ax.annotate(
+            "",
+            xy=(he.distance_kpc, y_max),
+            xytext=(he.distance_kpc, y_max * factor),
+            arrowprops=dict(
+                arrowstyle="->, head_width=0.15, head_length=0.3",
+                color="black",
+                lw=0.75)
+        )
+
+    axs[0].legend(
+        loc="lower left",
+        framealpha=0,
+        fontsize=5)
 
     plt.savefig(f"images/directional_density_profile_{config['RUN_CODE']}.pdf")
     plt.close(fig)
