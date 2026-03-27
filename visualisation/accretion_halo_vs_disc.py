@@ -106,9 +106,9 @@ def _add_auriga_data_to_ax(
     for i in Settings.AURIGA_RERUNS:
         data[f"{Helpers.get_rate_type_string(rate_type)}"
              f"AccretionHaloDiscFraction_Au{i}"] = \
-            df_halo[f"{Helpers.get_rate_type_string(rate_type)}"
-                    f"RateSmoothed_Au{i}_Msun/yr"] / \
             df_disc[f"{Helpers.get_rate_type_string(rate_type)}"
+                    f"RateSmoothed_Au{i}_Msun/yr"] / \
+            df_halo[f"{Helpers.get_rate_type_string(rate_type)}"
                     f"RateSmoothed_Au{i}_Msun/yr"]
     data[f"{Helpers.get_rate_type_string(rate_type)}"
          "AccretionHaloDiscFraction_Median"] = np.nanmedian(
@@ -153,9 +153,9 @@ def plot_halo_and_disc_time_series(
 
     xlabel = "Time [Gyr]"
     if rate_type == RateType.INFLOW:
-        ylabel = r'$\dot{M}_\mathrm{in}^\mathrm{halo} / \dot{M}_\mathrm{in}$'
+        ylabel = r'$\dot{M}_\mathrm{in} / \dot{M}_\mathrm{in}^\mathrm{halo}$'
     elif rate_type == RateType.OUTFLOW:
-        ylabel = r'$\dot{M}_\mathrm{out}^\mathrm{halo} / \dot{M}_\mathrm{out}$'
+        ylabel = r'$\dot{M}_\mathrm{out} / \dot{M}_\mathrm{out}^\mathrm{halo}$'
 
     for ax in axs.flatten():
         ax.set_axisbelow(True)
@@ -180,11 +180,11 @@ def plot_halo_and_disc_time_series(
                                 AccretionRegionType.HALO)
             time = df_disc["Time_Gyr"].to_numpy()
             f_acc = windowed_average(
-                df_halo["Time_Gyr"].to_numpy(),
-                df_halo[Helpers.get_feat_name(rate_type)].to_numpy(),
+                df_disc["Time_Gyr"].to_numpy(),
+                df_disc[Helpers.get_feat_name(rate_type)].to_numpy(),
                 window_length) / windowed_average(
-                    df_disc["Time_Gyr"].to_numpy(),
-                    df_disc[Helpers.get_feat_name(rate_type)].to_numpy(),
+                    df_halo["Time_Gyr"].to_numpy(),
+                    df_halo[Helpers.get_feat_name(rate_type)].to_numpy(),
                     window_length)
 
             ax.plot(
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
-    plot_halo_vs_disc_scatter(config, RateType.INFLOW)
-    plot_halo_vs_disc_scatter(config, RateType.OUTFLOW)
+    # plot_halo_vs_disc_scatter(config, RateType.INFLOW)
+    # plot_halo_vs_disc_scatter(config, RateType.OUTFLOW)
     plot_halo_and_disc_time_series(config, RateType.INFLOW)
     plot_halo_and_disc_time_series(config, RateType.OUTFLOW)
