@@ -1,6 +1,7 @@
 import json
 import yaml
 import argparse
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -23,6 +24,12 @@ class Helpers:
     def read_hestia_data(simulation: str,
                          galaxy: str,
                          config: dict) -> pd.DataFrame:
+        if galaxy == "M31":
+            print("Here")
+            raise ValueError(
+                "These files are only available for MW."
+            )
+
         with open(f"results/{simulation}_{galaxy}/"
                   f"density_profile_{config['RUN_CODE']}.json",
                   "r",
@@ -116,10 +123,18 @@ def make_plot(config: dict) -> None:
             he["radii"],
             he["rho_med_cone"],
             ls='--',
-            color='tab:red',
+            color=Settings.SIMULATION_COLORS[simulation],
             lw=0.75,
             zorder=12,
             label="Hestia (MW to M31)")
+        ax.plot(
+            he["radii"],
+            he["rho_med_anticone"],
+            ls=':',
+            color=Settings.SIMULATION_COLORS[simulation],
+            lw=0.75,
+            zorder=12,
+            label="Hestia (MW to AB)")
 
         m31_pos_idx = np.argmin(np.abs(he["radii"] - he.distance_kpc))
         y_max = he["rho_med_cone"].loc[m31_pos_idx]
