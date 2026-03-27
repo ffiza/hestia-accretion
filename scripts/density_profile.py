@@ -166,8 +166,10 @@ def radial_density_healpix(
 
         mu = vec_pix @ cone_axis
         pix_sel_cone = mu >= np.cos(np.deg2rad(cone_angle))
+        pix_sel_anticone = mu <= -np.cos(np.deg2rad(cone_angle))
     else:
         pix_sel_cone = None
+        pix_sel_anticone = None
 
     pix_sel_all = np.ones(Npix, dtype=bool)
 
@@ -200,11 +202,13 @@ def radial_density_healpix(
 
     rho_all = rho_pix[pix_sel_all]
     rho_cone = rho_pix[pix_sel_cone]
+    rho_anticone = rho_pix[pix_sel_anticone]
 
     rho_p16 = np.nanpercentile(rho_all, 16, axis=0)
     rho_med = np.nanpercentile(rho_all, 50, axis=0)
     rho_p84 = np.nanpercentile(rho_all, 84, axis=0)
     rho_med_cone = np.nanpercentile(rho_cone, 50, axis=0)
+    rho_med_anticone = np.nanpercentile(rho_anticone, 50, axis=0)
 
     # Add data to dictionary
     data["SnapshotNumber"] = SnapNo
@@ -213,6 +217,7 @@ def radial_density_healpix(
     data["rho_med"] = rho_med.tolist()
     data["rho_p84"] = rho_p84.tolist()
     data["rho_med_cone"] = rho_med_cone.tolist()
+    data["rho_med_anticone"] = rho_med_anticone.tolist()
 
     # Save dictionary
     path = f"results/{simulation}_{galaxy}/" \
