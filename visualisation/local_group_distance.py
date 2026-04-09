@@ -49,19 +49,19 @@ def make_plot(config: dict) -> None:
         ax.set_ylabel(
             r"MW-M31 Distance [kpc]",
             fontsize=8)
-        ax.set_ylim(0, 1_200)
+        ax.set_ylim(0, 1_300)
         ax.set_yticks(
-            ticks=[200, 400, 600, 800, 1_000],
-            labels=[200, 400, 600, 800, 1_000],
+            ticks=[200, 400, 600, 800, 1_000, 1_200],
+            labels=[200, 400, 600, 800, 1_000, 1_200],
             fontsize=6)
         ax.label_outer()
         ax.text(
             0.95,
-            0.95,
+            0.05,
             r"$\texttt{" + s + r"}$",
             transform=ax.transAxes,
             fontsize=7,
-            va="top",
+            va="bottom",
             ha="right",
             color=Settings.SIMULATION_COLORS[s])
 
@@ -73,7 +73,31 @@ def make_plot(config: dict) -> None:
             color=Settings.SIMULATION_COLORS[s],
             lw=0.75,
             zorder=12,
+            label="Physical"
             )
+        ax.plot(
+            df["Time_Gyr"],
+            df["ObjectDistance_kpc"] / df["ExpansionFactor"],
+            ls=":",
+            color=Settings.SIMULATION_COLORS[s],
+            lw=0.75,
+            zorder=12,
+            label="Comoving"
+            )
+        ax.plot(
+            [ax.get_xlim()[0], ax.get_xlim()[1]],
+            [1200] * 2,
+            ls="--",
+            color="k",
+            lw=0.5,
+            zorder=5,
+        )
+
+    axs[0].legend(
+        loc="lower left",
+        fontsize=5,
+        frameon=False
+    )
 
     plt.savefig(f"images/object_distance_{config['RUN_CODE']}.pdf")
     plt.close(fig)
