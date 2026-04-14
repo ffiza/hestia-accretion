@@ -45,21 +45,12 @@ def make_plot(config: dict) -> None:
 
     au = Helpers.read_auriga_data()
 
-    fig = plt.figure(figsize=(5.0, 2.0))
-    gs = fig.add_gridspec(nrows=1, ncols=3, hspace=0, wspace=0)
+    fig = plt.figure(figsize=(5.0, 3.0))
+    gs = fig.add_gridspec(nrows=2, ncols=3, hspace=0, wspace=0)
     axs = gs.subplots(sharex=True, sharey=False)
 
     for idx, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
-        ax = axs.flat[idx]
-
-        ax.set_xlabel(
-            "Time [Gyr]",
-            fontsize=8)
-        ax.set_xlim(0, 14)
-        ax.set_xticks(
-            ticks=[2, 4, 6, 8, 10, 12],
-            labels=["2", "4", "6", "8", "10", "12"],
-            fontsize=6)
+        ax = axs[0, idx]
 
         ax.set_ylabel(
             r"$M_{200}$ [$10^{10} ~ \mathrm{M}_\odot$]",
@@ -70,7 +61,26 @@ def make_plot(config: dict) -> None:
             labels=[r"$0$", r"$50$", r"$100$", r"$150$", r"$200$", r"$250$"],
             fontsize=6)
 
+        axs[1, idx].set_xlabel(
+            "Time [Gyr]",
+            fontsize=8)
+        axs[1, idx].set_xlim(0, 14)
+        axs[1, idx].set_xticks(
+            ticks=[2, 4, 6, 8, 10, 12],
+            labels=["2", "4", "6", "8", "10", "12"],
+            fontsize=6)
+
+        axs[1, idx].set_ylabel(
+            r"$M_{200} / M_{200}(z=0)$",
+            fontsize=8)
+        axs[1, idx].set_ylim(0, 1.2)
+        axs[1, idx].set_yticks(
+            ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0],
+            labels=[r"$0$", r"$0.2$", r"$0.4$", r"$0.6$", r"$0.8$", r"$1.0$"],
+            fontsize=6)
+
         ax.label_outer()
+        axs[1, idx].label_outer()
         ax.text(
             0.05,
             0.95,
@@ -85,6 +95,14 @@ def make_plot(config: dict) -> None:
         ax.plot(
             au["Time_Gyr"],
             au["M200_Median_1E10Msun"],
+            ls='-',
+            color='#4d4d4d',
+            lw=0.75,
+            zorder=11,
+            label="Auriga")
+        axs[1, idx].plot(
+            au["Time_Gyr"],
+            au["M200_Median_1E10Msun"] / au["M200_Median_1E10Msun"].iloc[-1],
             ls='-',
             color='#4d4d4d',
             lw=0.75,
@@ -112,8 +130,31 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            axs[1, idx].plot(
+                he["Time_Gyr"],
+                he["M200_1E10Msun"] / he["M200_1E10Msun"].iloc[-1],
+                ls=Settings.GALAXY_LINESTYLES[galaxy],
+                color=Settings.SIMULATION_COLORS[simulation],
+                lw=0.75,
+                zorder=12,
+                label=galaxy)
 
-    axs[0].legend(
+        ax.plot(
+            ax.get_xlim(),
+            [1] * 2,
+            ls=':',
+            color='k',
+            lw=0.5,
+            zorder=9)
+        axs[1, idx].plot(
+            axs[1, idx].get_xlim(),
+            [1] * 2,
+            ls=':',
+            color='k',
+            lw=0.5,
+            zorder=9)
+
+    axs[0, 0].legend(
         loc="lower right",
         framealpha=0,
         fontsize=5)
