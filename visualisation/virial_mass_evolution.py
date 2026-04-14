@@ -73,10 +73,11 @@ def make_plot(config: dict) -> None:
         axs[1, idx].set_ylabel(
             r"$M_{200} / M_{200}(z=0)$",
             fontsize=8)
-        axs[1, idx].set_ylim(0, 1.2)
+        axs[1, idx].set_ylim(0, 1.5)
         axs[1, idx].set_yticks(
-            ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0],
-            labels=[r"$0$", r"$0.2$", r"$0.4$", r"$0.6$", r"$0.8$", r"$1.0$"],
+            ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+            labels=[r"$0$", r"$0.2$", r"$0.4$", r"$0.6$",
+                    r"$0.8$", r"$1.0$", r"$1.2$"],
             fontsize=6)
 
         ax.label_outer()
@@ -113,6 +114,13 @@ def make_plot(config: dict) -> None:
             au["M200_16thPerc_1E10Msun"],
             au["M200_84thPerc_1E10Msun"],
             zorder=10,
+            color="#e6e6e6",
+            edgecolor=None)
+        axs[1, idx].fill_between(
+            au["Time_Gyr"],
+            au["M200_16thPerc_1E10Msun"] / au["M200_Median_1E10Msun"].iloc[-1],
+            au["M200_84thPerc_1E10Msun"] / au["M200_Median_1E10Msun"].iloc[-1],
+            zorder=5,
             color="#e6e6e6",
             edgecolor=None)
 
