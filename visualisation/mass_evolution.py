@@ -29,6 +29,9 @@ class Helpers:
             df[f"StellarMass_Au{i}_1E10Msun"] = data[:, 1]
             df[f"StellarMass/M200_Au{i}"] = data[:, 1] \
                 / df[f"M200_Au{i}_1E10Msun"]
+            df[f"StellarMassNormalized_Au{i}"] = \
+                df[f"StellarMass_Au{i}_1E10Msun"] \
+                / df[f"StellarMass_Au{i}_1E10Msun"].iloc[-1]
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
@@ -77,6 +80,19 @@ class Helpers:
                 16,
                 axis=1)
             df["StellarMass/M200_84thPerc"] = np.nanpercentile(
+                df[features],
+                84,
+                axis=1)
+
+            features = [f"StellarMassNormalized_Au{i}" for i in range(1, 31)]
+            df["StellarMassNormalized_Median"] = np.nanmedian(
+                df[features],
+                axis=1)
+            df["StellarMassNormalized_16thPerc"] = np.nanpercentile(
+                df[features],
+                16,
+                axis=1)
+            df["StellarMassNormalized_84thPerc"] = np.nanpercentile(
                 df[features],
                 84,
                 axis=1)
@@ -137,11 +153,10 @@ def make_plot(config: dict) -> None:
         axs[1, idx].set_ylabel(
             r"$M_{200} / M_{200}(z=0)$",
             fontsize=8)
-        axs[1, idx].set_ylim(0, 1.5)
+        axs[1, idx].set_ylim(0, 1.2)
         axs[1, idx].set_yticks(
-            ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
-            labels=[r"$0$", r"$0.2$", r"$0.4$", r"$0.6$",
-                    r"$0.8$", r"$1.0$", r"$1.2$"],
+            ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0],
+            labels=[r"$0$", r"$0.2$", r"$0.4$", r"$0.6$", r"$0.8$", r"$1.0$"],
             fontsize=6)
 
         axs[3, idx].set_ylabel(
@@ -154,12 +169,12 @@ def make_plot(config: dict) -> None:
             fontsize=6)
 
         axs[4, idx].set_ylabel(
-            r"$M_\star / M_{200}$",
+            r"$M_\star / M_\star (z=0)$",
             fontsize=8)
-        axs[4, idx].set_ylim(0, 0.08)
+        axs[4, idx].set_ylim(0, 1.2)
         axs[4, idx].set_yticks(
-            ticks=[0, 0.02, 0.04, 0.06],
-            labels=["0", "0.02", "0.04", "0.06"],
+            ticks=[0, 0.2, 0.4, 0.6, 0.8, 1.0],
+            labels=["0", "0.2", "0.4", "0.6", "0.8", "1.0"],
             fontsize=6)
 
     for ax in axs.flatten():
@@ -240,14 +255,14 @@ def make_plot(config: dict) -> None:
             label="Auriga")
         axs[4, idx].fill_between(
             au["Time_Gyr"],
-            au["StellarMass/M200_16thPerc"],
-            au["StellarMass/M200_84thPerc"],
+            au["StellarMassNormalized_16thPerc"],
+            au["StellarMassNormalized_84thPerc"],
             zorder=5,
             color="#e6e6e6",
             edgecolor=None)
         axs[4, idx].plot(
             au["Time_Gyr"],
-            au["StellarMass/M200_Median"],
+            au["StellarMassNormalized_Median"],
             ls='-',
             color='#4d4d4d',
             lw=0.75,
@@ -286,7 +301,8 @@ def make_plot(config: dict) -> None:
                 label=galaxy)
             axs[4, idx].plot(
                 he["Time_Gyr"],
-                he["StellarMass_1E10Msun"] / he["M200_1E10Msun"],
+                he["StellarMass_1E10Msun"]
+                / he["StellarMass_1E10Msun"].iloc[-1],
                 ls=Settings.GALAXY_LINESTYLES[galaxy],
                 color=Settings.SIMULATION_COLORS[simulation],
                 lw=0.75,
@@ -295,6 +311,14 @@ def make_plot(config: dict) -> None:
 
         axs[1, idx].plot(
             axs[1, idx].get_xlim(),
+            [1] * 2,
+            ls=':',
+            color='k',
+            lw=0.5,
+            zorder=9)
+
+        axs[4, idx].plot(
+            axs[4, idx].get_xlim(),
             [1] * 2,
             ls=':',
             color='k',
