@@ -53,7 +53,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
             r200.append(data["VirialRadius_ckpc"].to_numpy()[snapnum])
             data = pd.read_csv(
                 f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
-            m200.append(data["VirialMass_Msun"].to_numpy()[snapnum])
+            m200.append(data["Mvir"].to_numpy()[snapnum])
 
     colors = ["#4d4d4d"] * 30
     for s in Settings.HIGH_RES_SIMULATIONS:
@@ -110,12 +110,12 @@ def plot_prop_comparison(config: dict, snapnum: int) -> None:
     ]
     AX_LIMIT = [
         (-0.5, 1.6),
-        (8.5, 11.8),
-        (9.5, 11.8),
-        (0.3, 1.8),
-        (100, 400),
-        (-2.2, 1.0),
-        (11, 13),
+        (10.25, 11.25),
+        (10.5, 11.5),
+        (0.6, 1.5),
+        (180, 300),
+        (-2, -0.6),
+        (11.7, 12.6),
     ]
     AX_LABEL = [
         r"$\log_{10} \mathrm{SFR}$" + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
@@ -128,21 +128,21 @@ def plot_prop_comparison(config: dict, snapnum: int) -> None:
     ]
     AX_TICKS = [
         [-0.1, 0.3, 0.7, 1.1],
-        [9, 9.5, 10, 10.5, 11],
-        [10, 10.5, 11, 11.5],
-        [0.6, 0.8, 1.0, 1.2, 1.4, 1.6],
-        [140, 180, 220, 260, 300, 340],
-        [-1.8, -1.4, -1.0, -0.6, -0.2, 0.2],
-        [11.4, 11.7, 12.0, 12.3, 12.6],
+        [10.5, 10.7, 10.9, 11.1],
+        [10.6, 10.8, 11, 11.2, 11.4],
+        [0.8, 1.0, 1.2, 1.4],
+        [200, 220, 240, 260, 280],
+        [-1.8, -1.4, -1.0],
+        [11.8, 12.0, 12.2, 12.4],
     ]
     AX_TICK_LABELS = [
         ["$-0.1$", "0.3", "0.7", "1.1"],
-        ["9.0", "9.5", "10.0", "10.5", "11.0"],
-        ["10.0", "10.5", "11.0", "11.5"],
-        ["0.6", "0.8", "1.0", "1.2", "1.4", "1.6"],
-        ["140", "180", "220", "260", "300", "340"],
-        ["$-1.8$", "$-1.4$", "$-1.0$", "$-0.6$", "$-0.2$", "$0.2$"],
-        ["11.4", "11.7", "12.0", "12.3", "12.6"],
+        ["10.5", "10.7", "10.9", "11.1"],
+        ["10.6", "10.8", "11.0", "11.2", "11.4"],
+        ["0.8", "1.0", "1.2", "1.4"],
+        ["200", "220", "240", "260", "280"],
+        ["$-1.8$", "$-1.4$", "$-1.0$"],
+        ["11.8", "12.0", "12.2", "12.4"],
     ]
 
     fig = plt.figure(figsize=(6, 6))
@@ -432,9 +432,9 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    plot_prop_comparison(config, 61)
-    plot_prop_comparison(config, 77)
-    plot_prop_comparison(config, 95)
+    # plot_prop_comparison(config, 61)
+    # plot_prop_comparison(config, 77)
+    # plot_prop_comparison(config, 95)
     plot_prop_comparison(config, 127)
-    plot_time_correlation_sfr_vs_delta(config)
-    plot_time_correlation_ssfr_vs_delta(config)
+    # plot_time_correlation_sfr_vs_delta(config)
+    # plot_time_correlation_ssfr_vs_delta(config)
