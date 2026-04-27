@@ -211,6 +211,139 @@ def plot_prop_comparison(config: dict, snapnum: int) -> None:
     plt.close(fig)
 
 
+def plot_correlations_with_environment(
+        config: dict,
+        snapnum: int) -> None:
+    df = _get_data(snapnum, config)
+    df_au = df[df["Galaxy"].str.contains("Au")]
+    df_he = df[~df["Galaxy"].str.contains("Au")]
+
+    FEATS = [
+        "logSFR_Msun/yr",
+        "logMstar_Msun",
+        "logMgas_Msun",
+        "VirialRadius_ckpc",
+        "logsSFR_Gyr^-1",
+        "logVirialMass_Msun",
+    ]
+    AX_LIMIT = [
+        (-0.5, 1.6),
+        (10.25, 11.25),
+        (10.5, 11.5),
+        (180, 300),
+        (-2, -0.6),
+        (11.7, 12.6),
+    ]
+    AX_LABEL = [
+        r"$\log_{10} \mathrm{SFR}$" + r" $[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+        r"$\log_{10} M_\mathrm{star}$" + r" $[\mathrm{M}_\odot]$",
+        r"$\log_{10} M_\mathrm{gas}$" + r" $[\mathrm{M}_\odot]$",
+        r"$R_{200}$" + r" $[\mathrm{ckpc}]$",
+        r"$\log_{10} \mathrm{sSFR}$" + r" $[\mathrm{Gyr}^{-1}]$",
+        r"$\log_{10} M_\mathrm{200}$" + r" $[\mathrm{M}_\odot]$",
+    ]
+    AX_TICKS = [
+        [-0.1, 0.3, 0.7, 1.1],
+        [10.5, 10.7, 10.9, 11.1],
+        [10.6, 10.8, 11, 11.2, 11.4],
+        [200, 220, 240, 260, 280],
+        [-1.8, -1.4, -1.0],
+        [11.8, 12.0, 12.2, 12.4],
+    ]
+    AX_TICK_LABELS = [
+        ["$-0.1$", "0.3", "0.7", "1.1"],
+        ["10.5", "10.7", "10.9", "11.1"],
+        ["10.6", "10.8", "11.0", "11.2", "11.4"],
+        ["200", "220", "240", "260", "280"],
+        ["$-1.8$", "$-1.4$", "$-1.0$"],
+        ["11.8", "12.0", "12.2", "12.4"],
+    ]
+
+    fig = plt.figure(
+        figsize=(6, 3))
+    gs = fig.add_gridspec(
+        nrows=2,
+        ncols=3,
+        hspace=0,
+        wspace=0.4)
+    axs = np.array(gs.subplots(
+        sharex=False,
+        sharey=False))
+
+    for i in range(len(FEATS)):
+        feat = FEATS[i]
+        ax = np.array(axs).flatten()[i]
+
+        ax.set_xlim(0.6, 1.5)
+        ax.set_ylim(AX_LIMIT[i])
+        ax.set_xticks(
+            ticks=(0.8, 1.0, 1.2, 1.4),
+            labels=("0.8", "1.0", "1.2", "1.4"),
+            fontsize=5)
+        ax.set_yticks(
+            ticks=AX_TICKS[i],
+            labels=AX_TICK_LABELS[i],
+            fontsize=5)
+        ax.set_xlabel(
+            r"$\log_{10} \delta_{1200}$",
+            fontsize=8)
+        ax.set_ylabel(
+            AX_LABEL[i],
+            fontsize=8)
+        ax.scatter(
+            df_au["logDelta1200"].to_numpy(),
+            df_au[feat].to_numpy(),
+            s=8,
+            edgecolor="none",
+            facecolor=df_au["Colors"].values[0],
+            marker=df_au["Symbols"].values[0],
+            label="Auriga",
+            zorder=10,
+        )
+        for _, row in df_he.iterrows():
+            # This prefix prevents the name from appearing in the legend
+            prefix = "_" if row["Galaxy"].startswith("i_") else ""
+            ax.scatter(
+                row["logDelta1200"],
+                row[feat],
+                s=8,
+                facecolors="none",
+                marker=row["Symbols"],
+                edgecolor=row["Colors"],
+                zorder=11,
+                label=prefix + r"$\texttt{" + f"{row['Galaxy']}" + "}$",
+            )
+        correlation = pearsonr(df["logDelta1200"], df[feat])
+        rho = correlation.__getattribute__("statistic")
+        pvalue = correlation.__getattribute__("pvalue")
+        color = "tab:green" if pvalue < 0.05 else "tab:red"
+        stat_text = r"$r = $ " + f"{np.round(rho, 2)}" \
+            if rho > 0 else r"$r = -$" + f"{np.abs(rho):.2f}"
+        ax.text(0.03, 0.97,
+                stat_text,
+                transform=ax.transAxes, color=color,
+                ha="left", va='top', fontsize=4, zorder=12)
+        pvalue_text = r"$p$-value $ =$" + f" {np.round(pvalue, 2)}" \
+            if pvalue > 0.01 else r"$p$-value $ <0.01$"
+        ax.text(0.03, 0.90,
+                pvalue_text,
+                transform=ax.transAxes, color=color,
+                ha="left", va='top', fontsize=4, zorder=12)
+
+    handles, labels = axs[1, 0].get_legend_handles_labels()
+    axs[1, 2].legend(
+        handles,
+        labels,
+        frameon=False,
+        fontsize=3.5,
+        loc='lower center',
+        ncols=2)
+
+    plt.savefig(
+        f"images/prop_comparison_env_snap{snapnum}_{config['RUN_CODE']}.pdf")
+    plt.close(fig)
+
+
 def plot_time_correlation_sfr_vs_delta(config: dict) -> None:
     fig, ax = plt.subplots(figsize=(2.5, 2.5))
 
@@ -435,6 +568,7 @@ if __name__ == "__main__":
     # plot_prop_comparison(config, 61)
     # plot_prop_comparison(config, 77)
     # plot_prop_comparison(config, 95)
-    plot_prop_comparison(config, 127)
+    # plot_prop_comparison(config, 127)
+    plot_correlations_with_environment(config, 127)
     # plot_time_correlation_sfr_vs_delta(config)
     # plot_time_correlation_ssfr_vs_delta(config)
