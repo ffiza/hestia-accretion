@@ -97,6 +97,12 @@ class Helpers:
                 84,
                 axis=1)
 
+        # Add the half-mass formation time as metadata
+        df.half_stellar_mass_time_idx = np.argmin(
+            np.abs(df["StellarMassNormalized_Median"] - 0.5))
+        df.half_virial_mass_time_idx = np.argmin(
+            np.abs(df["M200Normalized_Median"] - 0.5))
+
         return df
 
     @staticmethod
@@ -115,6 +121,18 @@ class Helpers:
         stellar_mass = np.nan * np.ones(128)
         stellar_mass[35:] = data["Mstar"] / 1e10
         df["StellarMass_1E10Msun"] = stellar_mass
+
+        # Add the half-mass formation time as metadata
+        df.half_stellar_mass_time_idx = np.argmin(
+            np.abs(
+                df["StellarMass_1E10Msun"] \
+                    - 0.5 * df["StellarMass_1E10Msun"].iloc[-1]))
+        df.half_virial_mass_time_idx = np.argmin(
+            np.abs(
+                df["M200_1E10Msun"] \
+                    - 0.5 * df["M200_1E10Msun"].iloc[-1]))
+
+
         return df
 
 
@@ -208,6 +226,17 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
+        axs[0, idx].scatter(
+            [au["Time_Gyr"].iloc[
+                au.half_virial_mass_time_idx]],
+            [au["M200_Median_1E10Msun"].iloc[
+                au.half_virial_mass_time_idx]],
+            s=8,
+            marker="o",
+            color='#4d4d4d',
+            zorder=25,
+            lw=0.5,
+        )
         axs[1, idx].fill_between(
             au["Time_Gyr"],
             au["M200Normalized_16thPerc"],
@@ -223,6 +252,17 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
+        axs[1, idx].scatter(
+            [au["Time_Gyr"].iloc[
+                au.half_virial_mass_time_idx]],
+            [au["M200Normalized_Median"].iloc[
+                au.half_virial_mass_time_idx]],
+            s=8,
+            marker="o",
+            color='#4d4d4d',
+            zorder=25,
+            lw=0.5,
+        )
         axs[3, idx].fill_between(
             au["Time_Gyr"],
             au["StellarMass_16thPerc_1E10Msun"],
@@ -253,6 +293,17 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
+        axs[3, idx].scatter(
+            [au["Time_Gyr"].iloc[
+                au.half_stellar_mass_time_idx]],
+            [au["StellarMass_Median_1E10Msun"].iloc[
+                au.half_stellar_mass_time_idx]],
+            s=8,
+            marker="o",
+            color='#4d4d4d',
+            zorder=25,
+            lw=0.5,
+        )
         axs[4, idx].fill_between(
             au["Time_Gyr"],
             au["StellarMassNormalized_16thPerc"],
@@ -268,6 +319,17 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
+        axs[4, idx].scatter(
+            [au["Time_Gyr"].iloc[
+                au.half_stellar_mass_time_idx]],
+            [au["StellarMassNormalized_Median"].iloc[
+                au.half_stellar_mass_time_idx]],
+            s=8,
+            marker="o",
+            color='#4d4d4d',
+            zorder=25,
+            lw=0.5,
+        )
 
         # Hestia
         for galaxy in Settings.GALAXIES:
@@ -283,6 +345,17 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            axs[0, idx].scatter(
+                [he["Time_Gyr"].iloc[
+                    he.half_virial_mass_time_idx]],
+                [he["M200_1E10Msun"].iloc[
+                    he.half_virial_mass_time_idx]],
+                s=8,
+                marker="o",
+                color=Settings.SIMULATION_COLORS[simulation],
+                zorder=25,
+                lw=0.5,
+            )
             axs[1, idx].plot(
                 he["Time_Gyr"],
                 he["M200_1E10Msun"] / he["M200_1E10Msun"].iloc[-1],
@@ -291,6 +364,18 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            axs[1, idx].scatter(
+                [he["Time_Gyr"].iloc[
+                    he.half_virial_mass_time_idx]],
+                [he["M200_1E10Msun"].iloc[
+                    he.half_virial_mass_time_idx] \
+                        / he["M200_1E10Msun"].iloc[-1]],
+                s=8,
+                marker="o",
+                color=Settings.SIMULATION_COLORS[simulation],
+                zorder=25,
+                lw=0.5,
+            )
             axs[3, idx].plot(
                 he["Time_Gyr"],
                 he["StellarMass_1E10Msun"],
@@ -299,6 +384,17 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            axs[3, idx].scatter(
+                [he["Time_Gyr"].iloc[
+                    he.half_stellar_mass_time_idx]],
+                [he["StellarMass_1E10Msun"].iloc[
+                    he.half_stellar_mass_time_idx]],
+                s=8,
+                marker="o",
+                color=Settings.SIMULATION_COLORS[simulation],
+                zorder=25,
+                lw=0.5,
+            )
             axs[4, idx].plot(
                 he["Time_Gyr"],
                 he["StellarMass_1E10Msun"]
@@ -308,6 +404,18 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            axs[4, idx].scatter(
+                [he["Time_Gyr"].iloc[
+                    he.half_stellar_mass_time_idx]],
+                [he["StellarMass_1E10Msun"].iloc[
+                    he.half_stellar_mass_time_idx] \
+                        / he["StellarMass_1E10Msun"].iloc[-1]],
+                s=8,
+                marker="o",
+                color=Settings.SIMULATION_COLORS[simulation],
+                zorder=25,
+                lw=0.5,
+            )
 
         axs[1, idx].plot(
             axs[1, idx].get_xlim(),
