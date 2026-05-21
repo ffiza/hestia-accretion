@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 from sys import stdout
-from typing import Callable
+from typing import Callable, List
 
 GLOBAL_CONFIG = yaml.safe_load(open("configs/global.yml"))
 
@@ -149,3 +149,29 @@ def save_df_with_metadata(df: pd.DataFrame,
         for key, value in metadata.items():
             f.write(f"# {key}: {value}\n")
         df.to_csv(f, index=False)
+
+
+def y_interpolate(
+        y: float,
+        xp: np.ndarray,
+        yp: np.ndarray
+        ) -> List[float]:
+
+    # Clean NaNs
+    is_finite = np.isfinite(yp) & np.isfinite(xp)
+    xp_ = xp[is_finite]
+    yp_ = yp[is_finite]
+
+    if (y < yp_.min()) or (y > yp_.max()):
+        raise ValueError("`y` must be within the range of `yp`.")
+
+    diff = np.diff(np.sign(yp_ - y)).astype(np.int8)
+    idxs: List[int] = list(np.where(diff != 0)[0])
+
+    x: List[float] = []
+    for idx in idxs:
+        x1, x2 = xp_[idx], xp_[idx + 1]
+        y1, y2 = yp_[idx], yp_[idx + 1]
+        x.append(x1 + (y - y1) * (x2 - x1) / (y2 - y1))
+
+    return x
