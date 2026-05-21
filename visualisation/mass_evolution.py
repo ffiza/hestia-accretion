@@ -1,12 +1,15 @@
+import json
 import yaml
 import argparse
 import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from typing import Dict, List
 
 from hestia.images import figure_setup
 from hestia.settings import Settings
+from hestia.tools import y_interpolate
 
 
 class Helpers:
@@ -97,12 +100,6 @@ class Helpers:
                 84,
                 axis=1)
 
-        # Add the half-mass formation time as metadata
-        df.half_stellar_mass_time_idx = np.argmin(
-            np.abs(df["StellarMassNormalized_Median"] - 0.5))
-        df.half_virial_mass_time_idx = np.argmin(
-            np.abs(df["M200Normalized_Median"] - 0.5))
-
         return df
 
     @staticmethod
@@ -122,18 +119,68 @@ class Helpers:
         stellar_mass[35:] = data["Mstar"] / 1e10
         df["StellarMass_1E10Msun"] = stellar_mass
 
-        # Add the half-mass formation time as metadata
-        df.half_stellar_mass_time_idx = np.argmin(
-            np.abs(
-                df["StellarMass_1E10Msun"] \
-                    - 0.5 * df["StellarMass_1E10Msun"].iloc[-1]))
-        df.half_virial_mass_time_idx = np.argmin(
-            np.abs(
-                df["M200_1E10Msun"] \
-                    - 0.5 * df["M200_1E10Msun"].iloc[-1]))
-
-
         return df
+
+
+def _compute_half_mass_times(
+        config: dict,
+        ) -> Dict[str, float]:
+
+    au = Helpers.read_auriga_data()
+    half_mass_times: Dict[str, float] = dict()
+
+    au_half_virial_mass_times: List[float] = []
+    au_half_stellar_mass_times: List[float] = []
+    for i in range(1, 31):
+        half_mass_time = y_interpolate(
+            y=0.5 * au[f"M200_Au{i}_1E10Msun"].to_numpy()[-1],
+            xp=au["Time_Gyr"].to_numpy(),
+            yp=au[f"M200_Au{i}_1E10Msun"].to_numpy())
+        au_half_virial_mass_times.append(half_mass_time[0])
+
+        half_mass_time = y_interpolate(
+            y=0.5 * au[f"StellarMass_Au{i}_1E10Msun"].to_numpy()[-1],
+            xp=au["Time_Gyr"].to_numpy(),
+            yp=au[f"StellarMass_Au{i}_1E10Msun"].to_numpy())
+        au_half_stellar_mass_times.append(half_mass_time[0])
+
+    half_mass_times["Auriga_Mean_VirialMass_Gyr"] = float(np.mean(
+        au_half_virial_mass_times))
+    half_mass_times["Auriga_Mean_StellarMass_Gyr"] = float(np.mean(
+        au_half_stellar_mass_times))
+    half_mass_times["Auriga_Std_VirialMass_Gyr"] = float(np.std(
+        au_half_virial_mass_times))
+    half_mass_times["Auriga_Std_StellarMass_Gyr"] = float(np.std(
+        au_half_stellar_mass_times))
+
+    for simulation in Settings.HIGH_RES_SIMULATIONS:
+        for galaxy in Settings.GALAXIES:
+            he = Helpers.read_hestia_data(
+                simulation,
+                galaxy,
+                config)
+
+            half_mass_time = y_interpolate(
+                y=0.5 * he["M200_1E10Msun"].to_numpy()[-1],
+                xp=he["Time_Gyr"].to_numpy(),
+                yp=he["M200_1E10Msun"].to_numpy())
+            if len(half_mass_time) > 1:
+                raise ValueError("Multiple half-mass formation times found.")
+            half_mass_times[
+                f"{simulation}_{galaxy}_VirialMass_Gyr"] \
+                = half_mass_time[0]
+
+            half_mass_time = y_interpolate(
+                y=0.5 * he["StellarMass_1E10Msun"].to_numpy()[-1],
+                xp=he["Time_Gyr"].to_numpy(),
+                yp=he["StellarMass_1E10Msun"].to_numpy())
+            if len(half_mass_time) > 1:
+                raise ValueError("Multiple half-mass formation times found.")
+            half_mass_times[
+                f"{simulation}_{galaxy}_StellarMass_Gyr"] \
+                = half_mass_time[0]
+
+    return half_mass_times
 
 
 def make_plot(config: dict) -> None:
@@ -200,6 +247,7 @@ def make_plot(config: dict) -> None:
         ax.yaxis.set_label_coords(-0.23, 0.5)
 
     for idx, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
+
         axs[0, idx].text(
             0.05,
             0.95,
@@ -226,17 +274,22 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
+        half_mass_time = y_interpolate(
+            y=0.5 * au["M200_Median_1E10Msun"].to_numpy()[-1],
+            xp=au["Time_Gyr"].to_numpy(),
+            yp=au["M200_Median_1E10Msun"].to_numpy())
+        if len(half_mass_time) > 1:
+            raise ValueError("Multiple half-mass formation times found.")
         axs[0, idx].scatter(
-            [au["Time_Gyr"].iloc[
-                au.half_virial_mass_time_idx]],
-            [au["M200_Median_1E10Msun"].iloc[
-                au.half_virial_mass_time_idx]],
+            [half_mass_time[0]],
+            [0.5 * au["M200_Median_1E10Msun"].to_numpy()[-1]],
             s=8,
             marker="o",
             color='#4d4d4d',
             zorder=25,
             lw=0.5,
         )
+
         axs[1, idx].fill_between(
             au["Time_Gyr"],
             au["M200Normalized_16thPerc"],
@@ -252,17 +305,7 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
-        axs[1, idx].scatter(
-            [au["Time_Gyr"].iloc[
-                au.half_virial_mass_time_idx]],
-            [au["M200Normalized_Median"].iloc[
-                au.half_virial_mass_time_idx]],
-            s=8,
-            marker="o",
-            color='#4d4d4d',
-            zorder=25,
-            lw=0.5,
-        )
+
         axs[3, idx].fill_between(
             au["Time_Gyr"],
             au["StellarMass_16thPerc_1E10Msun"],
@@ -293,17 +336,22 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
+        half_mass_time = y_interpolate(
+            y=0.5 * au["StellarMass_Median_1E10Msun"].to_numpy()[-1],
+            xp=au["Time_Gyr"].to_numpy(),
+            yp=au["StellarMass_Median_1E10Msun"].to_numpy())
+        if len(half_mass_time) > 1:
+            raise ValueError("Multiple half-mass formation times found.")
         axs[3, idx].scatter(
-            [au["Time_Gyr"].iloc[
-                au.half_stellar_mass_time_idx]],
-            [au["StellarMass_Median_1E10Msun"].iloc[
-                au.half_stellar_mass_time_idx]],
+            [half_mass_time[0]],
+            [0.5 * au["StellarMass_Median_1E10Msun"].to_numpy()[-1]],
             s=8,
             marker="o",
             color='#4d4d4d',
             zorder=25,
             lw=0.5,
         )
+
         axs[4, idx].fill_between(
             au["Time_Gyr"],
             au["StellarMassNormalized_16thPerc"],
@@ -319,17 +367,6 @@ def make_plot(config: dict) -> None:
             lw=0.75,
             zorder=11,
             label="Auriga")
-        axs[4, idx].scatter(
-            [au["Time_Gyr"].iloc[
-                au.half_stellar_mass_time_idx]],
-            [au["StellarMassNormalized_Median"].iloc[
-                au.half_stellar_mass_time_idx]],
-            s=8,
-            marker="o",
-            color='#4d4d4d',
-            zorder=25,
-            lw=0.5,
-        )
 
         # Hestia
         for galaxy in Settings.GALAXIES:
@@ -345,11 +382,15 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            half_mass_time = y_interpolate(
+                y=0.5 * he["M200_1E10Msun"].to_numpy()[-1],
+                xp=he["Time_Gyr"].to_numpy(),
+                yp=he["M200_1E10Msun"].to_numpy())
+            if len(half_mass_time) > 1:
+                raise ValueError("Multiple half-mass formation times found.")
             axs[0, idx].scatter(
-                [he["Time_Gyr"].iloc[
-                    he.half_virial_mass_time_idx]],
-                [he["M200_1E10Msun"].iloc[
-                    he.half_virial_mass_time_idx]],
+                [half_mass_time[0]],
+                [0.5 * he["M200_1E10Msun"].to_numpy()[-1]],
                 s=8,
                 marker="o",
                 color=Settings.SIMULATION_COLORS[simulation],
@@ -364,18 +405,6 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
-            axs[1, idx].scatter(
-                [he["Time_Gyr"].iloc[
-                    he.half_virial_mass_time_idx]],
-                [he["M200_1E10Msun"].iloc[
-                    he.half_virial_mass_time_idx] \
-                        / he["M200_1E10Msun"].iloc[-1]],
-                s=8,
-                marker="o",
-                color=Settings.SIMULATION_COLORS[simulation],
-                zorder=25,
-                lw=0.5,
-            )
             axs[3, idx].plot(
                 he["Time_Gyr"],
                 he["StellarMass_1E10Msun"],
@@ -384,11 +413,15 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
+            half_mass_time = y_interpolate(
+                y=0.5 * he["StellarMass_1E10Msun"].to_numpy()[-1],
+                xp=he["Time_Gyr"].to_numpy(),
+                yp=he["StellarMass_1E10Msun"].to_numpy())
+            if len(half_mass_time) > 1:
+                raise ValueError("Multiple half-mass formation times found.")
             axs[3, idx].scatter(
-                [he["Time_Gyr"].iloc[
-                    he.half_stellar_mass_time_idx]],
-                [he["StellarMass_1E10Msun"].iloc[
-                    he.half_stellar_mass_time_idx]],
+                [half_mass_time[0]],
+                [0.5 * he["StellarMass_1E10Msun"].to_numpy()[-1]],
                 s=8,
                 marker="o",
                 color=Settings.SIMULATION_COLORS[simulation],
@@ -404,18 +437,6 @@ def make_plot(config: dict) -> None:
                 lw=0.75,
                 zorder=12,
                 label=galaxy)
-            axs[4, idx].scatter(
-                [he["Time_Gyr"].iloc[
-                    he.half_stellar_mass_time_idx]],
-                [he["StellarMass_1E10Msun"].iloc[
-                    he.half_stellar_mass_time_idx] \
-                        / he["StellarMass_1E10Msun"].iloc[-1]],
-                s=8,
-                marker="o",
-                color=Settings.SIMULATION_COLORS[simulation],
-                zorder=25,
-                lw=0.5,
-            )
 
         axs[1, idx].plot(
             axs[1, idx].get_xlim(),
@@ -455,6 +476,10 @@ def main() -> None:
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
     make_plot(config)
+
+    d = _compute_half_mass_times(config)
+    with open("results/half_mass_times.json", "w") as fp:
+        json.dump(d, fp, indent=4)
 
 
 if __name__ == "__main__":
