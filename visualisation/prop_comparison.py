@@ -3,6 +3,8 @@ import yaml
 import argparse
 import numpy as np
 import pandas as pd
+from typing import List, Tuple
+from dataclasses import dataclass
 import matplotlib.pyplot as plt
 from scipy.stats import linregress, pearsonr
 
@@ -13,12 +15,13 @@ from hestia.settings import Settings
 def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
     galaxies = []
 
-    sfr = []
-    m_star = []
-    m_gas = []
-    delta = []
-    r200 = []
-    m200 = []
+    sfr: List[float] = []
+    m_star: List[float] = []
+    m_gas: List[float] = []
+    m_cold_gas: List[float] = []
+    delta: List[float] = []
+    r200: List[float] = []
+    m200: List[float] = []
 
     for galaxy in range(1, 31):
         data = pd.read_csv("data/iza_et_al_2022/sfr.csv")
@@ -33,6 +36,18 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         r200.append(data[f"R200_Au{galaxy}_ckpc"].to_numpy()[snapnum])
         m200.append(
             data[f"M200_Au{galaxy}_1E10Msun"].to_numpy()[snapnum] * 1E10)
+
+        data = pd.read_csv(
+            "data/auriga/cold_gas_mass_evolution.csv",
+            usecols=["Snapshot", "SubhaloGasMassUnder20000K_Msun",
+                     "Simulation"])
+        m_cold_gas.append(
+            data.loc[
+                (data["Snapshot"] == snapnum)
+                & (data["Simulation"] == galaxy),
+                "SubhaloGasMassUnder20000K_Msun"
+            ].values[0]
+        )
 
     for simulation in Settings.HIGH_RES_SIMULATIONS:
         for galaxy in Settings.GALAXIES:
@@ -55,6 +70,12 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
                 f"data/hestia/r200_t/r200_t_{galaxy}_{simulation}.csv")
             m200.append(data["Mvir"].to_numpy()[snapnum])
 
+            data = pd.read_csv(
+                f"data/hestia/{galaxy}_M_SFR_t_Hestia{simulation}.csv",
+                usecols=["SnapNo", "Mcold"])
+            m_cold_gas.append(data.loc[
+                (data["SnapNo"] == snapnum), "Mcold"].values[0])
+
     colors = ["#4d4d4d"] * 30
     for s in Settings.HIGH_RES_SIMULATIONS:
         for _ in Settings.GALAXIES:
@@ -70,6 +91,7 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
         "SFR_Msun/yr": sfr,
         "Mstar_10^10Msun": np.array(m_star, np.float64),
         "Mgas_10^10Msun": np.array(m_gas, np.float64),
+        "Mcoldgas_10^10Msun": np.array(m_cold_gas, np.float64) / 1E10,
         "Delta1200": delta,
         "VirialRadius_ckpc": r200,
         "Colors": colors,
@@ -82,9 +104,14 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
     df["logMgas_Msun"] = np.log10(df["Mgas_10^10Msun"] * 1e10)
     df["logDelta1200"] = np.log10(df["Delta1200"])
     df["logsSFR_Gyr^-1"] = np.log10(df["sSFR_Gyr^-1"])
-
     df["VirialMass_Msun"] = m200
     df["logVirialMass_Msun"] = np.log10(df["VirialMass_Msun"])
+    df["StellarMassFraction"] = df["Mstar_10^10Msun"] \
+        / (df["Mstar_10^10Msun"] + df["Mcoldgas_10^10Msun"])
+    df["Mstar/M200"] = df["Mstar_10^10Msun"] * 1e10 / df["VirialMass_Msun"]
+    df["Mgas/M200"] = df["Mgas_10^10Msun"] * 1e10 / df["VirialMass_Msun"]
+    df["ColdGasMassFraction"] = df["Mcoldgas_10^10Msun"] \
+        / (df["Mstar_10^10Msun"] + df["Mcoldgas_10^10Msun"])
 
     with open('data/auriga/simulation_data.json', 'r') as file:
         data = json.load(file)
@@ -94,76 +121,59 @@ def _get_data(snapnum: int, config: dict) -> pd.DataFrame:
     return df
 
 
-def plot_prop_comparison(config: dict, snapnum: int) -> None:
+@dataclass
+class FeatureData:
+    name: str
+    axis_limits: Tuple[float, float]
+    axis_label: str
+    axis_ticks: List[float]
+    axis_tick_labels: List[str]
+
+
+def plot_prop_comparison(
+        config: dict,
+        snapnum: int,
+        features: List[FeatureData]) -> None:
     df = _get_data(snapnum, config)
     df_au = df[df["Galaxy"].str.contains("Au")]
     df_he = df[~df["Galaxy"].str.contains("Au")]
 
-    FEATS = [
-        "logSFR_Msun/yr",
-        "logMstar_Msun",
-        "logMgas_Msun",
-        "logDelta1200",
-        "VirialRadius_ckpc",
-        "logsSFR_Gyr^-1",
-        "logVirialMass_Msun",
-    ]
-    AX_LIMIT = [
-        (-0.5, 1.6),
-        (10.25, 11.25),
-        (10.5, 11.5),
-        (0.6, 1.5),
-        (180, 300),
-        (-2, -0.6),
-        (11.7, 12.6),
-    ]
-    AX_LABEL = [
-        r"$\log_{10} \mathrm{SFR}$" + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
-        r"$\log_{10} M_\mathrm{star}$" + "\n" + r"$[\mathrm{M}_\odot]$",
-        r"$\log_{10} M_\mathrm{gas}$" + "\n" + r"$[\mathrm{M}_\odot]$",
-        r"$\log_{10} \delta_{1200}$",
-        r"$R_{200}$" + "\n" + r"$[\mathrm{ckpc}]$",
-        r"$\log_{10} \mathrm{sSFR}$" + "\n" + r"$[\mathrm{Gyr}^{-1}]$",
-        r"$\log_{10} M_\mathrm{200}$" + "\n" + r"$[\mathrm{M}_\odot]$",
-    ]
-    AX_TICKS = [
-        [-0.1, 0.3, 0.7, 1.1],
-        [10.5, 10.7, 10.9, 11.1],
-        [10.6, 10.8, 11, 11.2, 11.4],
-        [0.8, 1.0, 1.2, 1.4],
-        [200, 220, 240, 260, 280],
-        [-1.8, -1.4, -1.0],
-        [11.8, 12.0, 12.2, 12.4],
-    ]
-    AX_TICK_LABELS = [
-        ["$-0.1$", "0.3", "0.7", "1.1"],
-        ["10.5", "10.7", "10.9", "11.1"],
-        ["10.6", "10.8", "11.0", "11.2", "11.4"],
-        ["0.8", "1.0", "1.2", "1.4"],
-        ["200", "220", "240", "260", "280"],
-        ["$-1.8$", "$-1.4$", "$-1.0$"],
-        ["11.8", "12.0", "12.2", "12.4"],
-    ]
+    feature_names = [feature.name for feature in features]
+    axis_limits = [feature.axis_limits for feature in features]
+    axis_labels = [feature.axis_label for feature in features]
+    axis_ticks = [feature.axis_ticks for feature in features]
+    axis_tick_labels = [feature.axis_tick_labels for feature in features]
 
-    fig = plt.figure(figsize=(6, 6))
-    gs = fig.add_gridspec(nrows=len(FEATS) - 1, ncols=len(FEATS) - 1,
-                          hspace=0, wspace=0)
-    axs = np.array(gs.subplots(sharex=False, sharey=False))
+    fig = plt.figure(
+        figsize=(6, 6))
+    gs = fig.add_gridspec(
+        nrows=len(features) - 1,
+        ncols=len(axis_limits) - 1,
+        hspace=0,
+        wspace=0)
+    axs = np.array(
+        gs.subplots(
+            sharex=False,
+            sharey=False))
 
-    for i in range(len(FEATS)):
-        f1 = FEATS[i]
-        for j in range(i + 1, len(FEATS)):
-            f2 = FEATS[j]
+    for i in range(len(feature_names)):
+        f1 = feature_names[i]
+        for j in range(i + 1, len(feature_names)):
+            f2 = feature_names[j]
             ax = np.array(axs)[j - 1, i]
-            ax.set_xlim(AX_LIMIT[i])
-            ax.set_ylim(AX_LIMIT[j])
+            ax.set_xlim(axis_limits[i])
+            ax.set_ylim(axis_limits[j])
             ax.set_xticks(
-                ticks=AX_TICKS[i], labels=AX_TICK_LABELS[i], fontsize=5,
+                ticks=axis_ticks[i],
+                labels=axis_tick_labels[i],
+                fontsize=5,
                 rotation=45)
             ax.set_yticks(
-                ticks=AX_TICKS[j], labels=AX_TICK_LABELS[j], fontsize=5)
-            ax.set_xlabel(AX_LABEL[i], fontsize=8)
-            ax.set_ylabel(AX_LABEL[j], fontsize=8)
+                ticks=axis_ticks[j],
+                labels=axis_tick_labels[j],
+                fontsize=5)
+            ax.set_xlabel(axis_labels[i], fontsize=8)
+            ax.set_ylabel(axis_labels[j], fontsize=8)
             ax.yaxis.set_label_coords(-0.4, 0.5)
             ax.xaxis.set_label_coords(0.5, -0.4)
             ax.scatter(
@@ -565,10 +575,54 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    # plot_prop_comparison(config, 61)
-    # plot_prop_comparison(config, 77)
-    # plot_prop_comparison(config, 95)
-    # plot_prop_comparison(config, 127)
-    plot_correlations_with_environment(config, 127)
+    features_data: List[FeatureData] = [
+        FeatureData(
+            name="StellarMassFraction",
+            axis_limits=(0.2, 1.0),
+            axis_label=r"$M_\star / \left(M_\star + M_\mathrm{cold} \right)$",
+            axis_ticks=[0.4, 0.6, 0.8],
+            axis_tick_labels=["0.4", "0.6", "0.8"],
+        ),
+        FeatureData(
+            name="logSFR_Msun/yr",
+            axis_limits=(-0.5, 1.6),
+            axis_label=r"$\log_{10} \mathrm{SFR}$" \
+            + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+            axis_ticks=[-0.1, 0.3, 0.7, 1.1],
+            axis_tick_labels=["$-0.1$", "0.3", "0.7", "1.1"],
+        ),
+        FeatureData(
+            name="logsSFR_Gyr^-1",
+            axis_limits=(-2, -0.6),
+            axis_label=r"$\log_{10} \mathrm{sSFR}$" \
+                + "\n" + r"$[\mathrm{Gyr}^{-1}]$",
+            axis_ticks=[-1.8, -1.4, -1],
+            axis_tick_labels=["$-1.8$", "$-1.4$", "$-1.0$"],
+        ),
+        FeatureData(
+            name="Mstar/M200",
+            axis_limits=(0, 0.1),
+            axis_label=r"$M_\star / M_{200}$",
+            axis_ticks=[0.02, 0.04, 0.06, 0.08],
+            axis_tick_labels=["0.02", "0.04", "0.06", "0.08"],
+        ),
+        FeatureData(
+            name="Mgas/M200",
+            axis_limits=(0.02, 0.1),
+            axis_label=r"$M_\mathrm{gas} / M_{200}$",
+            axis_ticks=[0.04, 0.06, 0.08],
+            axis_tick_labels=["0.04", "0.06", "0.08"],
+        ),
+        FeatureData(
+            name="ColdGasMassFraction",
+            axis_limits=(0, 1.0),
+            axis_label=r"$M_\mathrm{cg} / \left(M_\star + M_\mathrm{cold} \right)$",
+            axis_ticks=[0.2, 0.4, 0.6, 0.8],
+            axis_tick_labels=["0.2", "0.4", "0.6", "0.8"],
+        ),
+    ]
+    plot_prop_comparison(config, 127, features_data)
+
+    # plot_correlations_with_environment(config, 127)
     # plot_time_correlation_sfr_vs_delta(config)
     # plot_time_correlation_ssfr_vs_delta(config)
