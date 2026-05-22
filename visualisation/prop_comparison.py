@@ -134,6 +134,11 @@ def plot_prop_comparison(
         config: dict,
         snapnum: int,
         features: List[FeatureData]) -> None:
+
+    if len(features) != 6:
+        raise ValueError(
+            "This plot is optimized for 6 elements in `features`.")
+
     df = _get_data(snapnum, config)
     df_au = df[df["Galaxy"].str.contains("Au")]
     df_he = df[~df["Galaxy"].str.contains("Au")]
@@ -221,53 +226,22 @@ def plot_prop_comparison(
     plt.close(fig)
 
 
-def plot_correlations_with_environment(
+def plot_correlations_with_feature(
+        y_features: List[FeatureData],
+        x_feature: FeatureData,
+        snapnum: int,
         config: dict,
-        snapnum: int) -> None:
+        fig_name: str,
+        ) -> None:
     df = _get_data(snapnum, config)
     df_au = df[df["Galaxy"].str.contains("Au")]
     df_he = df[~df["Galaxy"].str.contains("Au")]
 
-    FEATS = [
-        "logSFR_Msun/yr",
-        "logMstar_Msun",
-        "logMgas_Msun",
-        "VirialRadius_ckpc",
-        "logsSFR_Gyr^-1",
-        "logVirialMass_Msun",
-    ]
-    AX_LIMIT = [
-        (-0.5, 1.6),
-        (10.25, 11.25),
-        (10.5, 11.5),
-        (180, 300),
-        (-2, -0.6),
-        (11.7, 12.6),
-    ]
-    AX_LABEL = [
-        r"$\log_{10} \mathrm{SFR}$" + r" $[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
-        r"$\log_{10} M_\mathrm{star}$" + r" $[\mathrm{M}_\odot]$",
-        r"$\log_{10} M_\mathrm{gas}$" + r" $[\mathrm{M}_\odot]$",
-        r"$R_{200}$" + r" $[\mathrm{ckpc}]$",
-        r"$\log_{10} \mathrm{sSFR}$" + r" $[\mathrm{Gyr}^{-1}]$",
-        r"$\log_{10} M_\mathrm{200}$" + r" $[\mathrm{M}_\odot]$",
-    ]
-    AX_TICKS = [
-        [-0.1, 0.3, 0.7, 1.1],
-        [10.5, 10.7, 10.9, 11.1],
-        [10.6, 10.8, 11, 11.2, 11.4],
-        [200, 220, 240, 260, 280],
-        [-1.8, -1.4, -1.0],
-        [11.8, 12.0, 12.2, 12.4],
-    ]
-    AX_TICK_LABELS = [
-        ["$-0.1$", "0.3", "0.7", "1.1"],
-        ["10.5", "10.7", "10.9", "11.1"],
-        ["10.6", "10.8", "11.0", "11.2", "11.4"],
-        ["200", "220", "240", "260", "280"],
-        ["$-1.8$", "$-1.4$", "$-1.0$"],
-        ["11.8", "12.0", "12.2", "12.4"],
-    ]
+    feature_names = [feature.name for feature in features]
+    axis_limits = [feature.axis_limits for feature in features]
+    axis_labels = [feature.axis_label for feature in features]
+    axis_ticks = [feature.axis_ticks for feature in features]
+    axis_tick_labels = [feature.axis_tick_labels for feature in features]
 
     fig = plt.figure(
         figsize=(6, 3))
@@ -280,28 +254,28 @@ def plot_correlations_with_environment(
         sharex=False,
         sharey=False))
 
-    for i in range(len(FEATS)):
-        feat = FEATS[i]
+    for i in range(len(feature_names)):
+        feat = feature_names[i]
         ax = np.array(axs).flatten()[i]
 
-        ax.set_xlim(0.6, 1.5)
-        ax.set_ylim(AX_LIMIT[i])
+        ax.set_xlim(x_feature.axis_limits)
+        ax.set_ylim(axis_limits[i])
         ax.set_xticks(
-            ticks=(0.8, 1.0, 1.2, 1.4),
-            labels=("0.8", "1.0", "1.2", "1.4"),
+            ticks=(x_feature.axis_ticks),
+            labels=x_feature.axis_tick_labels,
             fontsize=5)
         ax.set_yticks(
-            ticks=AX_TICKS[i],
-            labels=AX_TICK_LABELS[i],
+            ticks=axis_ticks[i],
+            labels=axis_tick_labels[i],
             fontsize=5)
         ax.set_xlabel(
-            r"$\log_{10} \delta_{1200}$",
+            x_feature.axis_label,
             fontsize=8)
         ax.set_ylabel(
-            AX_LABEL[i],
+            axis_labels[i].replace("\n", " "),
             fontsize=8)
         ax.scatter(
-            df_au["logDelta1200"].to_numpy(),
+            df_au[x_feature.name].to_numpy(),
             df_au[feat].to_numpy(),
             s=8,
             edgecolor="none",
@@ -314,7 +288,7 @@ def plot_correlations_with_environment(
             # This prefix prevents the name from appearing in the legend
             prefix = "_" if row["Galaxy"].startswith("i_") else ""
             ax.scatter(
-                row["logDelta1200"],
+                row[x_feature.name],
                 row[feat],
                 s=8,
                 facecolors="none",
@@ -323,7 +297,7 @@ def plot_correlations_with_environment(
                 zorder=11,
                 label=prefix + r"$\texttt{" + f"{row['Galaxy']}" + "}$",
             )
-        correlation = pearsonr(df["logDelta1200"], df[feat])
+        correlation = pearsonr(df[x_feature.name], df[feat])
         rho = correlation.__getattribute__("statistic")
         pvalue = correlation.__getattribute__("pvalue")
         color = "tab:green" if pvalue < 0.05 else "tab:red"
@@ -341,7 +315,7 @@ def plot_correlations_with_environment(
                 ha="left", va='top', fontsize=4, zorder=12)
 
     handles, labels = axs[1, 0].get_legend_handles_labels()
-    axs[1, 2].legend(
+    axs[1, 0].legend(
         handles,
         labels,
         frameon=False,
@@ -349,8 +323,7 @@ def plot_correlations_with_environment(
         loc='lower center',
         ncols=2)
 
-    plt.savefig(
-        f"images/prop_comparison_env_snap{snapnum}_{config['RUN_CODE']}.pdf")
+    plt.savefig(f"images/{fig_name}.pdf")
     plt.close(fig)
 
 
@@ -575,7 +548,7 @@ if __name__ == "__main__":
     # Load configuration file
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    features_data: List[FeatureData] = [
+    features: List[FeatureData] = [
         FeatureData(
             name="StellarMassFraction",
             axis_limits=(0.2, 1.0),
@@ -621,8 +594,26 @@ if __name__ == "__main__":
             axis_tick_labels=["0.2", "0.4", "0.6", "0.8"],
         ),
     ]
-    plot_prop_comparison(config, 127, features_data)
+    plot_prop_comparison(
+        features=features,
+        snapnum=127,
+        config=config,
+        )
 
-    # plot_correlations_with_environment(config, 127)
+    x_feature = FeatureData(
+            name="logDelta1200",
+            axis_limits=(0.6, 1.5),
+            axis_label=r"$\log_{10} \delta_{1200}$",
+            axis_ticks=[0.8, 1.0, 1.2, 1.4],
+            axis_tick_labels=["0.8", "1.0", "1.2", "1.4"],
+            )
+    snapnum = 127
+    plot_correlations_with_feature(
+        y_features=features,
+        x_feature=x_feature,
+        snapnum=snapnum,
+        config=config,
+        fig_name=f"prop_comparison_env_snap{snapnum}_{config['RUN_CODE']}")
+
     # plot_time_correlation_sfr_vs_delta(config)
     # plot_time_correlation_ssfr_vs_delta(config)
