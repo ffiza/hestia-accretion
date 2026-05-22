@@ -268,6 +268,7 @@ def plot_correlations_with_feature(
             ticks=axis_ticks[i],
             labels=axis_tick_labels[i],
             fontsize=5)
+        ax.yaxis.set_label_coords(-0.25, 0.5)
         ax.set_xlabel(
             x_feature.axis_label,
             fontsize=8)
