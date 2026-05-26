@@ -590,7 +590,7 @@ if __name__ == "__main__":
         FeatureData(
             name="ColdGasMassFraction",
             axis_limits=(0, 1.0),
-            axis_label=r"$M_\mathrm{cg} / \left(M_\star + M_\mathrm{cold} \right)$",
+            axis_label=r"$M_\mathrm{cold} / \left(M_\star + M_\mathrm{cold} \right)$",
             axis_ticks=[0.2, 0.4, 0.6, 0.8],
             axis_tick_labels=["0.2", "0.4", "0.6", "0.8"],
         ),
