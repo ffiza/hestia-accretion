@@ -3,7 +3,7 @@ import yaml
 import argparse
 import numpy as np
 import pandas as pd
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 from scipy.stats import linregress, pearsonr
@@ -224,6 +224,50 @@ def plot_prop_comparison(
     plt.savefig(
         f"images/prop_comparison_snap{snapnum}_{config['RUN_CODE']}.pdf")
     plt.close(fig)
+
+
+def compute_correlations(
+        config: dict,
+        snapnum: int,
+        features: List[FeatureData],
+        ) -> List[Dict[str, float | str]]:
+
+    df = _get_data(snapnum, config)
+    df_au = df[df["Galaxy"].str.contains("Au")]
+    df_he = df[~df["Galaxy"].str.contains("Au")]
+
+    feature_names = [feature.name for feature in features]
+
+    correlations: List[Dict[str, float | str]] = []
+
+    for i in range(len(feature_names)):
+        f1 = feature_names[i]
+        for j in range(i + 1, len(feature_names)):
+            f2 = feature_names[j]
+            correlation = pearsonr(df[f1], df[f2])
+            rho = correlation.__getattribute__("statistic")
+            pvalue = correlation.__getattribute__("pvalue")
+
+            correlation_au = pearsonr(df_au[f1], df_au[f2])
+            rho_au = correlation_au.__getattribute__("statistic")
+            pvalue_au = correlation_au.__getattribute__("pvalue")
+
+            correlation_he = pearsonr(df_he[f1], df_he[f2])
+            rho_he = correlation_he.__getattribute__("statistic")
+            pvalue_he = correlation_he.__getattribute__("pvalue")
+
+            correlations.append({
+                "x_feature": f1,
+                "y_feature": f2,
+                "rho_all": rho,
+                "p_value_all": pvalue,
+                "rho_au": rho_au,
+                "p_value_au": pvalue_au,
+                "rho_he": rho_he,
+                "p_value_he": pvalue_he
+            })
+
+    return correlations
 
 
 def plot_correlations_with_feature(
@@ -600,6 +644,14 @@ if __name__ == "__main__":
         snapnum=127,
         config=config,
         )
+
+    correlations = compute_correlations(
+        config=config,
+        snapnum=127,
+        features=features,
+    )
+    with open("results/correlations.json", "w") as f:
+        json.dump(correlations, f, indent=4)
 
     x_feature = FeatureData(
             name="logDelta1200",
