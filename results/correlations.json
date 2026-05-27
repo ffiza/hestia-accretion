@@ -1,0 +1,152 @@
+[
+    {
+        "x_feature": "StellarMassFraction",
+        "y_feature": "logSFR_Msun/yr",
+        "rho_all": 0.2575647203689201,
+        "p_value_all": 0.12937603286278168,
+        "rho_au": 0.3238551198593329,
+        "p_value_au": 0.08083608331213282,
+        "rho_he": 0.5886677458280505,
+        "p_value_he": 0.21899381434727422
+    },
+    {
+        "x_feature": "StellarMassFraction",
+        "y_feature": "logsSFR_Gyr^-1",
+        "rho_all": -0.040728522055264955,
+        "p_value_all": 0.8135532724323165,
+        "rho_au": -0.04387617058892813,
+        "p_value_au": 0.8179217710381279,
+        "rho_he": 0.6114474260350642,
+        "p_value_he": 0.19712916026863025
+    },
+    {
+        "x_feature": "StellarMassFraction",
+        "y_feature": "Mstar/M200",
+        "rho_all": 0.7642904217342861,
+        "p_value_all": 5.802725189596045e-08,
+        "rho_au": 0.8173815920897088,
+        "p_value_au": 3.5399336205690046e-08,
+        "rho_he": -0.5021507659875045,
+        "p_value_he": 0.31008386258430776
+    },
+    {
+        "x_feature": "StellarMassFraction",
+        "y_feature": "Mgas/M200",
+        "rho_all": -0.35259116623848824,
+        "p_value_all": 0.034931371757490046,
+        "rho_au": -0.43879076820298496,
+        "p_value_au": 0.01527922768895052,
+        "rho_he": -0.10581506704814655,
+        "p_value_he": 0.8418697960024784
+    },
+    {
+        "x_feature": "StellarMassFraction",
+        "y_feature": "ColdGasMassFraction",
+        "rho_all": -0.9999999999999999,
+        "p_value_all": 0.0,
+        "rho_au": -0.9999999999999999,
+        "p_value_au": 0.0,
+        "rho_he": -1.0,
+        "p_value_he": 0.0
+    },
+    {
+        "x_feature": "logSFR_Msun/yr",
+        "y_feature": "logsSFR_Gyr^-1",
+        "rho_all": 0.851317140423798,
+        "p_value_all": 4.72119720424788e-11,
+        "rho_au": 0.8506144533128249,
+        "p_value_au": 2.6431285534156584e-09,
+        "rho_he": 0.8160079674993882,
+        "p_value_he": 0.047665254639527754
+    },
+    {
+        "x_feature": "logSFR_Msun/yr",
+        "y_feature": "Mstar/M200",
+        "rho_all": 0.16124961455735917,
+        "p_value_all": 0.34746329030183354,
+        "rho_au": 0.2677072240829477,
+        "p_value_au": 0.15264639070988664,
+        "rho_he": -0.5046270474452803,
+        "p_value_he": 0.30731067833164893
+    },
+    {
+        "x_feature": "logSFR_Msun/yr",
+        "y_feature": "Mgas/M200",
+        "rho_all": 0.29565654573389777,
+        "p_value_all": 0.07999569810855739,
+        "rho_au": 0.45961978699382544,
+        "p_value_au": 0.010610907645644416,
+        "rho_he": 0.30775382025986725,
+        "p_value_he": 0.5529433232096999
+    },
+    {
+        "x_feature": "logSFR_Msun/yr",
+        "y_feature": "ColdGasMassFraction",
+        "rho_all": -0.2575647203689202,
+        "p_value_all": 0.1293760328627812,
+        "rho_au": -0.323855119859333,
+        "p_value_au": 0.08083608331213255,
+        "rho_he": -0.5886677458280498,
+        "p_value_he": 0.21899381434727488
+    },
+    {
+        "x_feature": "logsSFR_Gyr^-1",
+        "y_feature": "Mstar/M200",
+        "rho_all": -0.23208624992944538,
+        "p_value_all": 0.17318036858813796,
+        "rho_au": -0.1711210579469648,
+        "p_value_au": 0.3659227852873778,
+        "rho_he": -0.8651073635869296,
+        "p_value_he": 0.026066780256174402
+    },
+    {
+        "x_feature": "logsSFR_Gyr^-1",
+        "y_feature": "Mgas/M200",
+        "rho_all": 0.47686430717936,
+        "p_value_all": 0.003276891273563207,
+        "rho_au": 0.6073133188908976,
+        "p_value_au": 0.0003724026646046453,
+        "rho_he": 0.40319125697235575,
+        "p_value_he": 0.42798514293754364
+    },
+    {
+        "x_feature": "logsSFR_Gyr^-1",
+        "y_feature": "ColdGasMassFraction",
+        "rho_all": 0.040728522055264935,
+        "p_value_all": 0.8135532724323165,
+        "rho_au": 0.04387617058892803,
+        "p_value_au": 0.8179217710381279,
+        "rho_he": -0.6114474260350636,
+        "p_value_he": 0.1971291602686307
+    },
+    {
+        "x_feature": "Mstar/M200",
+        "y_feature": "Mgas/M200",
+        "rho_all": -0.2228832138892616,
+        "p_value_all": 0.191344784478313,
+        "rho_au": -0.2547941195691965,
+        "p_value_au": 0.1742048322590523,
+        "rho_he": -0.1931642485900802,
+        "p_value_he": 0.713857340570708
+    },
+    {
+        "x_feature": "Mstar/M200",
+        "y_feature": "ColdGasMassFraction",
+        "rho_all": -0.7642904217342862,
+        "p_value_all": 5.802725189596045e-08,
+        "rho_au": -0.8173815920897088,
+        "p_value_au": 3.5399336205690046e-08,
+        "rho_he": 0.5021507659875043,
+        "p_value_he": 0.31008386258430776
+    },
+    {
+        "x_feature": "Mgas/M200",
+        "y_feature": "ColdGasMassFraction",
+        "rho_all": 0.35259116623848835,
+        "p_value_all": 0.034931371757489935,
+        "rho_au": 0.438790768202985,
+        "p_value_au": 0.01527922768895052,
+        "rho_he": 0.10581506704814761,
+        "p_value_he": 0.8418697960024768
+    }
+]
