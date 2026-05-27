@@ -237,11 +237,11 @@ def plot_correlations_with_feature(
     df_au = df[df["Galaxy"].str.contains("Au")]
     df_he = df[~df["Galaxy"].str.contains("Au")]
 
-    feature_names = [feature.name for feature in features]
-    axis_limits = [feature.axis_limits for feature in features]
-    axis_labels = [feature.axis_label for feature in features]
-    axis_ticks = [feature.axis_ticks for feature in features]
-    axis_tick_labels = [feature.axis_tick_labels for feature in features]
+    feature_names = [feature.name for feature in y_features]
+    axis_limits = [feature.axis_limits for feature in y_features]
+    axis_labels = [feature.axis_label for feature in y_features]
+    axis_ticks = [feature.axis_ticks for feature in y_features]
+    axis_tick_labels = [feature.axis_tick_labels for feature in y_features]
 
     fig = plt.figure(
         figsize=(6, 3))
