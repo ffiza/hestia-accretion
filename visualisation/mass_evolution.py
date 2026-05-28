@@ -10,6 +10,7 @@ from typing import Dict, List
 from hestia.images import figure_setup
 from hestia.settings import Settings
 from hestia.tools import y_interpolate
+from hestia.cosmology import Cosmology
 
 
 class Helpers:
@@ -144,14 +145,24 @@ def _compute_half_mass_times(
             yp=au[f"StellarMass_Au{i}_1E10Msun"].to_numpy())
         au_half_stellar_mass_times.append(half_mass_time[0])
 
+    cosmology = Cosmology()
+
     half_mass_times["Auriga_Mean_VirialMass_Gyr"] = float(np.mean(
         au_half_virial_mass_times))
+    half_mass_times["Auriga_Mean_VirialMass_z"] = cosmology.time_to_redshift(
+        half_mass_times["Auriga_Mean_VirialMass_Gyr"]).value
     half_mass_times["Auriga_Mean_StellarMass_Gyr"] = float(np.mean(
         au_half_stellar_mass_times))
+    half_mass_times["Auriga_Mean_StellarMass_z"] = cosmology.time_to_redshift(
+        half_mass_times["Auriga_Mean_StellarMass_Gyr"]).value
     half_mass_times["Auriga_Std_VirialMass_Gyr"] = float(np.std(
         au_half_virial_mass_times))
+    half_mass_times["Auriga_Std_VirialMass_z"] = cosmology.time_to_redshift(
+        half_mass_times["Auriga_Std_VirialMass_Gyr"]).value
     half_mass_times["Auriga_Std_StellarMass_Gyr"] = float(np.std(
         au_half_stellar_mass_times))
+    half_mass_times["Auriga_Std_StellarMass_z"] = cosmology.time_to_redshift(
+        half_mass_times["Auriga_Std_StellarMass_Gyr"]).value
 
     for simulation in Settings.HIGH_RES_SIMULATIONS:
         for galaxy in Settings.GALAXIES:
@@ -169,6 +180,9 @@ def _compute_half_mass_times(
             half_mass_times[
                 f"{simulation}_{galaxy}_VirialMass_Gyr"] \
                 = half_mass_time[0]
+            half_mass_times[
+                f"{simulation}_{galaxy}_VirialMass_z"] \
+                = cosmology.time_to_redshift(half_mass_time[0]).value
 
             half_mass_time = y_interpolate(
                 y=0.5 * he["StellarMass_1E10Msun"].to_numpy()[-1],
@@ -179,6 +193,9 @@ def _compute_half_mass_times(
             half_mass_times[
                 f"{simulation}_{galaxy}_StellarMass_Gyr"] \
                 = half_mass_time[0]
+            half_mass_times[
+                f"{simulation}_{galaxy}_StellarMass_z"] \
+                = cosmology.time_to_redshift(half_mass_time[0]).value
 
     return half_mass_times
 
@@ -475,7 +492,7 @@ def main() -> None:
 
     config = yaml.safe_load(open(f"configs/{args.config}.yml"))
 
-    make_plot(config)
+    # make_plot(config)
 
     d = _compute_half_mass_times(config)
     with open("results/half_mass_times.json", "w") as fp:
