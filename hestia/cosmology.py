@@ -1,6 +1,6 @@
 import numpy as np
 from astropy import units as u
-from astropy.cosmology import FlatLambdaCDM
+from astropy.cosmology import FlatLambdaCDM, z_at_value
 
 
 class Cosmology:
@@ -63,6 +63,24 @@ class Cosmology:
         """
 
         return self.cosmology.age(redshift)
+
+    def time_to_redshift(
+            self,
+            time: float) -> float:
+        """
+        This method calculates the redshift for a given cosmic time.
+
+        Parameters
+        ----------
+        time : float
+            The cosmic time in Gyr.
+
+        Returns
+        -------
+        float
+            The corresponding redshift.
+        """
+        return z_at_value(self.cosmology.age, time * u.Gyr)
 
     def redshift_to_lookback_time(self, redshift: float) -> float:
         """
@@ -269,3 +287,6 @@ if __name__ == "__main__":
     print()
     print(f"Z=1 HUBBLE_PARAM: {c.hubble(1.0)}")
     print(f"Z=1 CRIT_DENS: {c.critical_density(1.0)}")
+    print()
+    print(f"Time at z=0: {c.time_to_redshift(13.4)}")
+    print(f"Time at z=0: {c.time_to_redshift(5.8)}")
