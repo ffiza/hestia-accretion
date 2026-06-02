@@ -666,6 +666,60 @@ if __name__ == "__main__":
         x_feature=x_feature,
         snapnum=snapnum,
         config=config,
+        fig_name=f"prop_comparison_env_norm_snap{snapnum}_{config['RUN_CODE']}")
+
+    features: List[FeatureData] = [
+        FeatureData(
+            name="StellarMassFraction",
+            axis_limits=(0.2, 1.0),
+            axis_label=r"$M_\star / \left(M_\star + M_\mathrm{cold} \right)$",
+            axis_ticks=[0.4, 0.6, 0.8],
+            axis_tick_labels=["0.4", "0.6", "0.8"],
+        ),
+        FeatureData(
+            name="logSFR_Msun/yr",
+            axis_limits=(-0.5, 1.6),
+            axis_label=r"$\log_{10} \mathrm{SFR}$" \
+            + "\n" + r"$[\mathrm{M}_\odot \, \mathrm{yr}^{-1}]$",
+            axis_ticks=[-0.1, 0.3, 0.7, 1.1],
+            axis_tick_labels=["$-0.1$", "0.3", "0.7", "1.1"],
+        ),
+        FeatureData(
+            name="logsSFR_Gyr^-1",
+            axis_limits=(-2, -0.6),
+            axis_label=r"$\log_{10} \mathrm{sSFR}$" \
+                + "\n" + r"$[\mathrm{Gyr}^{-1}]$",
+            axis_ticks=[-1.8, -1.4, -1],
+            axis_tick_labels=["$-1.8$", "$-1.4$", "$-1.0$"],
+        ),
+        FeatureData(
+            name="Mstar_10^10Msun",
+            axis_limits=(0, 18),
+            axis_label=r"$M_\star~\mathrm{[10^{10} M_\odot]}$",
+            axis_ticks=[2, 4, 6, 8, 10, 12, 14, 16],
+            axis_tick_labels=["2", "4", "6", "8", "10", "12", "14", "16"],
+        ),
+        FeatureData(
+            name="Mgas_10^10Msun",
+            axis_limits=(0, 18),
+            axis_label=r"$M_\mathrm{gas}~\mathrm{[10^{10} M_\odot]}$",
+            axis_ticks=[2, 4, 6, 8, 10, 12, 14, 16],
+            axis_tick_labels=["2", "4", "6", "8", "10", "12", "14", "16"],
+        ),
+        FeatureData(
+            name="ColdGasMassFraction",
+            axis_limits=(0, 1.0),
+            axis_label=r"$M_\mathrm{cold} / \left(M_\star + M_\mathrm{cold} \right)$",
+            axis_ticks=[0.2, 0.4, 0.6, 0.8],
+            axis_tick_labels=["0.2", "0.4", "0.6", "0.8"],
+        ),
+    ]
+    snapnum = 127
+    plot_correlations_with_feature(
+        y_features=features,
+        x_feature=x_feature,
+        snapnum=snapnum,
+        config=config,
         fig_name=f"prop_comparison_env_snap{snapnum}_{config['RUN_CODE']}")
 
     # plot_time_correlation_sfr_vs_delta(config)
