@@ -126,14 +126,14 @@ def plot_accretion_evolution(
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(0.1, 400)
+        ax.set_ylim(1, 200)
         ax.set_yscale("log")
         ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
                       labels=["2", "4", "6", "8", "10", "12"],
                       fontsize=6)
-        ax.set_yticks(ticks=[0.1, 1, 10, 100],
-                      labels=["0.1", "1", "10", "100"],
-                      fontsize=6)
+        # ax.set_yticks(ticks=[0.1, 1, 10, 100],
+        #               labels=["0.1", "1", "10", "100"],
+        #               fontsize=6)
         ax.set_ylabel(Helpers.get_ylabel(rate_type, accretion_region_type),
                       fontsize=8)
         ax.set_xlabel(r'Time [Gyr]', fontsize=8)

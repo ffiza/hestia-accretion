@@ -126,7 +126,10 @@ def plot_accretion_evolution(
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(-150, 150)
+        if accretion_region_type == AccretionRegionType.HALO:
+            ax.set_ylim(-120, 120)
+        else:
+            ax.set_ylim(-50, 50)
         # ax.set_yscale("log")
         ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
                       labels=["2", "4", "6", "8", "10", "12"],
