@@ -126,46 +126,95 @@ def plot_accretion_evolution(
     for ax in axs.flatten():
         ax.set_axisbelow(True)
         ax.set_xlim(0, 14)
-        ax.set_ylim(1, 200)
-        ax.set_yscale("log")
+        if accretion_region_type == AccretionRegionType.HALO:
+            ax.set_ylim(-120, 120)
+        else:
+            ax.set_ylim(-50, 50)
+        # ax.set_yscale("log")
         ax.set_xticks(ticks=[2, 4, 6, 8, 10, 12],
                       labels=["2", "4", "6", "8", "10", "12"],
                       fontsize=6)
         # ax.set_yticks(ticks=[0.1, 1, 10, 100],
         #               labels=["0.1", "1", "10", "100"],
         #               fontsize=6)
-        ax.set_ylabel(Helpers.get_ylabel(rate_type, accretion_region_type),
+        ax.set_ylabel(f'$\Delta$'+Helpers.get_ylabel(rate_type, accretion_region_type),
                       fontsize=8)
         ax.set_xlabel(r'Time [Gyr]', fontsize=8)
         ax.label_outer()
+
+    df_auriga = AurigaData.get_accretion(config, accretion_region_type)
+    feat = f"{Helpers.get_rate_type_string(rate_type)}RateSmoothed"
 
     for i, simulation in enumerate(Settings.HIGH_RES_SIMULATIONS):
         ax = axs.flatten()[i]
         for galaxy in Settings.GALAXIES:
             df = _get_data(f"{simulation}_{galaxy}", config,
                            accretion_region_type)
-            ax.plot(df["Time_Gyr"].to_numpy(),
-                    windowed_average(
-                        df["Time_Gyr"].to_numpy(),
-                        df[Helpers.get_feat_name(rate_type)].to_numpy(),
-                        window_length
-                    ),
-                    ls=Settings.GALAXY_LINESTYLES[galaxy],
-                    color=Settings.SIMULATION_COLORS[simulation],
-                    lw=0.75, label=galaxy, zorder=12)
+            
+            time = df["Time_Gyr"].to_numpy()
+
+            hestia = windowed_average(
+                time,
+                df[Helpers.get_feat_name(rate_type)].to_numpy(),
+                window_length
+            )
+
+            auriga_med = np.interp(
+                time,
+                df_auriga["Time_Gyr"],
+                df_auriga[f"{feat}Median_Msun/yr"]
+            )
+
+            auriga_p16 = np.interp(
+                time,
+                df_auriga["Time_Gyr"],
+                df_auriga[f"{feat}Perc16_Msun/yr"]
+            )
+
+            auriga_p84 = np.interp(
+                time,
+                df_auriga["Time_Gyr"],
+                df_auriga[f"{feat}Perc84_Msun/yr"]
+            )
+
+            delta = hestia - auriga_med
+            delta_lo = hestia - auriga_p84
+            delta_hi = hestia - auriga_p16
+
+            ax.fill_between(
+                time,
+                auriga_p84 - auriga_med,
+                -(auriga_med - auriga_p16),
+                color=Settings.SIMULATION_COLORS[simulation],
+                alpha=0.2,
+                lw=0
+            )
+
+            ax.plot(
+                time,
+                delta,
+                ls=Settings.GALAXY_LINESTYLES[galaxy],
+                color=Settings.SIMULATION_COLORS[simulation],
+                lw=0.75,
+                label=galaxy,
+                zorder=12
+            )
+
+            ax.axhline(y=0, ls="--", color="k", lw=0.5, zorder=11)
+
         ax.text(
             x=0.05, y=0.95, s=r"$\texttt{" + f"{simulation}" + "}$",
             transform=ax.transAxes, fontsize=7,
             verticalalignment='top', horizontalalignment='left',
             color=Settings.SIMULATION_COLORS[simulation])
 
-        _add_auriga_data_to_ax(ax, rate_type, accretion_region_type, config)
+        # _add_auriga_data_to_ax(ax, rate_type, accretion_region_type, config)
 
     axs[0].legend(loc="lower right", framealpha=0, fontsize=5)
 
     suffix = get_accretion_region_suffix(accretion_region_type)
     plt.savefig(
-        f"images/{Helpers.get_file_prefix(rate_type)}{suffix}"
+        f"images/{Helpers.get_file_prefix(rate_type)}_difference{suffix}"
         f"_{config['RUN_CODE']}.pdf")
     plt.close(fig)
 
