@@ -80,12 +80,12 @@ def make_plot(config: dict) -> None:
         ax.label_outer()
         # Segundo eje a la derecha para densidad de hidrógeno
         ax2 = ax.twinx()
-        conv = 1.989e30 / (3.0857e21)**3 * 0.76 / 1.6726e-27
+        conv = 1.989e30 / (3.0857e21)**3 * 0.76 / 1.6726e-27 # Msun in kg / kcp**3 to cm**3 * .76 / m_p in kg
         ax2.set_yscale("log")
         ax2.set_ylim(5E-1 * conv, 5E6 * conv)
         ax2.set_yticks(ticks=[1E-7, 1E-5, 1E-3, 1E-1])
         ax2.set_yticklabels([r"$10^{-7}$", r"$10^{-5}$", r"$10^{-3}$", r"$10^{-1}$"], fontsize=6)
-        ax2.set_ylabel(r"$n_H$ [cm$^{-3}$]", fontsize=8)
+        ax2.set_ylabel(r"$n_{\rm H}$ [cm$^{-3}$]", fontsize=8)
         ax2.label_outer()
 
         ax.text(
